@@ -1,0 +1,383 @@
+/* ===================================
+   CANVAS STYLES - iframe approach
+   =================================== */
+
+.canvas-wrapper {
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+    padding: 16px 24px 32px;
+    box-sizing: border-box;
+}
+
+/* ── Viewport Label ── */
+.viewport-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    margin-bottom: 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.viewport-label-size {
+    color: var(--color-text-muted);
+    font-weight: 400;
+    font-size: 0.7rem;
+}
+
+.viewport-desktop {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.viewport-tablet {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.viewport-mobile {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* ── Device Frame ── */
+.device-frame {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.device-frame.device-desktop {
+    max-width: 100%;
+}
+
+.device-frame.device-tablet {
+    max-width: 820px;
+    padding: 16px;
+    background: var(--color-surface-border);
+    border-radius: 24px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08), inset 0 0 0 2px var(--color-surface-border);
+}
+
+.device-frame.device-mobile {
+    max-width: 420px;
+    padding: 42px 16px 32px;
+    background: linear-gradient(145deg, #1e293b, #334155);
+    border-radius: 40px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 0 0 2px #475569;
+    position: relative;
+}
+
+.device-frame.device-mobile::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 20px;
+    background: #0f172a;
+    border-radius: 10px;
+    z-index: 2;
+}
+
+.device-frame.device-mobile::after {
+    content: '';
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: #64748b;
+    border-radius: 2px;
+}
+
+/* ── iframe Container ── */
+.canvas-iframe-container {
+    position: relative;
+    background: var(--color-surface);
+    min-height: 600px;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.device-frame.device-mobile .canvas-iframe-container {
+    border-radius: 4px;
+}
+
+.device-frame.device-tablet .canvas-iframe-container {
+    border-radius: 8px;
+}
+
+/* ── iframe ── */
+.canvas-iframe {
+    width: 100%;
+    height: 100vh;
+    min-height: 600px;
+    border: none;
+    display: block;
+    background: var(--color-surface);
+}
+
+/* ── Loading overlay ── */
+.canvas-iframe-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-surface-secondary);
+    z-index: 20;
+    gap: 12px;
+}
+
+.canvas-iframe-loading .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--color-surface-border);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.canvas-iframe-loading p {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+}
+
+/* ── Component Overlay Strip (right side) ── */
+.canvas-overlay-strip {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+    max-height: 100%;
+    overflow-y: auto;
+    background: var(--color-surface);
+    backdrop-filter: blur(12px);
+    border-left: 1px solid var(--color-surface-border);
+    z-index: 10;
+    padding: 0;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.overlay-strip-header {
+    padding: 10px 14px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-primary);
+    border-bottom: 1px solid var(--color-surface-border);
+    background: var(--color-surface-secondary);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+/* ── Overlay Item ── */
+.canvas-overlay-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px 8px 6px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+    font-size: 0.78rem;
+}
+
+.canvas-overlay-item:hover {
+    background: var(--color-surface-secondary);
+}
+
+.canvas-overlay-item.selected {
+    background: var(--color-surface-secondary);
+    border-left: 3px solid var(--color-primary);
+}
+
+.canvas-overlay-item.dragging-item {
+    opacity: 0.4;
+}
+
+.overlay-item-handle {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    cursor: grab;
+    border-radius: 3px;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+}
+
+.canvas-overlay-item:hover .overlay-item-handle {
+    color: #94a3b8;
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.overlay-item-handle:active {
+    cursor: grabbing;
+    color: var(--color-primary);
+}
+
+.overlay-item-label {
+    flex: 1;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.canvas-overlay-item.selected .overlay-item-label {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+/* ── Overlay Item Actions ── */
+.overlay-item-actions {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.overlay-action-btn {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-surface-border);
+    border-radius: 4px;
+    font-size: 9px;
+    color: var(--color-primary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+    line-height: 1;
+}
+
+.overlay-action-btn:hover:not(:disabled) {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.overlay-action-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.overlay-action-btn.danger {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.overlay-action-btn.danger:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
+/* ── Drop Zone ── */
+.canvas-drop-zone {
+    height: 4px;
+    margin: 0;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.canvas-drop-zone.active {
+    height: 28px;
+    margin: 2px 0;
+    background: rgba(var(--color-primary-rgb), 0.08); /* wait, primary-rgb is not defined, I'll use simple rgba */
+    background: var(--color-surface-secondary);
+    border: 2px dashed var(--color-primary);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.canvas-drop-zone.active::after {
+    content: 'Drop here';
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--color-primary);
+    letter-spacing: 0.5px;
+}
+
+/* ── Empty overlay ── */
+.canvas-empty-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--color-text-muted);
+    pointer-events: none;
+    z-index: 5;
+}
+
+.canvas-empty-overlay h3 {
+    font-size: 1.2rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 8px;
+}
+
+.canvas-empty-overlay p {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+/* ── Scrollbar for overlay strip ── */
+.canvas-overlay-strip::-webkit-scrollbar {
+    width: 4px;
+}
+
+.canvas-overlay-strip::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.canvas-overlay-strip::-webkit-scrollbar-thumb {
+    background: var(--color-surface-border);
+    border-radius: 2px;
+}
+
+.canvas-overlay-strip::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

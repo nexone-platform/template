@@ -1,0 +1,214 @@
+@import "tailwindcss";
+
+:root {
+  /* ── Nova defaults (overridden at runtime by ThemeProvider) ── */
+  --background:   #EEF0F4;
+  --foreground:   #1A1A2E;
+
+  --nv-bg:          #EEF0F4;
+  --nv-card:        #FFFFFF;
+  --nv-sidebar:     #111113;
+  --nv-sidebar-hover: #1C1C1F;
+  --nv-sidebar-text: #FFFFFF;
+  --nv-violet:      #6C5CE7;
+  --nv-violet-dark: #5A4BD1;
+  --nv-violet-light:#F0EEFF;
+  --nv-violet-glow: #6C5CE7;
+  --nv-cyan:        #00B4D8;
+  --nv-cyan-light:  #E0F7FA;
+  --nv-success:     #059669;
+  --nv-success-lt:  #ECFDF5;
+  --nv-danger:      #DC2626;
+  --nv-danger-lt:   #FEF2F2;
+  --nv-warn:        #D97706;
+  --nv-warn-lt:     #FFFBEB;
+  --nv-text:        #1A1A2E;
+  --nv-text-sec:    #6B7280;
+  --nv-text-dim:    #9CA3AF;
+  --nv-border:      #E5E7EB;
+  --nv-border-lt:   #F3F4F6;
+  --nv-font:        Inter, sans-serif;
+  --nv-font-size:   14px;
+  --nv-radius:      12px;
+  --nv-sidebar-width: 260px;
+  --nv-header: rgba(255,255,255,0.85);
+  --nv-header-height: 64px;
+  --nv-heading-font: Inter, sans-serif;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Nova palette — reads from CSS vars so ThemeProvider can override */
+  --color-nv-bg:          var(--nv-bg);
+  --color-nv-card:        var(--nv-card);
+  --color-nv-sidebar:     var(--nv-sidebar);
+  --color-nv-sidebar-hover: var(--nv-sidebar-hover);
+  --color-nv-sidebar-text: var(--nv-sidebar-text);
+  --color-nv-violet:      var(--nv-violet);
+  --color-nv-violet-dark: var(--nv-violet-dark);
+  --color-nv-violet-light:var(--nv-violet-light);
+  --color-nv-violet-glow: var(--nv-violet-glow);
+  --color-nv-cyan:        var(--nv-cyan);
+  --color-nv-cyan-light:  var(--nv-cyan-light);
+  --color-nv-success:     var(--nv-success);
+  --color-nv-success-lt:  var(--nv-success-lt);
+  --color-nv-danger:      var(--nv-danger);
+  --color-nv-danger-lt:   var(--nv-danger-lt);
+  --color-nv-warn:        var(--nv-warn);
+  --color-nv-warn-lt:     var(--nv-warn-lt);
+  --color-nv-text:        var(--nv-text);
+  --color-nv-text-sec:    var(--nv-text-sec);
+  --color-nv-text-dim:    var(--nv-text-dim);
+  --color-nv-border:      var(--nv-border);
+  --color-nv-border-lt:   var(--nv-border-lt);
+
+  /* Theme-driven border radius scale */
+  --radius-sm: calc(var(--nv-radius) * 0.33);
+  --radius: calc(var(--nv-radius) * 0.5);
+  --radius-md: calc(var(--nv-radius) * 0.67);
+  --radius-lg: calc(var(--nv-radius) * 0.83);
+  --radius-xl: var(--nv-radius);
+  --radius-2xl: calc(var(--nv-radius) * 1.33);
+  --radius-3xl: calc(var(--nv-radius) * 2);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #09090B;
+    --foreground: #FAFAFA;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Pointer cursor for all interactive elements ── */
+button,
+a,
+select,
+summary,
+label[for],
+[role="button"],
+[role="tab"],
+[role="link"],
+[role="menuitem"],
+[role="option"],
+[tabindex]:not([tabindex="-1"]),
+input[type="checkbox"],
+input[type="radio"],
+input[type="file"],
+input[type="submit"],
+input[type="reset"],
+input[type="button"],
+input[type="image"],
+input[type="color"] {
+  cursor: pointer;
+}
+
+/* ── Heading font (from theme settings) ── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--nv-heading-font, Inter, sans-serif);
+}
+
+/* ── Smooth momentum scrolling ── */
+.overflow-x-auto,
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Subtle scrollbar ── */
+.overflow-x-auto::-webkit-scrollbar {
+  height: 4px;
+}
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+/* ── Board scrollbar — more visible ── */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #9ca3af;
+  border-radius: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* ── Touch-friendly elements ── */
+@media (max-width: 640px) {
+  button, a, select, input[type="checkbox"], input[type="radio"] {
+    min-height: 36px;
+  }
+}
+
+/* ── Safe area insets ── */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .fixed.bottom-0,
+  .sticky.bottom-0 {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ── Sidebar scrollbar ── */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ── Compact Mode ── */
+.compact table th,
+.compact table td {
+  padding-top: 0.35rem !important;
+  padding-bottom: 0.35rem !important;
+}
+.compact .space-y-4 > * + * { margin-top: 0.5rem !important; }
+.compact .space-y-6 > * + * { margin-top: 0.75rem !important; }
+.compact .p-6 { padding: 1rem !important; }
+.compact .py-2\.5 { padding-top: 0.375rem !important; padding-bottom: 0.375rem !important; }
+.compact .gap-4 { gap: 0.5rem !important; }
+.compact .gap-6 { gap: 0.75rem !important; }
+.compact .text-2xl { font-size: 1.125rem !important; }
+.compact .text-xl { font-size: 1rem !important; }
+
+/* ── Dark Mode — invert gray scale so Tailwind gray-* utilities adapt ── */
+html.dark {
+  color-scheme: dark;
+  --color-gray-50: #18181b;
+  --color-gray-100: #27272a;
+  --color-gray-200: #3f3f46;
+  --color-gray-300: #52525b;
+  --color-gray-400: #71717a;
+  --color-gray-500: #a1a1aa;
+  --color-gray-600: #d4d4d8;
+  --color-gray-700: #e4e4e7;
+  --color-gray-800: #f4f4f5;
+  --color-gray-900: #fafafa;
+}

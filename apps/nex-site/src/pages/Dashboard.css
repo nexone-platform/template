@@ -1,0 +1,2380 @@
+/* Dashboard Styles */
+.dashboard {
+    padding: 4px 12px 12px 12px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Sticky card header for Recent Pages */
+.dashboard-card-header-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--color-surface);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* Override card overflow so sticky header works */
+.dashboard > .gmail-inbox {
+    overflow: visible;
+}
+
+/* ══════════════════════════════════════
+   GMAIL INBOX STYLES
+   ══════════════════════════════════════ */
+.gmail-inbox {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-surface-border);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 12px;
+}
+
+/* ── Header ── */
+.gmail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-surface-border);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.gmail-header-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin: 0;
+}
+
+.gmail-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ── Checkbox ── */
+.gmail-checkbox-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.gmail-checkbox {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--color-primary);
+}
+
+/* ── Star ── */
+.gmail-star {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-gray-400);
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.gmail-star:hover {
+    background: rgba(245, 158, 11, 0.08);
+    color: #f59e0b;
+}
+
+.gmail-star.active {
+    color: #f59e0b;
+}
+
+/* ── Row ── */
+.gmail-rows {
+    border-top: none;
+    max-height: 265px; /* Exactly 5 rows (53px each) */
+    overflow-y: auto;
+}
+
+/* Scrollbar for Recent Pages */
+.gmail-rows::-webkit-scrollbar {
+    width: 6px;
+}
+.gmail-rows::-webkit-scrollbar-track {
+    background: transparent;
+    margin-bottom: 8px;
+}
+.gmail-rows::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 6px;
+}
+.gmail-rows::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.gmail-row {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    min-height: 52px;
+    border-bottom: 1px solid var(--color-surface-border);
+    cursor: pointer;
+    transition: background 0.1s, box-shadow 0.1s;
+    position: relative;
+}
+
+.gmail-row:last-child {
+    border-bottom: none;
+}
+
+.gmail-row:hover {
+    background: var(--color-surface-secondary);
+    box-shadow: inset 0 -1px 0 var(--color-surface-border), inset 0 1px 0 var(--color-surface-border);
+    z-index: 1;
+}
+
+.gmail-row.selected {
+    background: rgba(99, 102, 241, 0.15);
+}
+
+.gmail-row.selected:hover {
+    background: rgba(99, 102, 241, 0.2);
+}
+
+/* ── Sender (Page Title) ── */
+.gmail-sender {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    width: 200px;
+    min-width: 140px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Subject ── */
+.gmail-subject {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.875rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding: 0 16px;
+}
+
+.gmail-subject-slug {
+    color: var(--color-gray-900);
+    font-weight: 500;
+}
+
+.gmail-subject-sep {
+    color: var(--color-gray-400);
+}
+
+.gmail-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.gmail-status-dot.published {
+    background: var(--color-success);
+}
+
+.gmail-status-dot.draft {
+    background: var(--color-gray-400);
+}
+
+.gmail-subject-status {
+    color: var(--color-gray-600);
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+.gmail-subject-preview {
+    color: var(--color-gray-400);
+    font-weight: 400;
+}
+
+/* ── Date ── */
+.gmail-date {
+    font-size: 0.8125rem;
+    color: var(--color-gray-500);
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding-right: 12px;
+    min-width: 70px;
+    text-align: right;
+}
+
+/* ── Hover Actions ── */
+.gmail-hover-actions {
+    display: none;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    padding-right: 4px;
+}
+
+.gmail-row:hover .gmail-date {
+    display: none;
+}
+
+.gmail-row:hover .gmail-hover-actions {
+    display: flex;
+}
+
+.gmail-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-gray-500);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.gmail-action-btn:hover {
+    background: var(--color-gray-200);
+    color: var(--color-gray-900);
+}
+
+/* ── Empty State ── */
+.gmail-empty {
+    padding: 48px;
+    text-align: center;
+    color: var(--color-gray-500);
+}
+
+/* ══════════════════════════════════════
+   STATS CARDS
+   ══════════════════════════════════════ */
+.dash-stats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.dash-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px;
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-surface-border);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.dash-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.dash-stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.dash-stat-icon-pages { background: rgba(99,102,241,0.1); color: #6366f1; }
+.dash-stat-icon-published { background: rgba(16,185,129,0.1); color: #10b981; }
+.dash-stat-icon-views { background: rgba(59,130,246,0.1); color: #3b82f6; }
+.dash-stat-icon-logins { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+.dash-stat-icon-failed { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+.dash-stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dash-stat-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--color-gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.dash-stat-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    line-height: 1.2;
+}
+
+/* ══════════════════════════════════════
+   CHARTS GRID
+   ══════════════════════════════════════ */
+.dash-charts-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.dash-view-toggle {
+    display: flex;
+    gap: 2px;
+    background: var(--color-gray-100);
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.dash-chart-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.dash-chart-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--color-surface-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.dash-chart-header h3 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-gray-800);
+}
+
+.dash-period-filters {
+    display: flex;
+    gap: 4px;
+    background: var(--color-gray-100);
+    border-radius: 8px;
+    padding: 3px;
+}
+
+.dash-period-btn {
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--color-gray-500);
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.dash-period-btn:hover {
+    color: var(--color-gray-700);
+}
+
+.dash-period-btn.active {
+    background: var(--color-surface);
+    color: #6366f1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.dash-chart-body {
+    padding: 16px 16px 4px 16px;
+    min-height: 220px;
+}
+
+.dash-chart-loading,
+.dash-chart-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: var(--color-gray-400);
+    font-size: 0.875rem;
+}
+
+/* ── Bar Chart ── */
+.dash-bar-chart {
+    display: flex;
+    gap: 8px;
+    height: 220px;
+}
+
+.dash-bar-y-axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0 0 24px;
+    min-width: 48px;
+    text-align: right;
+}
+
+.dash-bar-y-label {
+    font-size: 0.68rem;
+    color: var(--color-gray-400);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.dash-bar-area {
+    flex: 1;
+    position: relative;
+}
+
+.dash-bar-gridlines {
+    position: absolute;
+    inset: 0;
+    bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.dash-bar-gridline {
+    border-bottom: 1px dashed var(--color-surface-border);
+}
+
+.dash-bar-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 24px;
+    z-index: 1;
+}
+
+.dash-bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    min-width: 0;
+    justify-content: flex-end;
+}
+
+.dash-bar-fill-wrap {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.dash-bar-fill {
+    width: 70%;
+    max-width: 48px;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    cursor: pointer;
+    transition: filter 0.15s;
+    animation: barGrow 0.6s ease forwards;
+    transform: scaleY(0);
+    transform-origin: bottom;
+}
+
+.dash-bar-fill:hover {
+    filter: brightness(1.15);
+}
+
+@keyframes barGrow {
+    from { transform: scaleY(0); opacity: 0; }
+    to { transform: scaleY(1); opacity: 1; }
+}
+
+.dash-bar-tooltip {
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--color-gray-700);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.15s;
+    pointer-events: none;
+}
+
+.dash-bar-fill:hover .dash-bar-tooltip {
+    opacity: 1;
+}
+
+.dash-bar-label {
+    font-size: 0.65rem;
+    color: var(--color-gray-500);
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+/* ── Activity Timeline ── */
+.dash-activity-body {
+    padding: 16px 20px;
+    overflow-y: auto;
+    max-height: 260px;
+}
+
+.dash-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.dash-timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-surface-border);
+}
+
+.dash-timeline-item:last-child {
+    border-bottom: none;
+}
+
+.dash-timeline-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+}
+
+.dash-timeline-dot.dot-success { background: #10b981; }
+.dash-timeline-dot.dot-fail { background: #ef4444; }
+.dash-timeline-dot.dot-logout { background: #94a3b8; }
+
+.dash-timeline-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.dash-timeline-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dash-timeline-user {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--color-gray-800);
+}
+
+.dash-timeline-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.tbadge-success { background: rgba(16,185,129,0.1); color: #059669; }
+.tbadge-fail { background: rgba(239,68,68,0.1); color: #dc2626; }
+.tbadge-logout { background: rgba(148,163,184,0.15); color: #64748b; }
+
+.dash-timeline-time {
+    font-size: 0.72rem;
+    color: var(--color-gray-400);
+}
+
+/* Legacy stats-grid support */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    transition: transform var(--transition-base);
+}
+
+.stat-card:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-icon {
+    font-size: 1.25rem;
+    line-height: 1;
+    color: var(--color-gray-500);
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    color: var(--color-gray-500);
+    margin-bottom: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    margin-bottom: 0;
+    line-height: 1.3;
+}
+
+/* Table */
+.table-container {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead {
+    background: var(--color-gray-50);
+     /* Dashboard Styles */
+.dashboard {
+    padding: 4px 12px 12px 12px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Sticky card header for Recent Pages */
+.dashboard-card-header-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--color-surface);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* Override card overflow so sticky header works */
+.dashboard > .gmail-inbox {
+    overflow: visible;
+}
+
+/* ══════════════════════════════════════
+   GMAIL INBOX STYLES
+   ══════════════════════════════════════ */
+.gmail-inbox {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-surface-border);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 12px;
+}
+
+/* ── Header ── */
+.gmail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-surface-border);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.gmail-header-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin: 0;
+}
+
+.gmail-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ── Checkbox ── */
+.gmail-checkbox-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.gmail-checkbox {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--color-primary);
+}
+
+/* ── Star ── */
+.gmail-star {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-gray-400);
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.gmail-star:hover {
+    background: rgba(245, 158, 11, 0.08);
+    color: #f59e0b;
+}
+
+.gmail-star.active {
+    color: #f59e0b;
+}
+
+/* ── Row ── */
+.gmail-rows {
+    border-top: none;
+    max-height: 265px; /* Exactly 5 rows (53px each) */
+    overflow-y: auto;
+}
+
+/* Scrollbar for Recent Pages */
+.gmail-rows::-webkit-scrollbar {
+    width: 6px;
+}
+.gmail-rows::-webkit-scrollbar-track {
+    background: transparent;
+    margin-bottom: 8px;
+}
+.gmail-rows::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 6px;
+}
+.gmail-rows::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.gmail-row {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    min-height: 52px;
+    border-bottom: 1px solid var(--color-surface-border);
+    cursor: pointer;
+    transition: background 0.1s, box-shadow 0.1s;
+    position: relative;
+}
+
+.gmail-row:last-child {
+    border-bottom: none;
+}
+
+.gmail-row:hover {
+    background: var(--color-surface-secondary);
+    box-shadow: inset 0 -1px 0 var(--color-surface-border), inset 0 1px 0 var(--color-surface-border);
+    z-index: 1;
+}
+
+.gmail-row.selected {
+    background: rgba(99, 102, 241, 0.15);
+}
+
+.gmail-row.selected:hover {
+    background: rgba(99, 102, 241, 0.2);
+}
+
+/* ── Sender (Page Title) ── */
+.gmail-sender {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    width: 200px;
+    min-width: 140px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Subject ── */
+.gmail-subject {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.875rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding: 0 16px;
+}
+
+.gmail-subject-slug {
+    color: var(--color-gray-900);
+    font-weight: 500;
+}
+
+.gmail-subject-sep {
+    color: var(--color-gray-400);
+}
+
+.gmail-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.gmail-status-dot.published {
+    background: var(--color-success);
+}
+
+.gmail-status-dot.draft {
+    background: var(--color-gray-400);
+}
+
+.gmail-subject-status {
+    color: var(--color-gray-600);
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+.gmail-subject-preview {
+    color: var(--color-gray-400);
+    font-weight: 400;
+}
+
+/* ── Date ── */
+.gmail-date {
+    font-size: 0.8125rem;
+    color: var(--color-gray-500);
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding-right: 12px;
+    min-width: 70px;
+    text-align: right;
+}
+
+/* ── Hover Actions ── */
+.gmail-hover-actions {
+    display: none;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    padding-right: 4px;
+}
+
+.gmail-row:hover .gmail-date {
+    display: none;
+}
+
+.gmail-row:hover .gmail-hover-actions {
+    display: flex;
+}
+
+.gmail-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-gray-500);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.gmail-action-btn:hover {
+    background: var(--color-gray-200);
+    color: var(--color-gray-900);
+}
+
+/* ── Empty State ── */
+.gmail-empty {
+    padding: 48px;
+    text-align: center;
+    color: var(--color-gray-500);
+}
+
+/* ══════════════════════════════════════
+   STATS CARDS
+   ══════════════════════════════════════ */
+.dash-stats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.dash-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px;
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-surface-border);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.dash-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.dash-stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.dash-stat-icon-pages { background: rgba(99,102,241,0.1); color: #6366f1; }
+.dash-stat-icon-published { background: rgba(16,185,129,0.1); color: #10b981; }
+.dash-stat-icon-views { background: rgba(59,130,246,0.1); color: #3b82f6; }
+.dash-stat-icon-logins { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+.dash-stat-icon-failed { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+.dash-stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dash-stat-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--color-gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.dash-stat-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    line-height: 1.2;
+}
+
+/* ══════════════════════════════════════
+   CHARTS GRID
+   ══════════════════════════════════════ */
+.dash-charts-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.dash-view-toggle {
+    display: flex;
+    gap: 2px;
+    background: var(--color-gray-100);
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.dash-chart-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.dash-chart-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--color-surface-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.dash-chart-header h3 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-gray-800);
+}
+
+.dash-period-filters {
+    display: flex;
+    gap: 4px;
+    background: var(--color-gray-100);
+    border-radius: 8px;
+    padding: 3px;
+}
+
+.dash-period-btn {
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--color-gray-500);
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.dash-period-btn:hover {
+    color: var(--color-gray-700);
+}
+
+.dash-period-btn.active {
+    background: var(--color-surface);
+    color: #6366f1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.dash-chart-body {
+    padding: 16px 16px 4px 16px;
+    min-height: 220px;
+}
+
+.dash-chart-loading,
+.dash-chart-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: var(--color-gray-400);
+    font-size: 0.875rem;
+}
+
+/* ── Bar Chart ── */
+.dash-bar-chart {
+    display: flex;
+    gap: 8px;
+    height: 220px;
+}
+
+.dash-bar-y-axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0 0 24px;
+    min-width: 48px;
+    text-align: right;
+}
+
+.dash-bar-y-label {
+    font-size: 0.68rem;
+    color: var(--color-gray-400);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.dash-bar-area {
+    flex: 1;
+    position: relative;
+}
+
+.dash-bar-gridlines {
+    position: absolute;
+    inset: 0;
+    bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.dash-bar-gridline {
+    border-bottom: 1px dashed var(--color-surface-border);
+}
+
+.dash-bar-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 24px;
+    z-index: 1;
+}
+
+.dash-bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    min-width: 0;
+    justify-content: flex-end;
+}
+
+.dash-bar-fill-wrap {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.dash-bar-fill {
+    width: 70%;
+    max-width: 48px;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    cursor: pointer;
+    transition: filter 0.15s;
+    animation: barGrow 0.6s ease forwards;
+    transform: scaleY(0);
+    transform-origin: bottom;
+}
+
+.dash-bar-fill:hover {
+    filter: brightness(1.15);
+}
+
+@keyframes barGrow {
+    from { transform: scaleY(0); opacity: 0; }
+    to { transform: scaleY(1); opacity: 1; }
+}
+
+.dash-bar-tooltip {
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--color-gray-700);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.15s;
+    pointer-events: none;
+}
+
+.dash-bar-fill:hover .dash-bar-tooltip {
+    opacity: 1;
+}
+
+.dash-bar-label {
+    font-size: 0.65rem;
+    color: var(--color-gray-500);
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+/* ── Activity Timeline ── */
+.dash-activity-body {
+    padding: 16px 20px;
+    overflow-y: auto;
+    max-height: 260px;
+}
+
+.dash-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.dash-timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-surface-border);
+}
+
+.dash-timeline-item:last-child {
+    border-bottom: none;
+}
+
+.dash-timeline-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+}
+
+.dash-timeline-dot.dot-success { background: #10b981; }
+.dash-timeline-dot.dot-fail { background: #ef4444; }
+.dash-timeline-dot.dot-logout { background: #94a3b8; }
+
+.dash-timeline-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.dash-timeline-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dash-timeline-user {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--color-gray-800);
+}
+
+.dash-timeline-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.tbadge-success { background: rgba(16,185,129,0.1); color: #059669; }
+.tbadge-fail { background: rgba(239,68,68,0.1); color: #dc2626; }
+.tbadge-logout { background: rgba(148,163,184,0.15); color: #64748b; }
+
+.dash-timeline-time {
+    font-size: 0.72rem;
+    color: var(--color-gray-400);
+}
+
+/* Legacy stats-grid support */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    transition: transform var(--transition-base);
+}
+
+.stat-card:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-icon {
+    font-size: 1.25rem;
+    line-height: 1;
+    color: var(--color-gray-500);
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    color: var(--color-gray-500);
+    margin-bottom: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    margin-bottom: 0;
+    line-height: 1.3;
+}
+
+/* Table */
+.table-container {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead {
+    background: var(--color-gray-50);
+    border-bottom: 2px solid var(--color-gray-200);
+}
+
+.data-table th {
+    padding: var(--space-md);
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-gray-700);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-table td {
+    padding: var(--space-md);
+    border-bottom: 1px solid var(--color-gray-200);
+}
+
+.data-table tbody tr {
+    transition: background-color var(--transition-fast);
+}
+
+.data-table tbody tr:hover {
+    background: var(--color-gray-50);
+}
+
+/* Badge */
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    text-transform: capitalize;
+}
+
+.badge-published {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--color-success);
+}
+
+.badge-draft {
+    background: rgba(156, 163, 175, 0.1);
+    color: var(--color-gray-600);
+}
+
+/* Quick Actions — Compact */
+.quick-actions {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: 0;
+}
+
+.action-card-compact {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-gray-700);
+    text-decoration: none;
+    transition: all 0.15s;
+    cursor: pointer;
+}
+
+.action-card-compact:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+    color: var(--color-primary);
+}
+
+.action-card-compact svg {
+    color: var(--color-gray-500);
+    flex-shrink: 0;
+}
+
+.action-card-compact:hover svg {
+    color: var(--color-primary);
+}
+
+.text-primary {
+    color: var(--color-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.text-primary:hover {
+    color: var(--color-primary-dark);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .dash-stats {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard {
+        padding: var(--space-md);
+    }
+
+    .dash-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dash-charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .data-table {
+        font-size: 0.75rem;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: var(--space-sm);
+    }
+}.Value -replace 'var\(--color-gray-200\)', 'var(--color-surface-border)' ;
+}
+
+.data-table th {
+    padding: var(--space-md);
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-gray-700);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-table td {
+    padding: var(--space-md);
+     /* Dashboard Styles */
+.dashboard {
+    padding: 4px 12px 12px 12px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Sticky card header for Recent Pages */
+.dashboard-card-header-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--color-surface);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* Override card overflow so sticky header works */
+.dashboard > .gmail-inbox {
+    overflow: visible;
+}
+
+/* ══════════════════════════════════════
+   GMAIL INBOX STYLES
+   ══════════════════════════════════════ */
+.gmail-inbox {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-surface-border);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 12px;
+}
+
+/* ── Header ── */
+.gmail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-surface-border);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.gmail-header-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin: 0;
+}
+
+.gmail-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ── Checkbox ── */
+.gmail-checkbox-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.gmail-checkbox {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--color-primary);
+}
+
+/* ── Star ── */
+.gmail-star {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-gray-400);
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.gmail-star:hover {
+    background: rgba(245, 158, 11, 0.08);
+    color: #f59e0b;
+}
+
+.gmail-star.active {
+    color: #f59e0b;
+}
+
+/* ── Row ── */
+.gmail-rows {
+    border-top: none;
+    max-height: 265px; /* Exactly 5 rows (53px each) */
+    overflow-y: auto;
+}
+
+/* Scrollbar for Recent Pages */
+.gmail-rows::-webkit-scrollbar {
+    width: 6px;
+}
+.gmail-rows::-webkit-scrollbar-track {
+    background: transparent;
+    margin-bottom: 8px;
+}
+.gmail-rows::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 6px;
+}
+.gmail-rows::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.gmail-row {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    min-height: 52px;
+    border-bottom: 1px solid var(--color-surface-border);
+    cursor: pointer;
+    transition: background 0.1s, box-shadow 0.1s;
+    position: relative;
+}
+
+.gmail-row:last-child {
+    border-bottom: none;
+}
+
+.gmail-row:hover {
+    background: var(--color-surface-secondary);
+    box-shadow: inset 0 -1px 0 var(--color-surface-border), inset 0 1px 0 var(--color-surface-border);
+    z-index: 1;
+}
+
+.gmail-row.selected {
+    background: rgba(99, 102, 241, 0.15);
+}
+
+.gmail-row.selected:hover {
+    background: rgba(99, 102, 241, 0.2);
+}
+
+/* ── Sender (Page Title) ── */
+.gmail-sender {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    width: 200px;
+    min-width: 140px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Subject ── */
+.gmail-subject {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.875rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding: 0 16px;
+}
+
+.gmail-subject-slug {
+    color: var(--color-gray-900);
+    font-weight: 500;
+}
+
+.gmail-subject-sep {
+    color: var(--color-gray-400);
+}
+
+.gmail-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.gmail-status-dot.published {
+    background: var(--color-success);
+}
+
+.gmail-status-dot.draft {
+    background: var(--color-gray-400);
+}
+
+.gmail-subject-status {
+    color: var(--color-gray-600);
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+.gmail-subject-preview {
+    color: var(--color-gray-400);
+    font-weight: 400;
+}
+
+/* ── Date ── */
+.gmail-date {
+    font-size: 0.8125rem;
+    color: var(--color-gray-500);
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding-right: 12px;
+    min-width: 70px;
+    text-align: right;
+}
+
+/* ── Hover Actions ── */
+.gmail-hover-actions {
+    display: none;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    padding-right: 4px;
+}
+
+.gmail-row:hover .gmail-date {
+    display: none;
+}
+
+.gmail-row:hover .gmail-hover-actions {
+    display: flex;
+}
+
+.gmail-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-gray-500);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.gmail-action-btn:hover {
+    background: var(--color-gray-200);
+    color: var(--color-gray-900);
+}
+
+/* ── Empty State ── */
+.gmail-empty {
+    padding: 48px;
+    text-align: center;
+    color: var(--color-gray-500);
+}
+
+/* ══════════════════════════════════════
+   STATS CARDS
+   ══════════════════════════════════════ */
+.dash-stats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.dash-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px;
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-surface-border);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.dash-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.dash-stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.dash-stat-icon-pages { background: rgba(99,102,241,0.1); color: #6366f1; }
+.dash-stat-icon-published { background: rgba(16,185,129,0.1); color: #10b981; }
+.dash-stat-icon-views { background: rgba(59,130,246,0.1); color: #3b82f6; }
+.dash-stat-icon-logins { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+.dash-stat-icon-failed { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+.dash-stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dash-stat-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--color-gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.dash-stat-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    line-height: 1.2;
+}
+
+/* ══════════════════════════════════════
+   CHARTS GRID
+   ══════════════════════════════════════ */
+.dash-charts-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.dash-view-toggle {
+    display: flex;
+    gap: 2px;
+    background: var(--color-gray-100);
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.dash-chart-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.dash-chart-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--color-surface-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.dash-chart-header h3 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-gray-800);
+}
+
+.dash-period-filters {
+    display: flex;
+    gap: 4px;
+    background: var(--color-gray-100);
+    border-radius: 8px;
+    padding: 3px;
+}
+
+.dash-period-btn {
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--color-gray-500);
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.dash-period-btn:hover {
+    color: var(--color-gray-700);
+}
+
+.dash-period-btn.active {
+    background: var(--color-surface);
+    color: #6366f1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.dash-chart-body {
+    padding: 16px 16px 4px 16px;
+    min-height: 220px;
+}
+
+.dash-chart-loading,
+.dash-chart-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: var(--color-gray-400);
+    font-size: 0.875rem;
+}
+
+/* ── Bar Chart ── */
+.dash-bar-chart {
+    display: flex;
+    gap: 8px;
+    height: 220px;
+}
+
+.dash-bar-y-axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0 0 24px;
+    min-width: 48px;
+    text-align: right;
+}
+
+.dash-bar-y-label {
+    font-size: 0.68rem;
+    color: var(--color-gray-400);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.dash-bar-area {
+    flex: 1;
+    position: relative;
+}
+
+.dash-bar-gridlines {
+    position: absolute;
+    inset: 0;
+    bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.dash-bar-gridline {
+    border-bottom: 1px dashed var(--color-surface-border);
+}
+
+.dash-bar-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 24px;
+    z-index: 1;
+}
+
+.dash-bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    min-width: 0;
+    justify-content: flex-end;
+}
+
+.dash-bar-fill-wrap {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.dash-bar-fill {
+    width: 70%;
+    max-width: 48px;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    cursor: pointer;
+    transition: filter 0.15s;
+    animation: barGrow 0.6s ease forwards;
+    transform: scaleY(0);
+    transform-origin: bottom;
+}
+
+.dash-bar-fill:hover {
+    filter: brightness(1.15);
+}
+
+@keyframes barGrow {
+    from { transform: scaleY(0); opacity: 0; }
+    to { transform: scaleY(1); opacity: 1; }
+}
+
+.dash-bar-tooltip {
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--color-gray-700);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.15s;
+    pointer-events: none;
+}
+
+.dash-bar-fill:hover .dash-bar-tooltip {
+    opacity: 1;
+}
+
+.dash-bar-label {
+    font-size: 0.65rem;
+    color: var(--color-gray-500);
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+/* ── Activity Timeline ── */
+.dash-activity-body {
+    padding: 16px 20px;
+    overflow-y: auto;
+    max-height: 260px;
+}
+
+.dash-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.dash-timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-surface-border);
+}
+
+.dash-timeline-item:last-child {
+    border-bottom: none;
+}
+
+.dash-timeline-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+}
+
+.dash-timeline-dot.dot-success { background: #10b981; }
+.dash-timeline-dot.dot-fail { background: #ef4444; }
+.dash-timeline-dot.dot-logout { background: #94a3b8; }
+
+.dash-timeline-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.dash-timeline-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dash-timeline-user {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--color-gray-800);
+}
+
+.dash-timeline-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.tbadge-success { background: rgba(16,185,129,0.1); color: #059669; }
+.tbadge-fail { background: rgba(239,68,68,0.1); color: #dc2626; }
+.tbadge-logout { background: rgba(148,163,184,0.15); color: #64748b; }
+
+.dash-timeline-time {
+    font-size: 0.72rem;
+    color: var(--color-gray-400);
+}
+
+/* Legacy stats-grid support */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    transition: transform var(--transition-base);
+}
+
+.stat-card:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-icon {
+    font-size: 1.25rem;
+    line-height: 1;
+    color: var(--color-gray-500);
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    color: var(--color-gray-500);
+    margin-bottom: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    margin-bottom: 0;
+    line-height: 1.3;
+}
+
+/* Table */
+.table-container {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead {
+    background: var(--color-gray-50);
+    border-bottom: 2px solid var(--color-gray-200);
+}
+
+.data-table th {
+    padding: var(--space-md);
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-gray-700);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-table td {
+    padding: var(--space-md);
+    border-bottom: 1px solid var(--color-gray-200);
+}
+
+.data-table tbody tr {
+    transition: background-color var(--transition-fast);
+}
+
+.data-table tbody tr:hover {
+    background: var(--color-gray-50);
+}
+
+/* Badge */
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    text-transform: capitalize;
+}
+
+.badge-published {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--color-success);
+}
+
+.badge-draft {
+    background: rgba(156, 163, 175, 0.1);
+    color: var(--color-gray-600);
+}
+
+/* Quick Actions — Compact */
+.quick-actions {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: 0;
+}
+
+.action-card-compact {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-gray-700);
+    text-decoration: none;
+    transition: all 0.15s;
+    cursor: pointer;
+}
+
+.action-card-compact:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+    color: var(--color-primary);
+}
+
+.action-card-compact svg {
+    color: var(--color-gray-500);
+    flex-shrink: 0;
+}
+
+.action-card-compact:hover svg {
+    color: var(--color-primary);
+}
+
+.text-primary {
+    color: var(--color-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.text-primary:hover {
+    color: var(--color-primary-dark);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .dash-stats {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard {
+        padding: var(--space-md);
+    }
+
+    .dash-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dash-charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .data-table {
+        font-size: 0.75rem;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: var(--space-sm);
+    }
+}.Value -replace 'var\(--color-gray-200\)', 'var(--color-surface-border)' ;
+}
+
+.data-table tbody tr {
+    transition: background-color var(--transition-fast);
+}
+
+.data-table tbody tr:hover {
+    background: var(--color-gray-50);
+}
+
+/* Badge */
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    text-transform: capitalize;
+}
+
+.badge-published {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--color-success);
+}
+
+.badge-draft {
+    background: rgba(156, 163, 175, 0.1);
+    color: var(--color-gray-600);
+}
+
+/* Quick Actions — Compact */
+.quick-actions {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: 0;
+}
+
+.action-card-compact {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-gray-700);
+    text-decoration: none;
+    transition: all 0.15s;
+    cursor: pointer;
+}
+
+.action-card-compact:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+    color: var(--color-primary);
+}
+
+.action-card-compact svg {
+    color: var(--color-gray-500);
+    flex-shrink: 0;
+}
+
+.action-card-compact:hover svg {
+    color: var(--color-primary);
+}
+
+.text-primary {
+    color: var(--color-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.text-primary:hover {
+    color: var(--color-primary-dark);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .dash-stats {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard {
+        padding: var(--space-md);
+    }
+
+    .dash-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dash-charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .data-table {
+        font-size: 0.75rem;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: var(--space-sm);
+    }
+}

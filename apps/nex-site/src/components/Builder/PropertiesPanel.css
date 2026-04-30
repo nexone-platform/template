@@ -1,0 +1,536 @@
+/* Properties Panel Styles */
+.properties-panel {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Panel Header */
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md) var(--space-lg);
+    border-bottom: 1px solid var(--color-surface-border);
+    background: var(--color-surface);
+}
+
+.panel-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.panel-header h3 {
+    font-size: 0.9rem;
+    margin: 0;
+    text-transform: capitalize;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.panel-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--color-surface-border);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.panel-back-btn:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+/* Empty State */
+.panel-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xl);
+    text-align: center;
+}
+
+.panel-empty .empty-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-lg);
+    opacity: 0.5;
+}
+
+.panel-empty h3 {
+    font-size: 1.125rem;
+    color: var(--color-gray-700);
+    margin-bottom: var(--space-sm);
+}
+
+.panel-empty p {
+    font-size: 0.875rem;
+    color: var(--color-gray-500);
+}
+
+/* Horizontal Tabs */
+.panel-tabs-horizontal {
+    display: flex;
+    border-bottom: 1px solid var(--color-surface-border);
+    background: var(--color-surface);
+}
+
+.panel-tabs-horizontal .tab {
+    flex: 1;
+    padding: var(--space-sm) var(--space-md);
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    color: var(--color-gray-600);
+}
+
+.panel-tabs-horizontal .tab:hover {
+    background: var(--color-surface-secondary);
+    color: var(--color-text-primary);
+}
+
+.panel-tabs-horizontal .tab.active {
+    border-bottom-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+/* Properties Content */
+.properties-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-lg);
+}
+
+.properties-section h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-gray-700);
+    margin-bottom: var(--space-md);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Form Group */
+.form-group {
+    margin-bottom: var(--space-lg);
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-gray-700);
+    margin-bottom: var(--space-xs);
+}
+
+.form-group input[type="text"],
+.form-group input[type="url"],
+.form-group input[type="number"],
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: var(--space-sm);
+    font-size: 0.875rem;
+    border: 1px solid var(--color-surface-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    transition: border-color var(--transition-fast);
+}
+
+.form-group input:disabled {
+    background: var(--color-gray-100);
+    cursor: not-allowed;
+}
+
+.form-group input[type="color"] {
+    width: 100%;
+    height: 40px;
+    padding: 0;
+    border: 1px solid var(--color-surface-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    font-family: var(--font-family);
+}
+
+/* Alignment Buttons */
+.align-buttons {
+    display: flex;
+    gap: 6px;
+}
+
+.align-btn {
+    flex: 1;
+    padding: 6px;
+    border: 1.5px solid var(--color-surface-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all var(--transition-fast);
+    color: var(--color-text-muted);
+}
+
+.align-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.align-btn.active {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: white;
+}
+
+/* Columns Info Hint */
+.columns-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--color-surface-secondary);
+    border: 1px solid var(--color-surface-border);
+    border-radius: var(--radius-sm);
+    margin-top: 4px;
+}
+
+.columns-info span {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.columns-info p {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ── Layout Controls ── */
+
+/* Two-column form row */
+.form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+/* Color picker + text input side by side */
+.color-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.color-input-row input[type="color"] {
+    width: 48px;
+    height: 36px;
+    padding: 2px;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* Spacing grid — box model visualizer */
+.spacing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 8px;
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-sm);
+}
+
+.spacing-center-label {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--color-gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-bottom: 4px;
+}
+
+.spacing-top label,
+.spacing-bottom label,
+.spacing-left label,
+.spacing-right label {
+    font-size: 0.7rem;
+    color: var(--color-gray-500);
+    margin-bottom: 2px;
+}
+
+/* Range slider value display */
+.range-value {
+    display: block;
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--color-primary);
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+/* ── Sections List (replaces empty state) ── */
+.sections-list {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.sections-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--color-surface-border);
+    background: var(--color-surface);
+}
+
+.sections-list-header h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--color-text-primary);
+}
+
+.sections-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    background: var(--color-primary);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 999px;
+}
+
+.sections-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.section-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    margin-bottom: 4px;
+    border: 1px solid var(--color-surface-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: var(--color-surface);
+}
+
+.section-item:hover {
+    background: var(--color-surface-secondary);
+    border-color: var(--color-primary);
+    border-left: 3px solid var(--color-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding-left: 10px;
+}
+
+.section-item:hover .section-item-actions {
+    opacity: 1;
+}
+
+.section-item-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+
+.section-item-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: var(--color-surface-secondary);
+    color: var(--color-text-muted);
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 6px;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+}
+
+.section-item:hover .section-item-index {
+    background: var(--color-primary);
+    color: #fff;
+    transform: scale(1.08);
+}
+
+.section-item-label {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: all 0.15s ease;
+}
+
+.section-item:hover .section-item-label {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.section-item-actions {
+    display: flex;
+    gap: 3px;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.section-action-btn {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-surface-border);
+    border-radius: 4px;
+    font-size: 9px;
+    color: var(--color-primary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+    line-height: 1;
+}
+
+.section-action-btn:hover:not(:disabled) {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.section-action-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.section-action-btn.danger {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.section-action-btn.danger:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
+/* Scrollbar for sections */
+.sections-items::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sections-items::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sections-items::-webkit-scrollbar-thumb {
+    background: var(--color-surface-border);
+    border-radius: 2px;
+}
+
+.sections-items::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* ── Toggle Visibility ── */
+.section-item-hidden {
+    opacity: 0.5;
+}
+
+.section-item-hidden .section-item-label {
+    text-decoration: line-through;
+    color: var(--color-gray-400);
+}
+
+.section-item-hidden .section-item-index {
+    background: var(--color-surface-secondary);
+    color: var(--color-text-muted);
+}
+
+.toggle-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggle-btn svg {
+    display: block;
+}
+
+.toggle-btn.hidden-state {
+    color: #94a3b8;
+    border-color: #e2e8f0;
+}
+
+.toggle-btn.hidden-state:hover {
+    background: #6366f1;
+    color: white;
+    border-color: #6366f1;
+}
+
+/* Always show toggle button */
+.section-item .toggle-btn {
+    opacity: 1 !important;
+}
+
+/* Show other actions on hover */
+.section-item .section-item-actions {
+    opacity: 1;
+}
+
+.section-item .section-action-btn:not(.toggle-btn) {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.section-item:hover .section-action-btn:not(.toggle-btn) {
+    opacity: 1;
+}

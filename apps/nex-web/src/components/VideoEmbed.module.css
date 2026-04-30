@@ -1,0 +1,40 @@
+.wrapper {
+    width: 100%;
+}
+
+.container {
+    position: relative;
+    width: 100%;
+    height: 0;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    gap: 8px;
+}
+
+.placeholderIcon {
+    font-size: 2.5rem;
+    opacity: 0.5;
+}

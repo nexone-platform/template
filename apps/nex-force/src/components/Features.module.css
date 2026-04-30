@@ -1,0 +1,323 @@
+/* ============================================
+   FEATURES / SERVICES - Tech Biz Convergence
+   ============================================ */
+
+.features {
+    padding: var(--space-4xl) 0;
+    background: var(--theme-features-bg, #f8fafc);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle background accent */
+.features::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    right: -200px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, color-mix(in srgb, var(--theme-primary, #4a90e2) 6%, transparent) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.features::after {
+    content: '';
+    position: absolute;
+    bottom: -100px;
+    left: -100px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, color-mix(in srgb, var(--theme-primary, #4a90e2) 5%, transparent) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: var(--space-3xl);
+    position: relative;
+    z-index: 1;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 18px;
+    background: color-mix(in srgb, var(--theme-primary, #4a90e2) 8%, transparent);
+    border: 1.5px solid color-mix(in srgb, var(--theme-primary, #4a90e2) 30%, transparent);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--theme-primary, #4a90e2);
+    margin-bottom: 1.5rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    margin-bottom: 1rem;
+    color: var(--color-gray-900);
+    line-height: 1.15;
+}
+
+.titleGradient {
+    background: linear-gradient(135deg, var(--theme-primary, #4a90e2), var(--theme-primary-dark, #3a7bd5));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.subtitle {
+    font-size: 1.05rem;
+    color: var(--color-gray-500);
+    line-height: 1.8;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Grid */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* Card */
+.card {
+    position: relative;
+    padding: 2rem;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: default;
+    animation: fadeInUp 0.6s ease-out both;
+    overflow: hidden;
+}
+
+.cardExpanded {
+    border-color: color-mix(in srgb, var(--theme-primary, #4a90e2) 40%, transparent);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--theme-primary, #4a90e2) 10%, transparent);
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--theme-primary, #4a90e2), var(--theme-primary-dark, #3a7bd5));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 0;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    border-color: transparent;
+    box-shadow: 0 12px 32px color-mix(in srgb, var(--theme-primary, #4a90e2) 12%, transparent);
+}
+
+.card:hover::before {
+    opacity: 0.04;
+}
+
+/* Icon */
+.iconWrapper {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--theme-primary, #4a90e2) 15%, transparent);
+    z-index: 1;
+}
+
+.icon {
+    font-size: 1.75rem;
+    position: relative;
+    z-index: 2;
+    transition: transform 0.3s ease;
+}
+
+.card:hover .icon {
+    transform: scale(1.15) rotate(5deg);
+}
+
+.iconGlow {
+    position: absolute;
+    inset: -4px;
+    border-radius: 18px;
+    filter: blur(16px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 0;
+}
+
+.card:hover .iconGlow {
+    opacity: 1;
+}
+
+/* Card Content */
+.cardTitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    margin-bottom: 0.6rem;
+    position: relative;
+    z-index: 1;
+}
+
+.cardDescription {
+    font-size: 0.88rem;
+    line-height: 1.75;
+    color: var(--color-gray-500);
+    margin-bottom: 1.25rem;
+    position: relative;
+    z-index: 1;
+}
+
+.cardLink {
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: gap 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+    z-index: 1;
+}
+
+.cardLink:hover span {
+    transform: translateX(4px);
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.arrowUp {
+    display: inline-block;
+    transform: rotate(90deg);
+    transition: transform 0.3s ease;
+}
+
+/* Detail Panel */
+.detailPanel {
+    margin-top: 1rem;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #f0f7ff, #f8fafc);
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--theme-primary, #4a90e2) 15%, transparent);
+    animation: slideDown 0.3s ease-out;
+    position: relative;
+    z-index: 1;
+}
+
+.detailLine {
+    font-size: 0.88rem;
+    color: #334155;
+    line-height: 1.9;
+    margin: 0;
+    padding: 2px 0;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 300px;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .features {
+        padding: var(--space-3xl) 0;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .title {
+        font-size: 1.75rem;
+    }
+
+    .card {
+        padding: 1.5rem;
+    }
+}
+
+/* ============================================
+   CARD STYLE VARIANTS
+   ============================================ */
+
+/* Flat — no shadow, no hover lift */
+.card_flat {
+    box-shadow: none;
+    border: none;
+}
+.card_flat:hover {
+    transform: none;
+    box-shadow: none;
+    background: color-mix(in srgb, var(--theme-primary, #4a90e2) 3%, white);
+}
+
+/* Bordered — prominent border, subtle bg */
+.card_bordered {
+    background: transparent;
+    border: 2px solid color-mix(in srgb, var(--theme-primary, #4a90e2) 25%, transparent);
+    box-shadow: none;
+}
+.card_bordered:hover {
+    border-color: var(--theme-primary, #4a90e2);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--theme-primary, #4a90e2) 10%, transparent);
+    transform: translateY(-4px);
+}
+
+/* Glassmorphism — frosted glass effect */
+.card_glass {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+}
+.card_glass:hover {
+    background: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: translateY(-6px);
+}

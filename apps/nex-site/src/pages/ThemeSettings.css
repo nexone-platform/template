@@ -1,0 +1,929 @@
+/* ══════════════════════════════════
+   ThemeSettings.css — Backoffice
+   Responsive admin panel with gradient accents
+   ══════════════════════════════════ */
+
+/* Loading / Error */
+.ts-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: 16px;
+    color: var(--color-text-muted);
+}
+
+.ts-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--color-surface-border);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.ts-error {
+    text-align: center;
+    padding: 60px 20px;
+    color: #ef4444;
+    font-size: 1.1rem;
+}
+
+/* ── Page ── */
+.ts-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 4px 12px 60px 12px;
+}
+
+.ts-page-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-text-primary) !important;
+    margin: 0 0 12px !important;
+}
+
+/* ── Buttons (base) ── */
+.ts-btn {
+    padding: 8px 20px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    font-family: inherit;
+}
+
+.ts-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ── Card Container ── */
+.ts-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-surface-border);
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+/* ── Gradient Toolbar (inside card) ── */
+.ts-card-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    gap: 12px;
+    flex-wrap: wrap;
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px 14px 0 0;
+}
+
+/* Dark mode: add a darkening overlay to make brand-color toolbar muted */
+[data-theme="dark"] .ts-card-toolbar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+    z-index: 0;
+}
+
+[data-theme="eye-comfort"] .ts-card-toolbar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(60, 40, 20, 0.4);
+    pointer-events: none;
+    z-index: 0;
+}
+
+[data-theme="dark"] .ts-card-toolbar > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Eye comfort toolbar override: use a deep warm gradient instead of potentially bright brand colors */
+[data-theme="eye-comfort"] .ts-card-toolbar {
+    background: linear-gradient(135deg, #3d3528 0%, #1c1810 100%) !important;
+    border-bottom: 2px solid var(--color-primary);
+}
+
+[data-theme="eye-comfort"] .ts-card-toolbar::after {
+    display: none; /* No overlay needed if we override background */
+}
+
+.ts-card-toolbar-left {
+    flex: 1;
+    min-width: 0;
+}
+
+.ts-card-toolbar-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #fff !important;
+    margin: 0 !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.ts-card-toolbar-subtitle {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.85) !important;
+    margin: 2px 0 0 !important;
+}
+
+.ts-card-toolbar-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.ts-btn-toolbar-outline {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.25);
+}
+
+.ts-btn-toolbar-outline:hover:not(:disabled) {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.4);
+}
+
+[data-theme="eye-comfort"] .ts-btn-toolbar-outline {
+    background: rgba(184, 134, 11, 0.15); /* Warm secondary solid-ish */
+    color: #f5eed8;
+    border: 1px solid rgba(184, 134, 11, 0.3);
+}
+
+[data-theme="eye-comfort"] .ts-btn-toolbar-outline:hover:not(:disabled) {
+    background: rgba(184, 134, 11, 0.25);
+}
+
+.ts-btn-toolbar-primary {
+    background: var(--color-primary);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+}
+
+.ts-btn-toolbar-primary:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+}
+
+/* ── Card Body (content below toolbar) ── */
+.ts-card > .ts-preview-bar,
+.ts-card > .ts-tabs,
+.ts-card > .ts-panel {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.ts-card > .ts-preview-bar {
+    margin-top: 16px;
+}
+
+/* ── Preview Bar ── */
+.ts-preview-bar {
+    margin-bottom: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+}
+
+.ts-gradient-preview {
+    flex: 1;
+    min-height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #fff;
+    font-size: 0.88rem;
+    letter-spacing: 0.03em;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.ts-color-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.ts-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px 4px 4px;
+    background: var(--color-surface);
+    border-radius: 8px;
+    border: 1px solid var(--color-surface-border);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.ts-chip:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.ts-chip-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    border: 2px solid rgba(0, 0, 0, 0.06);
+    flex-shrink: 0;
+}
+
+.ts-chip-label {
+    font-size: 0.72rem;
+    color: var(--color-text-secondary);
+    font-weight: 600;
+}
+
+/* ── Tabs — gradient active state ── */
+.ts-tabs {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 16px;
+    background: var(--color-surface-secondary);
+    border-radius: 10px;
+    padding: 3px;
+    border: 1px solid var(--color-surface-border);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.ts-tab {
+    flex: 1;
+    padding: 8px 14px;
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 9px;
+    transition: all 0.25s ease;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.ts-tab.active {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(99, 102, 241, 0.3);
+}
+
+[data-theme="dark"] .ts-tab.active {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="eye-comfort"] .ts-tab.active {
+    background: linear-gradient(135deg, #b8860b, #d4a017);
+    color: #1c1810; /* Darker text for readability on gold */
+    box-shadow: 0 3px 10px rgba(184, 134, 11, 0.4);
+}
+
+.ts-tab:hover:not(.active) {
+    color: var(--color-text-primary);
+    background: rgba(255, 255, 255, 0.08); /* Minimal highlight for theme compatibility */
+}
+
+[data-theme="light"] .ts-tab:hover:not(.active) {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="eye-comfort"] .ts-tab:hover:not(.active) {
+    background: rgba(184, 134, 11, 0.1);
+    color: var(--color-primary-light);
+}
+
+/* ── Panel (inside card, no own border) ── */
+.ts-panel {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0 0 20px 0;
+}
+
+.ts-panel-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-text-primary) !important;
+    margin: 0 0 4px !important;
+}
+
+.ts-panel-desc {
+    font-size: 0.82rem;
+    color: var(--color-text-muted) !important;
+    margin: 0 0 20px !important;
+}
+
+/* ── Color Grid (Brand tab) ── */
+.ts-color-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.ts-color-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    background: var(--color-surface-secondary);
+    border-radius: 10px;
+    border: 1px solid var(--color-surface-border);
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+.ts-color-field:hover {
+    border-color: #c7d2fe;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08);
+    transform: translateY(-1px);
+}
+
+.ts-page .ts-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--color-text-primary) !important;
+    margin-bottom: 0 !important;
+}
+
+.ts-desc {
+    font-size: 0.75rem;
+    color: var(--color-text-muted) !important;
+    margin: 0 0 2px !important;
+}
+
+.ts-color-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ts-page .ts-color-picker {
+    width: 38px;
+    height: 34px;
+    border: 2px solid var(--color-surface-border) !important;
+    border-radius: 8px;
+    cursor: pointer;
+    background: transparent !important;
+    padding: 2px !important;
+    flex-shrink: 0;
+    transition: border-color 0.2s;
+}
+
+.ts-page .ts-color-picker:hover {
+    border-color: #6366f1 !important;
+}
+
+.ts-page .ts-color-picker::-webkit-color-swatch-wrapper {
+    padding: 1px;
+}
+
+.ts-page .ts-color-picker::-webkit-color-swatch {
+    border: none;
+    border-radius: 4px;
+}
+
+/* Override global input styles */
+.ts-page .ts-hex-input {
+    flex: 1;
+    padding: 7px 12px !important;
+    background: var(--color-surface) !important;
+    border: 1px solid var(--color-surface-border) !important;
+    border-radius: 8px !important;
+    color: var(--color-text-primary) !important;
+    font-size: 0.82rem !important;
+    font-family: 'Courier New', monospace !important;
+    outline: none;
+    transition: border-color 0.2s;
+    box-shadow: none !important;
+    min-width: 0;
+}
+
+.ts-page .ts-hex-input:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+}
+
+.ts-page .ts-hex-input.ts-full {
+    font-family: inherit !important;
+}
+
+.ts-page .ts-select {
+    padding: 7px 12px !important;
+    background: var(--color-surface) !important;
+    border: 1px solid var(--color-surface-border) !important;
+    border-radius: 8px !important;
+    color: var(--color-text-primary) !important;
+    font-size: 0.82rem !important;
+    font-family: inherit !important;
+    outline: none;
+    cursor: pointer;
+    width: 100%;
+}
+
+.ts-page .ts-select:focus {
+    border-color: #6366f1 !important;
+}
+
+/* ── Sections List (Accordion) — gradient accents ── */
+.ts-sections-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    align-items: start;
+}
+
+.ts-section-card {
+    background: var(--color-surface-secondary);
+    border: 1px solid var(--color-surface-border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ts-section-card.open {
+    border-color: #6366f1;
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.1);
+    background: var(--color-surface);
+}
+
+[data-theme="eye-comfort"] .ts-section-card.open {
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 16px rgba(184, 134, 11, 0.15);
+}
+
+.ts-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: var(--color-text-primary);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background 0.15s;
+}
+
+.ts-section-header:hover {
+    background: rgba(99, 102, 241, 0.04);
+}
+
+.ts-section-icon {
+    font-size: 0.85rem;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(99, 102, 241, 0.15);
+    border-radius: 6px;
+    flex-shrink: 0;
+    color: #818cf8;
+}
+
+[data-theme="eye-comfort"] .ts-section-icon {
+    background: rgba(184, 134, 11, 0.2);
+    color: var(--color-primary-light);
+}
+
+.ts-section-name {
+    flex: 1;
+}
+
+.ts-section-arrow {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    transition: transform 0.2s;
+}
+
+.ts-section-body {
+    padding: 0 16px 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    border-top: 1px solid var(--color-surface-border);
+    padding-top: 12px;
+    background: var(--color-surface);
+}
+
+.ts-section-body .ts-color-field {
+    padding: 10px;
+}
+
+/* ── Font Family Select ── */
+.ts-font-select {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 0.92rem;
+    border-radius: 8px;
+    border: 1.5px solid var(--color-surface-border);
+    background: var(--color-input-bg);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+    appearance: auto;
+}
+
+.ts-font-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.ts-font-select optgroup {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    padding: 4px 0;
+}
+
+.ts-font-select option {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    color: var(--color-text-primary);
+}
+
+/* ── Font Preview — gradient border ── */
+.ts-font-preview {
+    margin-top: 20px;
+    padding: 20px;
+    background: var(--color-surface-secondary);
+    border-radius: 10px;
+    border: 1px solid var(--color-surface-border);
+}
+
+.ts-font-preview p {
+    margin: 0 0 6px !important;
+    color: var(--color-text-primary) !important;
+}
+
+.ts-font-preview p:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+    .ts-color-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .ts-sections-list {
+        grid-template-columns: 1fr;
+    }
+
+    .ts-preview-bar {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 768px) {
+    .ts-page {
+        padding: 0 8px 40px;
+    }
+
+    .ts-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ts-color-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ts-tabs {
+        flex-direction: column;
+    }
+
+    .ts-section-body {
+        grid-template-columns: 1fr;
+    }
+
+    .ts-panel {
+        padding: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ts-title {
+        font-size: 1.25rem;
+    }
+
+    .ts-color-chips {
+        gap: 4px;
+    }
+
+    .ts-chip {
+        padding: 3px 8px 3px 3px;
+    }
+
+    .ts-chip-swatch {
+        width: 16px;
+        height: 16px;
+    }
+
+    .ts-chip-label {
+        font-size: 0.68rem;
+    }
+}
+
+/* ══════════════════════════════════
+   PALETTE PICKER STYLES
+   ══════════════════════════════════ */
+
+/* Mode filter bar */
+.ts-palette-modes {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.ts-palette-mode-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border: 1.5px solid var(--color-surface-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ts-palette-mode-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: rgba(99, 102, 241, 0.06);
+}
+
+.ts-palette-mode-btn.active {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: #fff;
+}
+
+/* Palette grid */
+.ts-palette-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+/* Palette card */
+.ts-palette-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border: 2px solid var(--color-surface-border);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--color-surface);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: left;
+    padding: 0;
+}
+
+.ts-palette-card:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.ts-palette-card.active {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25), 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* 4-swatch strip */
+.ts-palette-swatches {
+    display: flex;
+    height: 64px;
+}
+
+.ts-palette-swatch {
+    flex: 1;
+    transition: height 0.2s ease;
+}
+
+.ts-palette-card:hover .ts-palette-swatch {
+    height: 72px;
+}
+
+/* Info row under swatches */
+.ts-palette-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+}
+
+.ts-palette-name {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--color-text-primary);
+}
+
+.ts-palette-hex {
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+    font-family: monospace;
+    letter-spacing: 0.03em;
+}
+
+/* Check mark for active palette */
+.ts-palette-check {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 900;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Hint bar */
+.ts-palette-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--color-surface-secondary);
+    border: 1px solid var(--color-surface-border);
+    border-radius: 10px;
+    font-size: 0.82rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+}
+
+.ts-palette-hint strong {
+    color: var(--color-primary);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .ts-palette-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 10px;
+    }
+
+    .ts-palette-swatches {
+        height: 48px;
+    }
+
+    .ts-palette-info {
+        padding: 8px 10px;
+    }
+
+    .ts-palette-name {
+        font-size: 0.78rem;
+    }
+}
+
+/* ── ColorHunt Import ── */
+.ts-colorhunt-import {
+    margin-top: 24px;
+    background: rgba(139, 92, 246, 0.04);
+    border: 1.5px dashed rgba(139, 92, 246, 0.25);
+    border-radius: 14px;
+    padding: 18px 20px;
+}
+
+.ts-colorhunt-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 12px;
+}
+
+.ts-colorhunt-header a {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.ts-colorhunt-row {
+    display: flex;
+    gap: 10px;
+}
+
+.ts-colorhunt-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: var(--color-bg);
+    color: var(--color-text-primary);
+    font-size: 0.85rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ts-colorhunt-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+}
+
+.ts-colorhunt-input::placeholder {
+    color: var(--color-text-secondary);
+    font-size: 0.82rem;
+}
+
+.ts-colorhunt-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--color-primary), #7c3aed);
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ts-colorhunt-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+}
+
+.ts-colorhunt-error {
+    margin-top: 8px;
+    color: #ef4444;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* ── Custom palette delete button ── */
+.ts-palette-delete {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.85);
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    line-height: 1;
+}
+
+.ts-palette-card:hover .ts-palette-delete {
+    opacity: 1;
+}
+
+.ts-palette-delete:hover {
+    background: #dc2626;
+    transform: scale(1.15);
+}

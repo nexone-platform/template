@@ -1,0 +1,273 @@
+/* ===================================
+   COMPONENT LIBRARY STYLES
+   =================================== */
+
+.component-library {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── Tab Bar ── */
+.library-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--color-border);
+    overflow-x: auto;
+    flex-shrink: 0;
+}
+
+.library-tabs::-webkit-scrollbar {
+    height: 0;
+}
+
+.library-tab {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border: 1px solid var(--color-surface-border);
+    border-radius: 8px;
+    background: var(--color-surface);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.library-tab:hover {
+    background: var(--color-gray-50, #f9fafb);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.library-tab-active {
+    background: var(--color-surface-secondary);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.library-tab-icon {
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    color: inherit;
+}
+
+.library-tab-label {
+    font-size: 0.75rem;
+}
+
+.library-tab-count {
+    font-size: 0.65rem;
+    background: var(--color-gray-100, #f3f4f6);
+    color: var(--color-text-secondary);
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-weight: 600;
+    min-width: 18px;
+    text-align: center;
+}
+
+.library-tab-active .library-tab-count {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+/* ── Content Area ── */
+.library-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+/* ── Empty State ── */
+.library-empty {
+    text-align: center;
+    padding: var(--space-xl) var(--space-md);
+    color: var(--color-text-secondary);
+}
+
+.library-empty-icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.library-empty p {
+    font-size: 0.875rem;
+    margin: 4px 0;
+}
+
+.library-empty-hint {
+    font-size: 0.78rem !important;
+    color: var(--color-text-secondary);
+    opacity: 0.7;
+}
+
+.component-category {
+    margin-bottom: var(--space-lg);
+}
+
+.category-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-sm);
+    padding: 0 var(--space-xs);
+}
+
+.component-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+}
+
+.component-item {
+    padding: var(--space-md);
+    border: 1.5px solid var(--color-surface-border);
+    border-radius: 10px;
+    cursor: grab;
+    transition: all 0.2s ease;
+    text-align: center;
+    background: var(--color-surface);
+}
+
+.component-item:hover {
+    border-color: var(--color-primary);
+    background: var(--color-surface-secondary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px) scale(1.02);
+}
+
+.component-item:hover .component-icon {
+    transform: scale(1.15);
+    transition: transform 0.2s ease;
+}
+
+.component-item:hover .component-name {
+    color: var(--color-primary);
+}
+
+.component-item:active {
+    cursor: grabbing;
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.12);
+}
+
+.component-icon {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-xs);
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.component-item:hover .component-icon {
+    color: var(--color-primary);
+}
+
+.component-name {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.component-description {
+    font-size: 0.6875rem;
+    color: var(--color-text-secondary);
+    margin-top: var(--space-xs);
+    display: none;
+}
+
+.component-item:hover .component-description {
+    display: block;
+}
+
+/* ── Section Items ── */
+.component-item.section-item {
+    border: 1.5px solid var(--color-surface-border);
+    background: var(--color-surface);
+    border-radius: 10px;
+    padding: 12px 8px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    transition: all 0.2s ease;
+}
+
+
+
+
+.component-item.section-item:hover {
+    border-color: var(--color-primary);
+    background: var(--color-surface-secondary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.component-item.section-item .component-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-text-primary);
+    transition: color 0.2s ease;
+}
+
+.component-item.section-item .component-icon {
+    margin-bottom: 4px;
+    color: var(--color-text-secondary);
+    opacity: 0.7;
+}
+
+.component-item.section-item:hover .component-icon {
+    color: var(--color-primary);
+    opacity: 1;
+}
+
+.component-item.section-item:hover .component-name {
+    color: var(--color-primary);
+}
+
+/* Dragging State */
+.component-item.dragging {
+    opacity: 0.5;
+}
+
+/* Empty State */
+.library-empty {
+    text-align: center;
+    padding: var(--space-xl);
+    color: var(--color-text-secondary);
+}
+
+.library-empty p {
+    font-size: 0.875rem;
+}
+
+/* Scrollbar */
+.library-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.library-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.library-content::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+}
+
+.library-content::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-secondary);
+}

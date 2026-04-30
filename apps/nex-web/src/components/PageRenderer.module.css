@@ -1,0 +1,28 @@
+/* Page container */
+.pageContainer {
+    width: 100%;
+}
+
+/* Columns container - CSS Grid for side-by-side layout */
+.columnsContainer {
+    display: grid;
+    width: 100%;
+    padding: 0 24px;
+    box-sizing: border-box;
+}
+
+/* Each column slot */
+.columnSlot {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Responsive: stack columns on mobile */
+@media (max-width: 768px) {
+    .columnsContainer {
+        grid-template-columns: 1fr !important;
+        gap: 24px !important;
+        padding: 0 16px;
+    }
+}

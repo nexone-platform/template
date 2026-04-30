@@ -1,0 +1,60 @@
+/* =============================================================================
+   NexOne Platform — Dark Theme
+   packages/ui/src/themes/dark.css
+   เพิ่ม class="dark" บน <html> หรือ <body> เพื่อเปิดใช้งาน Dark Mode
+   ============================================================================= */
+
+[data-theme="dark"],
+.dark {
+    /* ── Background ──────────────────────────────────────────────────────── */
+    --bg-page:      #0a0e1a;
+    --bg-card:      #131a2b;
+    --bg-sidebar:   #0d1422;
+    --bg-topbar:    #131a2b;
+    --bg-hover:     #1a2236;
+    --bg-input:     #1a2236;
+    --bg-code:      #0d1422;
+
+    /* ── Text ────────────────────────────────────────────────────────────── */
+    --text-primary:     #f1f5f9;
+    --text-secondary:   #cbd5e1;
+    --text-muted:       #94a3b8;
+    --text-placeholder: #64748b;
+
+    /* ── Borders ─────────────────────────────────────────────────────────── */
+    --border-color:  rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.15);
+
+    /* ── Table ───────────────────────────────────────────────────────────── */
+    --table-header-bg: #1a2236;
+    --table-row-hover: #1a2236;
+
+    /* ── Sidebar (slightly lighter for dark mode) ────────────────────────── */
+    --sidebar-bg: #0a0e1a;
+
+    /* ── Shadows adapt to dark ───────────────────────────────────────────── */
+    --shadow-xs:  0 1px 2px rgba(0,0,0,0.25);
+    --shadow-sm:  0 2px 8px rgba(0,0,0,0.35);
+    --shadow-md:  0 4px 16px rgba(0,0,0,0.40);
+    --shadow-lg:  0 8px 32px rgba(0,0,0,0.50);
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.40), 0 4px 16px rgba(0,0,0,0.20);
+
+    /* ── Color adjustments ───────────────────────────────────────────────── */
+    --color-primary-light: rgba(59,130,246,0.12);
+    --color-success-light: rgba(22,163,74,0.10);
+    --color-warning-light: rgba(245,158,11,0.10);
+    --color-danger-light:  rgba(220,38,38,0.10);
+    --color-info-light:    rgba(8,145,178,0.10);
+    --color-purple-light:  rgba(124,58,237,0.12);
+    --color-amber-light:   rgba(245,158,11,0.10);
+
+    --color-success-border: rgba(22,163,74,0.25);
+    --color-warning-border: rgba(245,158,11,0.25);
+    --color-danger-border:  rgba(220,38,38,0.25);
+    --color-info-border:    rgba(8,145,178,0.25);
+
+    /* ── Input ───────────────────────────────────────────────────────────── */
+    --input-border: 1.5px solid rgba(255,255,255,0.10);
+    --input-border-focus: 1.5px solid var(--border-focus);
+    --input-shadow-focus: 0 0 0 3px rgba(59,130,246,0.18);
+}

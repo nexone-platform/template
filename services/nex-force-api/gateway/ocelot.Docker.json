@@ -1,0 +1,3965 @@
+{
+  "Routes": [
+    // Theme Settings
+    {
+      "DownstreamPathTemplate": "/ThemeSettings",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/themesettings",
+      "UpstreamHttpMethod": [ "GET", "PUT" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ThemeSettings/reset",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/themesettings/reset",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": null
+    },
+    // Munu
+    {
+      "DownstreamPathTemplate": "/Menu",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/menu",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Menu/{empId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/menu/{empId}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Menu/{empId}/{languageCode}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/menu/{empId}/{languageCode}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Menu/menulist",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/menu/menulist",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Menu/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/menu/update",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Menu/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/menu/delete",
+      "UpstreamHttpMethod": [ "Delete" ]
+    },
+    // data setting
+    {
+      "DownstreamPathTemplate": "/DataSettings",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/dataSettings",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": null
+    },
+    // Translations
+    {
+      "DownstreamPathTemplate": "/Translations/{languageCode}/{pageKey}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/translations/{languageCode}/{pageKey}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Translations/getLanguages",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/translations/getLanguages",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Translations/getPageKey",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/translations/getPageKey",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Translations/labelList",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/translations/labelList",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Translations/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/translations/update",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Translations/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/translations/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    // ResponseMessages
+    {
+      "DownstreamPathTemplate": "/ResponseMessages/list",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/responseMessages/list",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ResponseMessages/adminList",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/responseMessages/adminList",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ResponseMessages/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/responseMessages/update",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
+    {
+      "DownstreamPathTemplate": "/ResponseMessages/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/responseMessages/delete",
+      "UpstreamHttpMethod": [ "Delete" ]
+    },
+    {
+      "DownstreamPathTemplate": "/ResponseMessages/categories",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/responseMessages/categories",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ResponseMessages/keys",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/responseMessages/keys",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": null
+    },
+    // auth
+    {
+      "DownstreamPathTemplate": "/auth/login",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/auth/login", // Expose this route via Ocelot
+      "UpstreamHttpMethod": [ "POST" ], // Allow only POST method for login
+      "AuthenticationOptions": null // No JWT required for login
+    },
+    {
+      "DownstreamPathTemplate": "/auth/register",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/auth/register",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/auth/register-line",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/auth/register-line",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/auth/check-line-token/{lineToken}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/auth/check-line-token/{lineToken}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/auth/forgot-password",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/auth/forgot-password",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/auth/verify-otp",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/auth/verify-otp",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/auth/reset-password",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/auth/reset-password",
+      "UpstreamHttpMethod": [ "http" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/auth/change-password",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/auth/change-password",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/auth/profile/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/auth/profile/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    // role
+    {
+      "DownstreamPathTemplate": "/Role",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/role",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Role/role",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/role/role",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Role/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/role/update",
+      "UpstreamHttpMethod": [ "Post" ]
+    },
+    {
+      "DownstreamPathTemplate": "/Role/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/role/delete",
+      "UpstreamHttpMethod": [ "Delete" ]
+    },
+    {
+      "DownstreamPathTemplate": "/Role/create-or-update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/Role/create-or-update",
+      "UpstreamHttpMethod": [ "Post" ]
+    },
+    {
+      "DownstreamPathTemplate": "/Role/getPermission/{empId}/{menuId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/role/getPermission/{empId}/{menuId}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": null
+    },
+    // Email templates
+    {
+      "DownstreamPathTemplate": "/EmailTemplate/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/emailTemplate/update",
+      "UpstreamHttpMethod": [ "Post" ]
+    },
+    {
+      "DownstreamPathTemplate": "/EmailTemplate",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/emailTemplate",
+      "UpstreamHttpMethod": [ "Get" ]
+    },
+    {
+      "DownstreamPathTemplate": "/EmailTemplate/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/emailTemplate/delete",
+      "UpstreamHttpMethod": [ "Delete" ]
+    },
+    // emailsetting
+    {
+      "DownstreamPathTemplate": "/EmailSetting/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/emailSetting/update",
+      "UpstreamHttpMethod": [ "Post" ]
+    },
+    {
+      "DownstreamPathTemplate": "/EmailSetting",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/emailSetting",
+      "UpstreamHttpMethod": [ "Get" ]
+    },
+    {
+      "DownstreamPathTemplate": "/EmailSetting/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/emailSetting/delete",
+      "UpstreamHttpMethod": [ "Delete" ]
+    },
+    // HR
+    // leave report
+    // report
+    {
+      "DownstreamPathTemplate": "/LeaveReports/available",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaveReports/available",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/LeaveReports/search-available",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaveReports/search-available",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    // resign
+    {
+      "DownstreamPathTemplate": "/Registration/getAllWorkingYears",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/registration/getAllWorkingYears",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Registration/search",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/registration/search",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+
+    // tax
+    {
+      "DownstreamPathTemplate": "/Tax/getIncomeTaxBracket",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/tax/getIncomeTaxBracket",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Tax/incomeTaxBracket/save",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/tax/incomeTaxBracket/save",
+      "UpstreamHttpMethod": [ "Post" ]
+    },
+    {
+      "DownstreamPathTemplate": "/Tax/getType",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/tax/getType",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Tax",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/tax",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Tax/taxType/save",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/tax/taxType/save",
+      "UpstreamHttpMethod": [ "Post" ]
+    },
+    {
+      "DownstreamPathTemplate": "/Tax/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/tax/update",
+      "UpstreamHttpMethod": [ "Post" ]
+    },
+    {
+      "DownstreamPathTemplate": "/Tax/deleteType",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/tax/deleteType",
+      "UpstreamHttpMethod": [ "Delete" ]
+    },
+    {
+      "DownstreamPathTemplate": "/Tax/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/tax/delete",
+      "UpstreamHttpMethod": [ "Delete" ]
+    },
+    {
+      "DownstreamPathTemplate": "/Tax/deleteIncome",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/tax/deleteIncome",
+      "UpstreamHttpMethod": [ "Delete" ]
+    },
+
+    {
+      "DownstreamPathTemplate": "/Salary/getPayrollByPeriod",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/salary/getPayrollByPeriod",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Salary/createPayroll",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/salary/createPayroll",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Salary/SSO",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/salary/SSO",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Salary/periods/by-status",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/salary/periods/by-status",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Salary/update-period-status",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/salary/update-period-status",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Salary/search-periods",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/salary/search-periods",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Salary/periods",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/salary/periods",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Salary/payroll/{periodId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/salary/payroll/{periodId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Salary/estimated-tax/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/salary/estimated-tax/{employeeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Salary/allEmployee",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/salary/allEmployee",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Salary/byPaymentType",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/salary/byPaymentType",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Payroll/payslip/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/payroll/payslip/{employeeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Payroll/GetPayrollsById",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/payroll/GetPayrollsById",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Payroll/GetPayrollsByYear",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/payroll/GetPayrollsByYear",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/PayrolItem/deleteDeduction",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/payrolItem/deleteDeduction",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/PayrolItem/deleteAddition",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/payrolItem/deleteAddition",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/PayrolItem/updateAddition",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/payrolItem/updateAddition",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/PayrolItem/updateDeduction",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/payrolItem/updateDeduction",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/PayrolItem/getAdditions",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/payrolItem/getAdditions",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/PayrolItem/getDeductions",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "hrservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/payrolItem/getDeductions",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    //*** PERFORMANCE SERVICE
+    //terminate
+    {
+      "DownstreamPathTemplate": "/Terminate/getType",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "performance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/terminate/getType",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Terminate",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "performance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/terminate",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Terminate/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "performance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/terminate/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Terminate/terminateType/save",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "performance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/terminate/terminateType/save",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Terminate/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "performance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/terminate/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Terminate/deleteType",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "performance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/terminate/deleteType",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    //promotion
+    {
+      "DownstreamPathTemplate": "/Promotion",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "performance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/promotion",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Promotion/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "performance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/promotion/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Promotion/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "performance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/promotion/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Promotion/approve/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "performance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/promotion/approve/{id}",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Promotion/pendingApprovalCount",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "performance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/promotion/pendingApprovalCount",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    //Resignations
+    {
+      "DownstreamPathTemplate": "/Resignations/pendingApprovalCount",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "performance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/resignations/pendingApprovalCount",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Resignations/getAllResignations",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "performance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/resignations/getAllResignations",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Resignations/getResignationsById/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "performance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/resignations/getResignationsById/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Resignations/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "performance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/resignations/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Resignations/approve/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "performance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/resignations/approve/{id}",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Resignations/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "performance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/resignations/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    // *** EMPLOYEE SERVICE
+    // employment
+    {
+      "DownstreamPathTemplate": "/Employment",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/employment",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Employment/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/employment/{employeeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Employment/histories/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/employment/histories/{employeeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    // overtime
+    {
+      "DownstreamPathTemplate": "/Overtime/getAllOvertime",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/overtime/getAllOvertime",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Overtime/getOvertimeByFilter",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/overtime/getOvertimeByFilter",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Overtime/getOtType",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/overtime/getOtType",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Overtime/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/overtime/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Overtime/pendingApprovalCount",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/overtime/pendingApprovalCount",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Overtime/getAllOvertimeById/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/overtime/getAllOvertimeById/{id}",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Overtime/getAllOvertimeByRequestor/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/overtime/getAllOvertimeByRequestor/{id}",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Overtime/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/overtime/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Overtime/updateOtType",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/overtime/updateOtType",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Overtime/approve/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/overtime/approve/{id}",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Overtime/statistics/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/overtime/statistics/{employeeId}",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Overtime/statistics",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/overtime/statistics",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    // Designations
+    {
+      "DownstreamPathTemplate": "/Designations/getAllDesignation",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/designations/getAllDesignation",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Designations/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/designations/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Designations/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/designations/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    // Department
+    {
+      "DownstreamPathTemplate": "/Department/getAllDepartment",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/departments/getAllDepartment",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Department/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/departments/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Department/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/departments/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    // Holiday
+    {
+      "DownstreamPathTemplate": "/Holiday/getAllHoliday",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/holidays/getAllHoliday",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Holiday/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/holidays/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Holiday/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/holidays/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Holiday/search",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/holidays/search",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Holiday/copy",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/holidays/copy",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    // special days
+    {
+      "DownstreamPathTemplate": "/SpecialWorkingDays/getAllSpecialDay",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/specialWorkingDays/getAllSpecialDay",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/SpecialWorkingDays/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/specialWorkingDays/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/SpecialWorkingDays/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/specialWorkingDays/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/SpecialWorkingDays/copy",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/specialWorkingDays/copy",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    // Organization
+    {
+      "DownstreamPathTemplate": "/Organization/getMasterOrganization",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/organizations/getMasterOrganization",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Organization",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/organizations",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+
+    },
+    {
+      "DownstreamPathTemplate": "/Organization/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/organizations/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    // branch
+    {
+      "DownstreamPathTemplate": "/Branch/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/branch/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Branch",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/branch",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Branch/company",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/branch/company",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Branch/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/branch/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    // Leave
+    {
+      "DownstreamPathTemplate": "/Leave/getMasterLeaveType",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaves/getMasterLeaveType",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Leave/leaveType/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaves/leaveType/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Leave/leaveType/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaves/leaveType/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Leave/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaves/{id}",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    // Employee
+
+    {
+      "DownstreamPathTemplate": "/PaymentType",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/paymentType",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Employee/getBankData",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/employees/getBankData",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Employee/getEmployeeType",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/employees/getEmployeeType",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Employee/getEmployeeForSelect",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/employees/getEmployeeForSelect",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Employee/getEmployeeByprojectId/{projectId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/employees/getEmployeeByprojectId/{projectId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Employee/getAllEmployee",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/employees/getAllEmployee",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Employee/getEmployeeById/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/employees/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Employee/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/employees/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Employee/reactivate/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/employees/reactivate/{employeeId}",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Employee/search",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/employees/search",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Employee/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/employees/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Employee/getNewId",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/employees/getNewId",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    //MaritalStatus
+    {
+      "DownstreamPathTemplate": "/MaritalStatus/getAllMaritalStatus",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/maritalStatus/getAllMaritalStatus",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    //Gender
+    {
+      "DownstreamPathTemplate": "/Gender/getAllGender",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/gender/getAllGender",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    // Asset
+    {
+      "DownstreamPathTemplate": "/Asset/getAssets",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/asset/getAssets",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Asset/getAssets/{empId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/asset/getAssets/{empId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Asset/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/asset/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/User/current/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/user/current/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+
+    },
+    {
+      "DownstreamPathTemplate": "/User/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/user/update",
+      "UpstreamHttpMethod": [ "Post" ]
+    },
+    {
+      "DownstreamPathTemplate": "/User/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/user/delete",
+      "UpstreamHttpMethod": [ "Delete" ]
+    },
+    {
+      "DownstreamPathTemplate": "/User",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/user",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    //
+    {
+      "DownstreamPathTemplate": "/Asset/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/asset/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Asset/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/asset/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    }
+    // client
+    ,
+    {
+      "DownstreamPathTemplate": "/Client/getAllClient",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/client/getAllClient",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Client/getClientById/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/client/getClientById/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Client/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/client/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Client/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/client/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Client/getCompany",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/client/getCompany",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Client/searchClients",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/client/searchClients",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Client/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/client/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    // project-cost
+    {
+      "DownstreamPathTemplate": "/ProjectCost/get-all",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projectCost/get-all",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ProjectCost/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projectCost/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ProjectCost/{projectId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projectCost/{projectId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ProjectCost/getCost/{costId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projectCost/getCost/{costId}}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ProjectCost/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projectCost/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    // project
+    {
+      "DownstreamPathTemplate": "/Projects/upload-config",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projects/upload-config",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Projects/getProject",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projects/getProject",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Projects/getProject/{leadId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projects/getProject/{leadId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Projects/deleteFile",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projects/deleteFile",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Projects/projectType/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projects/projectType/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Projects/projectType/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projects/projectType/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Projects/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projects/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Projects/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projects/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Projects/getAllProject",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projects/getAllProject",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Projects/getProjectById/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projects/getProjectById/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Projects/getEmployeeForAssign",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projects/getEmployeeForAssign",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Projects/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projects/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Projects/getProjectsByClient/{clientId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projects/getProjectsByClient/{clientId}}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Projects/getProjectType",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projects/getProjectType",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+
+    {
+      "DownstreamPathTemplate": "/Projects/searchProjects",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/projects/searchProjects",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+
+    // Leave Quata
+    {
+      "DownstreamPathTemplate": "/LeaveQuota/getLeaves",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaveQuota/getLeaves",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/LeaveQuota/delete",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaveQuota/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/LeaveQuota/update",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaveQuota/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/LeaveQuota/employee/{employeeId}",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaveQuota/employee/{employeeId}",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    // leave request
+    {
+      "DownstreamPathTemplate": "/LeaveRequest/pendingApprovalCount",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaveRequest/pendingApprovalCount",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/LeaveRequest/employee/{employeeId}",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaveRequest/employee/{employeeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/LeaveRequest/available-quota",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaveRequest/available-quota",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/LeaveRequest/update",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaveRequest/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/LeaveRequest/getAllRequest",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaveRequest/getAllRequest",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/LeaveRequest/requestStatus/{leaveRequestId}",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaveRequest/requestStatus/{leaveRequestId}",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/LeaveRequest/leaveSummary",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaveRequest/leaveSummary",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/LeaveRequest/delete",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/leaveRequest/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    // USER
+
+    // task
+    {
+      "DownstreamPathTemplate": "/Tasks",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/tasks",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Tasks/update",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/tasks/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Tasks/delete",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/tasks/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    // Timesheet
+    {
+      "DownstreamPathTemplate": "/Timesheet",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/timesheet",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Timesheet/{timesheetId}",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/timesheet/{timesheetId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Timesheet/update",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/timesheet/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Timesheet/delete",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/timesheet/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Timesheet/events",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/timesheet/events",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Timesheet/getWorkDateOptions",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/timesheet/getWorkDateOptions",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Timesheet/import",
+      "searchProjects": null,
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/timesheet/import",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Timesheet/getJobTypes",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/timesheet/getJobTypes",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    // Attendance
+    {
+      "DownstreamPathTemplate": "/Attendance/{year}/{month}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "attendance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/attendance/{year}/{month}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/CheckIn/year",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "attendance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/checkIn/year",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/CheckIn/log-check-in-out",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "attendance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/checkIn/log-check-in-out",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/CheckIn/check-status/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "attendance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/checkIn/check-status/{employeeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/CheckIn/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "attendance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/checkIn/{employeeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/CheckIn/activities/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "attendance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/checkIn/activities/{employeeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/CheckIn/work-stats/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "attendance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/checkIn/work-stats/{employeeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/CheckIn/check-ins-data/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "attendance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/checkIn/check-ins-data/{employeeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/CheckIn/search",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "attendance",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/checkIn/search",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    // Document Running
+    {
+      "DownstreamPathTemplate": "/DocumentRunning/getAllDocument",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/documentRunning/getAllDocument",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/DocumentRunning/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/documentRunning/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/DocumentRunning/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/documentRunning/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    // Prefixes
+    {
+      "DownstreamPathTemplate": "/PreFixes/getAllPrefixes",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/preFixes/getAllPrefixes",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/PreFixes/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/preFixes/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/PreFixes/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/preFixes/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    // Notification
+    {
+      "DownstreamPathTemplate": "/Notification/getAllNotiChanel",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/notification/getAllNotiChanel",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Notification/getAllNotiModule",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/notification/getAllNotiModule",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Notification/getAllNotiSetting",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/notification/getAllNotiSetting",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Notification/addModule",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/notification/addModule",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Notification/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/notification/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Approval/pending/{approverId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/approval/pending/{approverId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Approval/action",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/approval/action",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Approval/bulk-action",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/approval/bulk-action",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Approval/request",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/approval/request",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Approval/cancel-reasons",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/approval/cancel-reasons",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Approval/pending",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/approval/pending",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Approval/steps",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/approval/steps",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Approval/steps/all",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/approval/steps/all",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Approval/steps/bulk",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/approval/steps/bulk",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Approval/steps/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/approval/steps/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Approval/departments",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/approval/departments",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Approval/steps/references",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/approval/steps/references",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Approval/steps/rules",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/approval/steps/rules",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Approval/history",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/approval/history",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    // ManageJobs
+    {
+      "DownstreamPathTemplate": "/ManageJobs/getAllManageJobs",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/manageJobs/getAllManageJobs",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ManageJobs/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/manageJobs/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ManageJobs/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/manageJobs/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ManageJobs/getAllEmployeeType",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/manageJobs/getAllEmployeeType",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ManageJobs/getAllLocationJob",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/manageJobs/getAllLocationJob",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ManageJobs/getAllDesignation",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/manageJobs/getAllDesignation",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ManageJobs/searchManageJob",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/manageJobs/searchManageJob",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    // ManageResume
+    {
+      "DownstreamPathTemplate": "/ManageResume/getAllManageResume",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/manageResume/getAllManageResume",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/manageResume/getManageResumeById/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/manageResume/getManageResumeById/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ManageResume/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/manageResume/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ManageResume/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/manageResume/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ManageResume/getAllTitle",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/manageResume/getAllTitle",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ManageResume/searchResume",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/manageResume/searchResume",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    // Interview Question
+    {
+      "DownstreamPathTemplate": "/InterviewQuestions/getAllCategory",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/interviewQuestions/getAllCategory",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/InterviewQuestions/getAllQuestion",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/interviewQuestions/getAllQuestion",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/InterviewQuestions/getQuestionById/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/interviewQuestions/getQuestionById/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/InterviewQuestions/updateCategory",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/interviewQuestions/updateCategory",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/InterviewQuestions/updateQuestion",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/interviewQuestions/updateQuestion",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/InterviewQuestions/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/interviewQuestions/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/InterviewQuestions/searchQuestion",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/interviewQuestions/searchQuestion",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    // Schedule Timing
+    {
+      "DownstreamPathTemplate": "/ScheduleTiming/getAllManageResume",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/scheduleTiming/getAllManageResume",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ScheduleTiming/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/scheduleTiming/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ScheduleTiming/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/scheduleTiming/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ScheduleTiming/searchScheduleTime",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/scheduleTiming/searchScheduleTime",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    // Manage Applicant Testing
+    {
+      "DownstreamPathTemplate": "/ManageApplicantTesting/getAllManageResume",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/manageApplicantTesting/getAllManageResume",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ManageApplicantTesting/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/manageApplicantTesting/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ManageApplicantTesting/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/manageApplicantTesting/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/ManageApplicantTesting/searchScheduleTime",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/manageApplicantTesting/searchScheduleTime",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    // Testing
+    {
+      "DownstreamPathTemplate": "/Testing/getAllManageResume",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/testing/getAllManageResume",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Testing/getManageResumeById/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/testing/getManageResumeById/{id}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Testing/getQuestionsByManageResume/{manageResumeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/testing/getQuestionsByManageResume/{manageResumeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Testing/getLatestResult/{manageResumeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/testing/getLatestResult/{manageResumeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Testing/getAssignedCategories/{manageResumeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/testing/getAssignedCategories/{manageResumeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Testing/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/testing/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Testing/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/testing/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/Testing/searchScheduleTime",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/testing/searchScheduleTime",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    // Attendance List
+    {
+      "DownstreamPathTemplate": "/AttendanceList/log-check-in-out",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/attendanceList/log-check-in-out",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/AttendanceList/check-status/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/attendanceList/check-status/{employeeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/AttendanceList/getAllTimeSheet",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/attendanceList/getAllTimeSheet",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/AttendanceList/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/attendanceList/{employeeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/AttendanceList/activities/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/attendanceList/activities/{employeeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/AttendanceList/work-stats/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/attendanceList/work-stats/{employeeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/AttendanceList/check-ins-data/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/attendanceList/check-ins-data/{employeeId}",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/AttendanceList/search",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/attendanceList/search",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    // Interview result
+    {
+      "DownstreamPathTemplate": "/InterviewResult/getAllInterview",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/interviewResult/getAllInterview",
+      "UpstreamHttpMethod": [ "Get" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/InterviewResult/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/interviewResult/update",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/InterviewResult/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/interviewResult/delete",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/InterviewResult/searchInterviewResult",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/interviewResult/searchInterviewResult",
+      "UpstreamHttpMethod": [ "Post" ],
+      "AuthenticationOptions": null
+    },
+    // EmployeeDashboard — aggregated dashboard data
+    {
+      "DownstreamPathTemplate": "/EmployeeDashboard/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/employeeDashboard/{employeeId}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": null
+    },
+    // Overtime — deleteOtType
+    {
+      "DownstreamPathTemplate": "/Overtime/deleteOtType",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/overtime/deleteOtType",
+      "UpstreamHttpMethod": [ "Delete" ],
+      "AuthenticationOptions": null
+    },
+    // TaskBoard
+    {
+      "DownstreamPathTemplate": "/TaskBoard",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/taskBoard",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/TaskBoard/myProjects/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/taskBoard/myProjects/{employeeId}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/TaskBoard/myTasks/{employeeId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/taskBoard/myTasks/{employeeId}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/TaskBoard/project/{projectId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/taskBoard/project/{projectId}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/TaskBoard/update",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/taskBoard/update",
+      "UpstreamHttpMethod": [ "POST" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/TaskBoard/updateStatus",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/taskBoard/updateStatus",
+      "UpstreamHttpMethod": [ "PUT" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/TaskBoard/delete",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/taskBoard/delete",
+      "UpstreamHttpMethod": [ "DELETE" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/TaskBoard/toggleSprint",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/taskBoard/toggleSprint",
+      "UpstreamHttpMethod": [ "PUT" ],
+      "AuthenticationOptions": null
+    },
+    {
+      "DownstreamPathTemplate": "/TaskBoard/sprints",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "solutionapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/taskBoard/sprints",
+      "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": null
+    }
+
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:8001"
+  }
+}

@@ -1,0 +1,181 @@
+/* ============================================
+   BUTTON COMPONENT - Premium Design System
+   ============================================ */
+
+.wrapper {
+    line-height: 0;
+}
+
+/* ── Base ── */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+}
+
+/* ── Variants ── */
+.btn_primary {
+    background: var(--theme-primary, #4a90e2);
+    color: #ffffff;
+    border-color: var(--theme-primary, #4a90e2);
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--theme-primary, #4a90e2) 30%, transparent);
+}
+.btn_primary:hover {
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--theme-primary, #4a90e2) 40%, transparent);
+    filter: brightness(1.08);
+}
+
+.btn_secondary {
+    background: #64748b;
+    color: #ffffff;
+    border-color: #64748b;
+    box-shadow: 0 4px 14px rgba(100, 116, 139, 0.25);
+}
+.btn_secondary:hover {
+    background: #475569;
+    border-color: #475569;
+    box-shadow: 0 8px 24px rgba(71, 85, 105, 0.35);
+}
+
+.btn_outline {
+    background: transparent;
+    color: var(--theme-primary, #4a90e2);
+    border-color: var(--theme-primary, #4a90e2);
+}
+.btn_outline:hover {
+    background: var(--theme-primary, #4a90e2);
+    color: #ffffff;
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--theme-primary, #4a90e2) 25%, transparent);
+}
+
+.btn_ghost {
+    background: transparent;
+    color: var(--theme-primary, #4a90e2);
+    border: 2px dashed color-mix(in srgb, var(--theme-primary, #4a90e2) 30%, transparent);
+}
+.btn_ghost:hover {
+    background: color-mix(in srgb, var(--theme-primary, #4a90e2) 6%, transparent);
+    border-style: solid;
+    border-color: color-mix(in srgb, var(--theme-primary, #4a90e2) 50%, transparent);
+}
+
+.btn_gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 18px rgba(102, 126, 234, 0.35);
+}
+.btn_gradient:hover {
+    box-shadow: 0 8px 28px rgba(102, 126, 234, 0.5);
+    filter: brightness(1.06);
+}
+
+.btn_glow {
+    background: var(--theme-primary, #4a90e2);
+    color: #ffffff;
+    border-color: var(--theme-primary, #4a90e2);
+    box-shadow:
+        0 0 20px color-mix(in srgb, var(--theme-primary, #4a90e2) 40%, transparent),
+        0 0 60px color-mix(in srgb, var(--theme-primary, #4a90e2) 15%, transparent);
+    animation: glowPulse 2s ease-in-out infinite;
+}
+.btn_glow:hover {
+    box-shadow:
+        0 0 30px color-mix(in srgb, var(--theme-primary, #4a90e2) 60%, transparent),
+        0 0 80px color-mix(in srgb, var(--theme-primary, #4a90e2) 25%, transparent);
+}
+
+@keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 20px color-mix(in srgb, var(--theme-primary, #4a90e2) 40%, transparent), 0 0 60px color-mix(in srgb, var(--theme-primary, #4a90e2) 15%, transparent); }
+    50% { box-shadow: 0 0 30px color-mix(in srgb, var(--theme-primary, #4a90e2) 55%, transparent), 0 0 80px color-mix(in srgb, var(--theme-primary, #4a90e2) 25%, transparent); }
+}
+
+/* ── Shapes ── */
+.shape_rounded { border-radius: 10px; }
+.shape_pill { border-radius: 999px; }
+.shape_square { border-radius: 0; }
+.shape_circle {
+    border-radius: 50%;
+    aspect-ratio: 1;
+    padding: 0 !important;
+    width: auto;
+}
+
+/* ── Sizes ── */
+.size_xs { padding: 6px 14px; font-size: 0.72rem; }
+.size_small { padding: 8px 20px; font-size: 0.82rem; }
+.size_medium { padding: 12px 28px; font-size: 0.95rem; }
+.size_large { padding: 16px 36px; font-size: 1.08rem; }
+.size_xl { padding: 20px 48px; font-size: 1.2rem; letter-spacing: 0.02em; }
+
+/* Circle size overrides */
+.shape_circle.size_xs { width: 32px; height: 32px; }
+.shape_circle.size_small { width: 40px; height: 40px; }
+.shape_circle.size_medium { width: 48px; height: 48px; }
+.shape_circle.size_large { width: 56px; height: 56px; }
+.shape_circle.size_xl { width: 64px; height: 64px; }
+
+/* ── Full Width ── */
+.fullWidth {
+    width: 100%;
+    display: flex;
+}
+
+/* ── Hover Effects ── */
+.hover_lift:hover { transform: translateY(-3px); }
+.hover_scale:hover { transform: scale(1.06); }
+
+.hover_shine::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -100%;
+    width: 50%;
+    height: 200%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    transform: skewX(-25deg);
+    transition: left 0.5s ease;
+}
+.hover_shine:hover::after {
+    left: 150%;
+}
+
+.hover_pulse:hover {
+    animation: btnPulse 0.6s ease-in-out;
+}
+
+@keyframes btnPulse {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.05); }
+    50% { transform: scale(0.98); }
+    75% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+}
+
+/* ── Icon ── */
+.icon {
+    display: inline-flex;
+    align-items: center;
+    font-size: 1.1em;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+.btn:hover .icon {
+    transform: translateX(2px);
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+    .size_xl { padding: 16px 36px; font-size: 1.05rem; }
+    .size_large { padding: 14px 28px; font-size: 1rem; }
+}
