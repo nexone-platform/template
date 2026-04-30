@@ -18,6 +18,7 @@ import { AuditLogsModule } from './master-data/audit-logs/audit-logs.module';
 import { NotificationsModule } from './master-data/notifications/notifications.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
+import { AuthModule } from './auth/auth.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
@@ -57,6 +58,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     NotificationsModule,
     DashboardModule,
     AnnouncementsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [

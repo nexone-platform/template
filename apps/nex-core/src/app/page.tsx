@@ -2,8 +2,10 @@
 
 import React, { useState, useCallback } from 'react';
 import { usePermissions } from '@/contexts/PermissionContext';
+import { useAuth } from '@nexone/auth';
 import { MasterTemplate, useLanguage } from '@nexone/ui';
 import { Settings, Building2, MapPin, Palette, ShieldCheck, Mail, Users, Globe, LayoutDashboard, Database, Bell, FileText, Shield, Monitor, LayoutTemplate, Box } from 'lucide-react';
+import LoginPage from '@/components/LoginPage';
 import CompanySettings from '@/components/CompanySettings';
 import BranchSettings from '@/components/BranchSettings';
 import RoleSettings from '@/components/RoleSettings';
@@ -114,6 +116,7 @@ export default function AdminPage() {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { refreshPermissions } = usePermissions();
+  const { isLoggedIn, user: authUser, login, logout, loading: authLoading, error: authError } = useAuth();
 
   // ดึงสิทธิ์ใหม่ทุกครั้งที่กด sidebar
   const handleNavigate = useCallback((page: string) => {
@@ -126,6 +129,7 @@ export default function AdminPage() {
   const { lang } = useLanguage();
 
   React.useEffect(() => {
+    if (!isLoggedIn) return; // Don't fetch menus until logged in
     const apiUrl = process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8001/api';
 
     const fetchMenus = async () => {
@@ -153,13 +157,27 @@ export default function AdminPage() {
 
     fetchMenus();
     fetchSystemApp();
-  }, []);
+  }, [isLoggedIn]);
 
-  // Dummy user for now
+  // ── Auth Guard: Show Login Page ──
+  if (!isLoggedIn) {
+    return (
+      <LoginPage
+        onLogin={async (email, password) => {
+          return login({ email, password, appName: 'nex-core' });
+        }}
+        appName="NexOne ERP"
+        error={authError?.message}
+        loading={authLoading}
+      />
+    );
+  }
+
+  // Real user from auth session
   const user = {
-    name: lang === 'th' ? 'แอดมิน' : 'Admin User',
-    role: lang === 'th' ? 'ผู้ดูแลระบบสูงสุด' : 'Super Administrator',
-    avatar: ''
+    name: authUser?.displayName || authUser?.email || (lang === 'th' ? 'แอดมิน' : 'Admin User'),
+    role: authUser?.roleName || (lang === 'th' ? 'ผู้ดูแลระบบ' : 'Administrator'),
+    avatar: (authUser as any)?.avatarUrl || ''
   };
 
   const renderContent = () => {
@@ -247,7 +265,7 @@ export default function AdminPage() {
       pageTitle={getPageTitle()}
       breadcrumb={[breadcrumbAppName, getPageTitle()]}
       user={user}
-      onLogout={() => console.log('logout')}
+      onLogout={() => logout()}
       onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
     >
       <React.Fragment key={currentPage}>

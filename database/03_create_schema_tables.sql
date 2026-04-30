@@ -5,9 +5,28 @@
 
 -- 0. NexCore (System, Auth, Admin & Localization)
 CREATE TABLE IF NOT EXISTS nex_core.users (
-    create_date timestamp DEFAULT now() NULL, create_by varchar(50) NULL, update_date timestamp NULL, update_by varchar(50) NULL, id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-    username varchar(100), password varchar(255), email varchar(255), status varchar(50)
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    email varchar(100) NOT NULL UNIQUE,
+    password varchar(255) NOT NULL,
+    display_name varchar(100),
+    role_id integer DEFAULT 2,
+    role_name varchar(50) DEFAULT 'user',
+    is_active boolean DEFAULT true,
+    employee_id varchar(50),
+    avatar_url varchar(500),
+    app_access text DEFAULT '["nex-core"]',
+    last_login_at timestamp,
+    create_date timestamp DEFAULT now(), create_by varchar(50),
+    update_date timestamp, update_by varchar(50)
 );
+-- Default admin user (password: admin123 — CHANGE IN PRODUCTION!)
+-- Password hash generated with PBKDF2-SHA512 + random salt
+INSERT INTO nex_core.users (email, password, display_name, role_id, role_name, app_access, create_by)
+SELECT 'admin@nexone.local',
+       -- ⚠️ This is a placeholder hash. Run the app and use /api/auth/register to create real users.
+       'CHANGE_ME:REGISTER_VIA_API',
+       'System Admin', 1, 'admin', '["nex-core","nexspeed","nexforce","nexstock","nexsite"]', 'system'
+WHERE NOT EXISTS (SELECT 1 FROM nex_core.users WHERE email = 'admin@nexone.local');
 CREATE TABLE IF NOT EXISTS nex_core.menus (
     create_date timestamp DEFAULT now() NULL, create_by varchar(50) NULL, update_date timestamp NULL, update_by varchar(50) NULL, id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     menu_name varchar(100), url varchar(255), parent_id uuid

@@ -3,6 +3,7 @@
 import React from 'react';
 import { ApiConfigProvider } from '../contexts/ApiConfigContext';
 import { PermissionProvider } from '../contexts/PermissionContext';
+import { AuthProvider } from '@nexone/auth';
 import { LanguageProvider, ThemeProvider, ToastProvider } from '@nexone/ui';
 
 const CORE_API_URL = process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8001/api';
@@ -10,15 +11,23 @@ const CORE_API_URL = process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ApiConfigProvider>
-      <ThemeProvider coreApiUrl={CORE_API_URL}>
-        <LanguageProvider>
-          <ToastProvider>
-            <PermissionProvider initialRoleId={1} initialApp="nex-core">
-              {children}
-            </PermissionProvider>
-          </ToastProvider>
-        </LanguageProvider>
-      </ThemeProvider>
+      <AuthProvider
+        apiBaseUrl={CORE_API_URL}
+        onSessionExpired={() => {
+          // Force reload to show login page
+          window.location.reload();
+        }}
+      >
+        <ThemeProvider coreApiUrl={CORE_API_URL}>
+          <LanguageProvider>
+            <ToastProvider>
+              <PermissionProvider initialRoleId={1} initialApp="nex-core">
+                {children}
+              </PermissionProvider>
+            </ToastProvider>
+          </LanguageProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </ApiConfigProvider>
   );
 }
