@@ -33,7 +33,7 @@ export interface AuthError {
 export type AppName =
   | 'nexspeed' | 'nexsite' | 'nexforce' | 'nexstock' | 'nexfinance'
   | 'nexsales' | 'nexprocure' | 'nexproduce' | 'nexbi' | 'nexless'
-  | 'nexcost' | 'nex-core-admin';
+  | 'nexcost' | 'nex-core';
 
 export type PermissionAction = 'read' | 'write' | 'delete' | 'export' | 'approve';
 

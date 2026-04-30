@@ -67,7 +67,7 @@ flowchart TD
 | [audit-logs.service.ts](file:///c:/Task/NexOne/services/nex-core-api/src/master-data/audit-logs/audit-logs.service.ts) | Service สำหรับ createLog / getAllLogs / getRecentLogs |
 | [audit-logs.module.ts](file:///c:/Task/NexOne/services/nex-core-api/src/master-data/audit-logs/audit-logs.module.ts) | Module ที่ export `AuditLogsService` ให้ Interceptor ใช้ |
 | [app.module.ts](file:///c:/Task/NexOne/services/nex-core-api/src/app.module.ts) | ลงทะเบียน `LoggingInterceptor` เป็น Global Interceptor |
-| [ActivityLogs.tsx](file:///c:/Task/NexOne/apps/nex-core-admin/src/components/ActivityLogs.tsx) | หน้า Frontend แสดงผล Activity Logs + Permission Control |
+| [ActivityLogs.tsx](file:///c:/Task/NexOne/apps/nex-core/src/components/ActivityLogs.tsx) | หน้า Frontend แสดงผล Activity Logs + Permission Control |
 
 ---
 
@@ -220,4 +220,4 @@ providers: [
 | 5 | 🟡 `nex-force-api` — เพิ่ม Logging ที่ Gateway หรือแต่ละ Service | ปานกลาง | ยาก |
 
 > [!IMPORTANT]
-> **สำหรับ nex-core-admin ไม่ต้องแก้ไขอะไรเพิ่มแล้ว** ทั้ง Backend (ทุก Controller ติด @AuditLog แล้ว) และ Frontend (Permission ครบแล้ว) ส่วนที่เหลือเป็นงานขยายไปยัง API service อื่นๆ
+> **สำหรับ nex-core ไม่ต้องแก้ไขอะไรเพิ่มแล้ว** ทั้ง Backend (ทุก Controller ติด @AuditLog แล้ว) และ Frontend (Permission ครบแล้ว) ส่วนที่เหลือเป็นงานขยายไปยัง API service อื่นๆ
