@@ -5,23 +5,29 @@ import { AuthService } from './auth.service';
 export class AuthGuard implements CanActivate {
   constructor(private readonly authService: AuthService) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const authHeader = request.headers['authorization'];
 
-    if (!authHeader?.startsWith('Bearer ')) {
+    // Read session ID from HttpOnly cookie
+    const sessionId = request.cookies?.['nexone_sid'];
+    if (!sessionId) {
       throw new UnauthorizedException('กรุณาเข้าสู่ระบบ');
     }
 
-    const token = authHeader.slice(7);
-    const decoded = this.authService.verifyToken(token);
-
-    if (!decoded) {
-      throw new UnauthorizedException('Token หมดอายุหรือไม่ถูกต้อง');
+    const result = await this.authService.validateSession(sessionId);
+    if (!result) {
+      throw new UnauthorizedException('Session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
     }
 
-    // Attach user info to request for downstream usage
-    request.user = decoded;
+    // Attach user + session info to request for downstream usage
+    request.user = {
+      userId: result.user.id,
+      email: result.user.email,
+      roleId: result.user.roleId,
+      roleName: result.user.roleName,
+    };
+    request.sessionId = result.session.id;
+
     return true;
   }
 }

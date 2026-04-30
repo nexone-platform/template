@@ -1,21 +1,22 @@
 // ── NexOne Auth Types ──────────────────────────────────────────────────────────
 
 export interface NexUser {
-  userId: number;
+  userId: number | string;
   employeeId?: string;
   email: string;
+  displayName?: string;
   roleId: number;
   roleName?: string;
   isActive: boolean;
+  avatarUrl?: string;
   permissions?: string[];  // e.g. ['nexspeed:read', 'nexspeed:write']
   appAccess?: string[];    // e.g. ['nexspeed', 'nexsite', 'nexforce']
+  lastLoginAt?: string;
 }
 
 export interface AuthSession {
   user: NexUser;
-  accessToken: string;
-  refreshToken?: string;
-  expiresAt: number;  // unix timestamp ms
+  isAuthenticated: boolean;
 }
 
 export interface LoginCredentials {
@@ -25,7 +26,7 @@ export interface LoginCredentials {
 }
 
 export interface AuthError {
-  code: 'INVALID_CREDENTIALS' | 'ACCOUNT_INACTIVE' | 'TOKEN_EXPIRED' | 'NETWORK_ERROR' | 'UNKNOWN';
+  code: 'INVALID_CREDENTIALS' | 'ACCOUNT_INACTIVE' | 'SESSION_EXPIRED' | 'NETWORK_ERROR' | 'UNKNOWN';
   message: string;
 }
 
@@ -46,4 +47,14 @@ export interface RoleDefinition {
   description?: string;
   isSystem: boolean;
   permissions: Permission[];
+}
+
+// ── Session Info ───────────────────────────────────────────────────────────────
+export interface SessionInfo {
+  id: string;
+  ipAddress: string;
+  deviceName: string;
+  createdAt: string;
+  lastActivityAt: string;
+  expiresAt: string;
 }

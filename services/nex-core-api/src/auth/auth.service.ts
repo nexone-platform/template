@@ -1,26 +1,26 @@
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, LessThan } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { User } from '../entities/user.entity';
+import { Session } from '../entities/session.entity';
 import { LoginDto, RegisterDto, ChangePasswordDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
-  private readonly jwtSecret: string;
-  private readonly tokenExpiry: number; // seconds
+  private readonly sessionTTL: number; // seconds
 
   constructor(
     @InjectRepository(User) private readonly userRepo: Repository<User>,
+    @InjectRepository(Session) private readonly sessionRepo: Repository<Session>,
     private readonly config: ConfigService,
   ) {
-    this.jwtSecret = this.config.get('JWT_SECRET', 'nexone-template-secret-change-me');
-    this.tokenExpiry = this.config.get('JWT_EXPIRY_SECONDS', 28800); // 8 hours
+    this.sessionTTL = this.config.get('SESSION_TTL_SECONDS', 28800); // 8 hours
   }
 
   // ── Login ─────────────────────────────────────────────────────────
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto, ip: string, userAgent: string) {
     const user = await this.userRepo.findOne({ where: { email: dto.email } });
     if (!user) throw new UnauthorizedException('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
     if (!user.isActive) throw new UnauthorizedException('บัญชีถูกระงับ กรุณาติดต่อผู้ดูแลระบบ');
@@ -32,23 +32,12 @@ export class AuthService {
     user.lastLoginAt = new Date();
     await this.userRepo.save(user);
 
-    const accessToken = this.generateToken(user);
-    const appAccess = this.parseAppAccess(user.appAccess);
+    // Create session
+    const session = await this.createSession(user, ip, userAgent);
 
     return {
-      user: {
-        userId: user.id,
-        email: user.email,
-        displayName: user.displayName,
-        roleId: user.roleId,
-        roleName: user.roleName,
-        isActive: user.isActive,
-        employeeId: user.employeeId,
-        avatarUrl: user.avatarUrl,
-        appAccess,
-      },
-      accessToken,
-      expiresIn: this.tokenExpiry,
+      sessionId: session.id,
+      user: this.toUserDto(user),
     };
   }
 
@@ -76,23 +65,39 @@ export class AuthService {
     };
   }
 
+  // ── Validate Session (used by Guard) ──────────────────────────────
+  async validateSession(sessionId: string): Promise<{ user: User; session: Session } | null> {
+    if (!sessionId) return null;
+
+    const session = await this.sessionRepo.findOne({
+      where: { id: sessionId, isActive: true },
+      relations: ['user'],
+    });
+
+    if (!session) return null;
+    if (new Date() > session.expiresAt) {
+      // Expired — mark inactive
+      session.isActive = false;
+      await this.sessionRepo.save(session);
+      return null;
+    }
+
+    // Update last activity (throttle to every 60s to reduce writes)
+    const now = new Date();
+    const sinceLastActivity = now.getTime() - session.lastActivityAt.getTime();
+    if (sinceLastActivity > 60_000) {
+      session.lastActivityAt = now;
+      await this.sessionRepo.save(session);
+    }
+
+    return { user: session.user, session };
+  }
+
   // ── Me (Profile) ──────────────────────────────────────────────────
   async getProfile(userId: string) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new UnauthorizedException('ไม่พบผู้ใช้');
-
-    return {
-      userId: user.id,
-      email: user.email,
-      displayName: user.displayName,
-      roleId: user.roleId,
-      roleName: user.roleName,
-      isActive: user.isActive,
-      employeeId: user.employeeId,
-      avatarUrl: user.avatarUrl,
-      appAccess: this.parseAppAccess(user.appAccess),
-      lastLoginAt: user.lastLoginAt,
-    };
+    return this.toUserDto(user);
   }
 
   // ── Change Password ───────────────────────────────────────────────
@@ -107,23 +112,49 @@ export class AuthService {
     user.updateBy = userId;
     await this.userRepo.save(user);
 
-    return { message: 'เปลี่ยนรหัสผ่านสำเร็จ' };
+    // Invalidate all other sessions (force re-login)
+    await this.revokeAllSessions(userId);
+
+    return { message: 'เปลี่ยนรหัสผ่านสำเร็จ — กรุณาเข้าสู่ระบบใหม่' };
   }
 
-  // ── Verify Token ──────────────────────────────────────────────────
-  verifyToken(token: string): { userId: string; email: string; roleId: number } | null {
-    try {
-      const [headerB64, payloadB64, signature] = token.split('.');
-      const expectedSig = this.hmacSign(`${headerB64}.${payloadB64}`);
-      if (signature !== expectedSig) return null;
+  // ── Logout (single session) ───────────────────────────────────────
+  async logout(sessionId: string) {
+    await this.sessionRepo.update(sessionId, { isActive: false });
+    return { message: 'ออกจากระบบสำเร็จ' };
+  }
 
-      const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString());
-      if (payload.exp && Date.now() / 1000 > payload.exp) return null;
+  // ── Logout All (force logout ทุกอุปกรณ์) ──────────────────────────
+  async revokeAllSessions(userId: string, exceptSessionId?: string) {
+    const qb = this.sessionRepo.createQueryBuilder()
+      .update(Session)
+      .set({ isActive: false })
+      .where('user_id = :userId', { userId })
+      .andWhere('is_active = true');
 
-      return { userId: payload.sub, email: payload.email, roleId: payload.roleId };
-    } catch {
-      return null;
+    if (exceptSessionId) {
+      qb.andWhere('id != :sid', { sid: exceptSessionId });
     }
+
+    await qb.execute();
+    return { message: 'ออกจากระบบทุกอุปกรณ์สำเร็จ' };
+  }
+
+  // ── List Active Sessions (for user or admin) ─────────────────────
+  async listSessions(userId: string) {
+    const sessions = await this.sessionRepo.find({
+      where: { userId, isActive: true },
+      order: { lastActivityAt: 'DESC' },
+    });
+
+    return sessions.map(s => ({
+      id: s.id.slice(0, 8) + '...', // Don't expose full session ID
+      ipAddress: s.ipAddress,
+      deviceName: s.deviceName || this.parseDevice(s.userAgent),
+      createdAt: s.createdAt,
+      lastActivityAt: s.lastActivityAt,
+      expiresAt: s.expiresAt,
+    }));
   }
 
   // ── List Users (Admin) ────────────────────────────────────────────
@@ -137,9 +168,47 @@ export class AuthService {
     return { data: users, total, page, limit };
   }
 
+  // ── Cleanup expired sessions (call periodically) ──────────────────
+  async cleanupExpiredSessions() {
+    const result = await this.sessionRepo.delete({
+      expiresAt: LessThan(new Date()),
+      isActive: false,
+    });
+    return { deleted: result.affected || 0 };
+  }
+
   // ══════════════════════════════════════════════════════════════════
   // Private helpers
   // ══════════════════════════════════════════════════════════════════
+
+  private async createSession(user: User, ip: string, userAgent: string): Promise<Session> {
+    const sessionId = crypto.randomBytes(64).toString('hex'); // 128-char secure random ID
+    const session = this.sessionRepo.create({
+      id: sessionId,
+      userId: user.id,
+      ipAddress: ip,
+      userAgent: userAgent,
+      deviceName: this.parseDevice(userAgent),
+      isActive: true,
+      expiresAt: new Date(Date.now() + this.sessionTTL * 1000),
+    });
+    return this.sessionRepo.save(session);
+  }
+
+  private toUserDto(user: User) {
+    return {
+      userId: user.id,
+      email: user.email,
+      displayName: user.displayName,
+      roleId: user.roleId,
+      roleName: user.roleName,
+      isActive: user.isActive,
+      employeeId: user.employeeId,
+      avatarUrl: user.avatarUrl,
+      appAccess: this.parseAppAccess(user.appAccess),
+      lastLoginAt: user.lastLoginAt,
+    };
+  }
 
   private hashPassword(plain: string): string {
     const salt = crypto.randomBytes(16).toString('hex');
@@ -154,26 +223,18 @@ export class AuthService {
     return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(test, 'hex'));
   }
 
-  private generateToken(user: User): string {
-    const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
-    const payload = Buffer.from(JSON.stringify({
-      sub: user.id,
-      email: user.email,
-      roleId: user.roleId,
-      roleName: user.roleName,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + this.tokenExpiry,
-    })).toString('base64url');
-    const signature = this.hmacSign(`${header}.${payload}`);
-    return `${header}.${payload}.${signature}`;
-  }
-
-  private hmacSign(data: string): string {
-    return crypto.createHmac('sha256', this.jwtSecret).update(data).digest('base64url');
-  }
-
   private parseAppAccess(raw: string | null): string[] {
     if (!raw) return [];
     try { return JSON.parse(raw); } catch { return []; }
+  }
+
+  private parseDevice(ua: string | null): string {
+    if (!ua) return 'Unknown';
+    if (ua.includes('Windows')) return 'Windows PC';
+    if (ua.includes('Mac')) return 'Mac';
+    if (ua.includes('iPhone')) return 'iPhone';
+    if (ua.includes('Android')) return 'Android';
+    if (ua.includes('Linux')) return 'Linux';
+    return 'Browser';
   }
 }

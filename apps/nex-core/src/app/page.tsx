@@ -160,6 +160,26 @@ export default function AdminPage() {
   }, [isLoggedIn]);
 
   // ── Auth Guard: Show Login Page ──
+  // Loading = checking if existing session cookie is valid
+  if (authLoading && !isLoggedIn) {
+    return (
+      <div style={{
+        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #0f172a 100%)',
+      }}>
+        <div style={{ textAlign: 'center', color: '#94a3b8' }}>
+          <div style={{
+            width: 40, height: 40, border: '3px solid #334155', borderTopColor: '#6366f1',
+            borderRadius: '50%', margin: '0 auto 16px',
+            animation: 'spin 1s linear infinite',
+          }} />
+          <p style={{ fontSize: 14 }}>กำลังตรวจสอบสิทธิ์...</p>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      </div>
+    );
+  }
+
   if (!isLoggedIn) {
     return (
       <LoginPage

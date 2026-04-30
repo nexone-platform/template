@@ -27,6 +27,21 @@ SELECT 'admin@nexone.local',
        'CHANGE_ME:REGISTER_VIA_API',
        'System Admin', 1, 'admin', '["nex-core","nexspeed","nexforce","nexstock","nexsite"]', 'system'
 WHERE NOT EXISTS (SELECT 1 FROM nex_core.users WHERE email = 'admin@nexone.local');
+
+CREATE TABLE IF NOT EXISTS nex_core.sessions (
+    id varchar(128) PRIMARY KEY,
+    user_id uuid NOT NULL REFERENCES nex_core.users(id) ON DELETE CASCADE,
+    ip_address varchar(45),
+    user_agent text,
+    device_name varchar(100),
+    is_active boolean DEFAULT true,
+    expires_at timestamp NOT NULL,
+    created_at timestamp DEFAULT now(),
+    last_activity_at timestamp DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_sessions_user ON nex_core.sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_expires ON nex_core.sessions(expires_at);
+
 CREATE TABLE IF NOT EXISTS nex_core.menus (
     create_date timestamp DEFAULT now() NULL, create_by varchar(50) NULL, update_date timestamp NULL, update_by varchar(50) NULL, id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     menu_name varchar(100), url varchar(255), parent_id uuid

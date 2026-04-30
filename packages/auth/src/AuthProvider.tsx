@@ -1,23 +1,21 @@
 'use client';
 
 import React from 'react';
-import type { NexUser, AuthSession, LoginCredentials, AuthError, Permission } from './types';
-import {
-  saveSession, clearSession, getSession, getCurrentUser,
-  isAuthenticated, hasPermission, hasAppAccess, watchSessionExpiry,
-} from './session';
+import type { NexUser, LoginCredentials, AuthError, Permission, SessionInfo } from './types';
+import { setCachedUser, getCachedUser, clearSession, hasPermission, hasAppAccess } from './session';
 
 // ── Context ───────────────────────────────────────────────────────────────────
 interface AuthContextValue {
   user: NexUser | null;
-  session: AuthSession | null;
   loading: boolean;
   error: AuthError | null;
   isLoggedIn: boolean;
   login: (credentials: LoginCredentials) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
+  logoutAll: () => Promise<void>;
   can: (permission: Permission) => boolean;
   canAccess: (appName: string) => boolean;
+  getSessions: () => Promise<SessionInfo[]>;
 }
 
 const AuthContext = React.createContext<AuthContextValue | null>(null);
@@ -32,25 +30,52 @@ export interface AuthProviderProps {
 
 export function AuthProvider({
   children,
-  apiBaseUrl = 'http://localhost:8080/api/v1',
+  apiBaseUrl = 'http://localhost:8001/api',
   onSessionExpired,
   onLoginSuccess,
 }: AuthProviderProps) {
-  const [user, setUser] = React.useState<NexUser | null>(() => getCurrentUser());
-  const [session, setSession] = React.useState<AuthSession | null>(() => getSession());
-  const [loading, setLoading] = React.useState(false);
+  const [user, setUser] = React.useState<NexUser | null>(null);
+  const [loading, setLoading] = React.useState(true); // Start true — we check session on mount
   const [error, setError] = React.useState<AuthError | null>(null);
 
-  // Watch for session expiry
+  // On mount: check if we have a valid session (cookie is sent automatically)
   React.useEffect(() => {
-    const cleanup = watchSessionExpiry(() => {
-      setUser(null);
-      setSession(null);
-      onSessionExpired?.();
-    });
-    return cleanup;
-  }, [session?.expiresAt]);
+    const checkSession = async () => {
+      try {
+        const res = await fetch(`${apiBaseUrl}/auth/me`, { credentials: 'include' });
+        if (res.ok) {
+          const userData = await res.json();
+          const nexUser: NexUser = {
+            userId: userData.userId,
+            email: userData.email,
+            displayName: userData.displayName,
+            roleId: userData.roleId,
+            roleName: userData.roleName,
+            isActive: userData.isActive,
+            employeeId: userData.employeeId,
+            avatarUrl: userData.avatarUrl,
+            appAccess: userData.appAccess || [],
+            lastLoginAt: userData.lastLoginAt,
+          };
+          setUser(nexUser);
+          setCachedUser(nexUser);
+        } else {
+          // No valid session
+          setUser(null);
+          setCachedUser(null);
+        }
+      } catch {
+        // Network error — assume not logged in
+        setUser(null);
+        setCachedUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkSession();
+  }, [apiBaseUrl]);
 
+  // ── Login ───────────────────────────────────────────────────────────
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     setLoading(true);
     setError(null);
@@ -58,6 +83,7 @@ export function AuthProvider({
       const res = await fetch(`${apiBaseUrl}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Send & receive cookies
         body: JSON.stringify(credentials),
       });
 
@@ -72,20 +98,10 @@ export function AuthProvider({
       }
 
       const data = await res.json();
-      // Expected: { user, accessToken, refreshToken?, expiresIn? }
-      const newSession: AuthSession = {
-        user: data.user,
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken,
-        expiresAt: data.expiresIn
-          ? Date.now() + data.expiresIn * 1000
-          : Date.now() + 8 * 60 * 60 * 1000, // default 8h
-      };
-
-      saveSession(newSession);
-      setSession(newSession);
-      setUser(newSession.user);
-      onLoginSuccess?.(newSession.user);
+      const nexUser: NexUser = data.user;
+      setUser(nexUser);
+      setCachedUser(nexUser);
+      onLoginSuccess?.(nexUser);
       return true;
     } catch {
       setError({ code: 'NETWORK_ERROR', message: 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้' });
@@ -95,11 +111,41 @@ export function AuthProvider({
     }
   };
 
-  const logout = () => {
-    clearSession();
+  // ── Logout ──────────────────────────────────────────────────────────
+  const logout = async () => {
+    try {
+      await fetch(`${apiBaseUrl}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch { /* ignore */ }
     setUser(null);
-    setSession(null);
+    setCachedUser(null);
+    clearSession();
     setError(null);
+  };
+
+  // ── Logout All Devices ──────────────────────────────────────────────
+  const logoutAll = async () => {
+    try {
+      await fetch(`${apiBaseUrl}/auth/logout-all`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch { /* ignore */ }
+    setUser(null);
+    setCachedUser(null);
+    clearSession();
+    setError(null);
+  };
+
+  // ── Get Sessions ────────────────────────────────────────────────────
+  const getSessions = async (): Promise<SessionInfo[]> => {
+    try {
+      const res = await fetch(`${apiBaseUrl}/auth/sessions`, { credentials: 'include' });
+      if (res.ok) return res.json();
+    } catch { /* ignore */ }
+    return [];
   };
 
   const can = (permission: Permission) => hasPermission(permission);
@@ -107,9 +153,9 @@ export function AuthProvider({
 
   return (
     <AuthContext.Provider value={{
-      user, session, loading, error,
-      isLoggedIn: isAuthenticated(),
-      login, logout, can, canAccess,
+      user, loading, error,
+      isLoggedIn: user !== null,
+      login, logout, logoutAll, can, canAccess, getSessions,
     }}>
       {children}
     </AuthContext.Provider>
@@ -135,16 +181,13 @@ export function withAuth<P extends object>(
   Component: React.ComponentType<P>,
   options: WithAuthOptions = {},
 ) {
-  const { requiredPermission, requiredApp, redirectTo = '/login', fallback = null } = options;
+  const { requiredPermission, requiredApp, fallback = null } = options;
 
   function ProtectedComponent(props: P) {
     const { isLoggedIn, can, canAccess, loading } = useAuth();
 
     if (loading) return null;
-    if (!isLoggedIn) {
-      if (typeof window !== 'undefined') window.location.href = redirectTo;
-      return fallback as React.ReactElement;
-    }
+    if (!isLoggedIn) return fallback as React.ReactElement;
     if (requiredPermission && !can(requiredPermission)) return fallback as React.ReactElement;
     if (requiredApp && !canAccess(requiredApp)) return fallback as React.ReactElement;
 

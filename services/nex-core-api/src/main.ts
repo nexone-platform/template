@@ -1,13 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Cookie parser for session-based auth
+  app.use(cookieParser());
+
   app.enableCors({
-    origin: '*',
+    origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000', 'http://localhost:3001'],
+    credentials: true, // Allow cookies to be sent cross-origin
   });
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.setGlobalPrefix('api');
 
@@ -15,7 +22,7 @@ async function bootstrap() {
     .setTitle('NexCore API')
     .setDescription('NexOne ERP Core API Documentation')
     .setVersion('1.0')
-    .addBearerAuth()
+    .addCookieAuth('nexone_sid')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
