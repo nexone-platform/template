@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS nex_core.users (
     avatar_url varchar(500),
     app_access text DEFAULT '["nex-core"]',
     last_login_at timestamp,
+    failed_login_count integer DEFAULT 0,
+    locked_until timestamp,
     create_date timestamp DEFAULT now(), create_by varchar(50),
     update_date timestamp, update_by varchar(50)
 );

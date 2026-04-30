@@ -52,7 +52,7 @@ export class MenusService {
       }));
     } catch (err) {
       console.error('FIND ALL ERROR:', err);
-      return { error: err.message };
+      return { error: 'Failed to retrieve menus. Please try again later.' };
     }
   }
 

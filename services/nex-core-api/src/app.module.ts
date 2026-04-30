@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SystemAppsModule } from './master-data/system-apps/system-apps.module';
@@ -19,7 +22,8 @@ import { NotificationsModule } from './master-data/notifications/notifications.m
 import { DashboardModule } from './dashboard/dashboard.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
 import { AuthModule } from './auth/auth.module';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { AuthGuard } from './auth/auth.guard';
+import { RolesGuard } from './common/guards/roles.guard';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 @Module({
@@ -28,6 +32,16 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
       isGlobal: true,
       envFilePath: process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : '.env.development',
     }),
+
+    // ── Rate Limiting (Brute Force Protection) ──
+    ThrottlerModule.forRoot([{
+      ttl: 60000,    // 60 seconds window
+      limit: 30,     // 30 requests per window (global)
+    }]),
+
+    // ── Scheduled Tasks (Session Cleanup) ──
+    ScheduleModule.forRoot(),
+
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -63,6 +77,26 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
   controllers: [AppController],
   providers: [
     AppService,
+
+    // ── Global Auth Guard: ALL routes require login unless @Public() ──
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+
+    // ── Global Roles Guard: Check @Roles() on protected routes ──
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+
+    // ── Global Rate Limiter ──
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+
+    // ── Audit Logging ──
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,

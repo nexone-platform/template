@@ -18,7 +18,7 @@ export class DashboardService {
       let onlineUsers = 0;
       try {
         const onlineResult = await this.dataSource.query(
-          `SELECT COUNT(*) as count FROM nex_core.users WHERE last_login > NOW() - INTERVAL '10 minutes'`
+          `SELECT COUNT(*) as count FROM nex_core.users WHERE last_login_at > NOW() - INTERVAL '10 minutes'`
         );
         onlineUsers = parseInt(onlineResult[0].count, 10);
       } catch (err) {

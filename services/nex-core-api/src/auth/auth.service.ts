@@ -1,11 +1,15 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import * as crypto from 'crypto';
 import { User } from '../entities/user.entity';
 import { Session } from '../entities/session.entity';
 import { LoginDto, RegisterDto, ChangePasswordDto } from './dto/auth.dto';
+
+const MAX_FAILED_ATTEMPTS = 10;
+const LOCKOUT_MINUTES = 30;
 
 @Injectable()
 export class AuthService {
@@ -25,10 +29,28 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
     if (!user.isActive) throw new UnauthorizedException('บัญชีถูกระงับ กรุณาติดต่อผู้ดูแลระบบ');
 
-    const isValid = this.verifyPassword(dto.password, user.password);
-    if (!isValid) throw new UnauthorizedException('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+    // ── Account Lockout Check ──
+    if (user.lockedUntil && new Date() < user.lockedUntil) {
+      const remaining = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
+      throw new ForbiddenException(`บัญชีถูกล็อค กรุณารอ ${remaining} นาที`);
+    }
 
-    // Update last login
+    const isValid = this.verifyPassword(dto.password, user.password);
+    if (!isValid) {
+      // ── Increment failed attempts ──
+      user.failedLoginCount = (user.failedLoginCount || 0) + 1;
+      if (user.failedLoginCount >= MAX_FAILED_ATTEMPTS) {
+        user.lockedUntil = new Date(Date.now() + LOCKOUT_MINUTES * 60_000);
+        await this.userRepo.save(user);
+        throw new ForbiddenException(`ใส่รหัสผ่านผิดเกิน ${MAX_FAILED_ATTEMPTS} ครั้ง บัญชีถูกล็อค ${LOCKOUT_MINUTES} นาที`);
+      }
+      await this.userRepo.save(user);
+      throw new UnauthorizedException('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+    }
+
+    // ── Login success — reset failed attempts ──
+    user.failedLoginCount = 0;
+    user.lockedUntil = null;
     user.lastLoginAt = new Date();
     await this.userRepo.save(user);
 
@@ -50,8 +72,8 @@ export class AuthService {
       email: dto.email,
       password: this.hashPassword(dto.password),
       displayName: dto.displayName || dto.email.split('@')[0],
-      roleId: dto.roleId || 2,
-      roleName: dto.roleId === 1 ? 'admin' : 'user',
+      roleId: 2,           // Always default role (never accept from client)
+      roleName: 'user',    // Always default role
       appAccess: JSON.stringify(['nex-core']),
       createBy: 'system',
     });
@@ -76,7 +98,13 @@ export class AuthService {
 
     if (!session) return null;
     if (new Date() > session.expiresAt) {
-      // Expired — mark inactive
+      session.isActive = false;
+      await this.sessionRepo.save(session);
+      return null;
+    }
+
+    // Check if user account is still active
+    if (!session.user.isActive) {
       session.isActive = false;
       await this.sessionRepo.save(session);
       return null;
@@ -112,7 +140,7 @@ export class AuthService {
     user.updateBy = userId;
     await this.userRepo.save(user);
 
-    // Invalidate all other sessions (force re-login)
+    // Invalidate all sessions (force re-login everywhere)
     await this.revokeAllSessions(userId);
 
     return { message: 'เปลี่ยนรหัสผ่านสำเร็จ — กรุณาเข้าสู่ระบบใหม่' };
@@ -140,7 +168,7 @@ export class AuthService {
     return { message: 'ออกจากระบบทุกอุปกรณ์สำเร็จ' };
   }
 
-  // ── List Active Sessions (for user or admin) ─────────────────────
+  // ── List Active Sessions ──────────────────────────────────────────
   async listSessions(userId: string) {
     const sessions = await this.sessionRepo.find({
       where: { userId, isActive: true },
@@ -148,7 +176,7 @@ export class AuthService {
     });
 
     return sessions.map(s => ({
-      id: s.id.slice(0, 8) + '...', // Don't expose full session ID
+      id: s.id.slice(0, 8) + '...',
       ipAddress: s.ipAddress,
       deviceName: s.deviceName || this.parseDevice(s.userAgent),
       createdAt: s.createdAt,
@@ -168,12 +196,13 @@ export class AuthService {
     return { data: users, total, page, limit };
   }
 
-  // ── Cleanup expired sessions (call periodically) ──────────────────
+  // ── Scheduled: Cleanup expired sessions daily at 3am ──────────────
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async cleanupExpiredSessions() {
     const result = await this.sessionRepo.delete({
       expiresAt: LessThan(new Date()),
-      isActive: false,
     });
+    console.log(`[Session Cleanup] Deleted ${result.affected || 0} expired sessions`);
     return { deleted: result.affected || 0 };
   }
 
@@ -182,7 +211,7 @@ export class AuthService {
   // ══════════════════════════════════════════════════════════════════
 
   private async createSession(user: User, ip: string, userAgent: string): Promise<Session> {
-    const sessionId = crypto.randomBytes(64).toString('hex'); // 128-char secure random ID
+    const sessionId = crypto.randomBytes(64).toString('hex');
     const session = this.sessionRepo.create({
       id: sessionId,
       userId: user.id,

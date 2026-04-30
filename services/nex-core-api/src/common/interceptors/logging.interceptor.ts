@@ -9,6 +9,20 @@ import { tap, catchError } from 'rxjs/operators';
 import { Reflector } from '@nestjs/core';
 import { AuditLogsService } from '../../master-data/audit-logs/audit-logs.service';
 
+// Fields that must NEVER be stored in audit logs
+const SENSITIVE_FIELDS = ['password', 'currentPassword', 'newPassword', 'token', 'secret', 'accessToken', 'refreshToken', 'sessionId', 'otp'];
+
+function sanitizePayload(body: any): any {
+  if (!body || typeof body !== 'object') return body;
+  const sanitized = { ...body };
+  for (const key of Object.keys(sanitized)) {
+    if (SENSITIVE_FIELDS.includes(key)) {
+      sanitized[key] = '[REDACTED]';
+    }
+  }
+  return sanitized;
+}
+
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
   constructor(
@@ -58,7 +72,7 @@ export class LoggingInterceptor implements NestInterceptor {
             endpoint: `${req.method} ${req.originalUrl}`.substring(0, 255),
             user_agent: req.headers['user-agent']?.substring(0, 500),
             // HOW
-            payload: req.body && Object.keys(req.body).length > 0 ? req.body : null,
+            payload: req.body && Object.keys(req.body).length > 0 ? sanitizePayload(req.body) : null,
             response_time_ms: responseTime,
             // WHY
             status: 'SUCCESS',
@@ -93,7 +107,7 @@ export class LoggingInterceptor implements NestInterceptor {
             endpoint: `${req.method} ${req.originalUrl}`.substring(0, 255),
             user_agent: req.headers['user-agent']?.substring(0, 500),
             // HOW
-            payload: req.body && Object.keys(req.body).length > 0 ? req.body : null,
+            payload: req.body && Object.keys(req.body).length > 0 ? sanitizePayload(req.body) : null,
             response_time_ms: responseTime,
             // WHY
             status: 'FAILED',
