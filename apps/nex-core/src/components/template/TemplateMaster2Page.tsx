@@ -1,3 +1,4 @@
+import { useSystemConfig } from '@nexone/ui';
 import React, { useState, useEffect, useCallback } from 'react';
 import CrudLayout from '@/components/CrudLayout';
 import { SummaryCard, SearchInput, crudStyles, StatusDropdown, BaseModal, ExportButtons } from '@/components/CrudComponents';
@@ -17,7 +18,16 @@ export default function TemplateMaster2Page() {
     const [search, setSearch] = useState('');
     const [filterType, setFilterType] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
     const [saving, setSaving] = useState(false);
 
     // CRUD State

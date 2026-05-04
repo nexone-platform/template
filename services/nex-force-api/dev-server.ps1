@@ -13,7 +13,7 @@ param(
 )
 
 $services = @{
-    "gateway"     = @{ Path = "gateway";              Project = "gateway.csproj";               Port = 8001 }
+    "gateway"     = @{ Path = "gateway";              Project = "gateway.csproj";               Port = 8102 }
     "solutionapi" = @{ Path = "solutionAPI";           Project = "solutionAPI.csproj";            Port = 5011 }
     "auth"        = @{ Path = "authentication-server"; Project = "authentication-server.csproj";  Port = 7246 }
     "hr"          = @{ Path = "HrService";             Project = "HrService.csproj";              Port = 7140 }

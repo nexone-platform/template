@@ -7,7 +7,7 @@ import { LanguageProvider } from "@/lib/language";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ThemeProvider as NexThemeProvider } from "@nexone/ui";
 
-const CORE_API_URL = process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8001/api';
+const CORE_API_URL = process.env.NEXT_PUBLIC_CORE_API_URL || '';
 
 /**
  * Root providers — replaces Angular's module-level providers.

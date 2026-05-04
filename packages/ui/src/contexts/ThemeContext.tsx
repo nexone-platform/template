@@ -144,7 +144,7 @@ export function applyThemeToCSS(theme: ThemeData) {
 
 interface ThemeProviderProps {
   children: React.ReactNode;
-  /** The base URL for the nex-core API, e.g. "http://localhost:8001/api" */
+  /** The base URL for the nex-core API, e.g. "http://localhost:8101/api" */
   coreApiUrl: string;
 }
 

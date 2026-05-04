@@ -1,3 +1,4 @@
+import { useSystemConfig } from '@nexone/ui';
 import React, { useState, useEffect } from "react";
 import CrudLayout from "@/components/CrudLayout";
 import {
@@ -32,7 +33,16 @@ interface Language {
 export default function SystemLanguages() {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const { configs, loading: configLoading } = useSystemConfig();
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
   const [languages, setLanguages] = useState<Language[]>([]);
 
   // CRUD State
@@ -50,12 +60,12 @@ export default function SystemLanguages() {
   });
 
   const { getEndpoint } = useApiConfig();
-    const coreApi = getEndpoint('NexCore', 'http://localhost:8001/api');
+    const coreApi = getEndpoint('NexCore', '');
     const API_URL = `${coreApi}/translations/languages`;
 
   const fetchLanguages = async () => {
     try {
-      const res = await fetch(API_URL);
+      const res = await fetch(API_URL, { credentials: 'include' });
       const data = await res.json();
       if (Array.isArray(data)) {
         setLanguages(data);
@@ -109,7 +119,7 @@ export default function SystemLanguages() {
       const method = modalMode === "edit" ? "PUT" : "POST";
       const url =
         modalMode === "edit" ? `${API_URL}/${selectedItem?.id}` : API_URL;
-      const res = await fetch(url, {
+      const res = await fetch(url, { credentials: 'include', 
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -126,7 +136,7 @@ export default function SystemLanguages() {
   const confirmDelete = async () => {
     if (!selectedItem) return;
     try {
-      const res = await fetch(`${API_URL}/${selectedItem.id}`, {
+      const res = await fetch(`${API_URL}/${selectedItem.id}`, { credentials: 'include', 
         method: "DELETE",
       });
       if (res.ok) {
@@ -140,7 +150,7 @@ export default function SystemLanguages() {
 
   const toggleStatus = async (val: boolean, item: Language) => {
     try {
-      const res = await fetch(`${API_URL}/${item.id}`, {
+      const res = await fetch(`${API_URL}/${item.id}`, { credentials: 'include', 
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: val }),

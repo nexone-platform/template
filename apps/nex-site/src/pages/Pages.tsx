@@ -5,7 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
 import './Pages.css';
 
-const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:3000';
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || '';
 
 
 

@@ -432,7 +432,7 @@ export default function Settings() {
                                 </div>
                                 <div className="system-info-item">
                                     <span className="system-info-label">Frontend URL</span>
-                                    <span className="system-info-value">{import.meta.env.VITE_FRONTEND_URL || 'http://localhost:3000'}</span>
+                                    <span className="system-info-value">{import.meta.env.VITE_FRONTEND_URL || ''}</span>
                                 </div>
                                 <div className="system-info-item">
                                     <span className="system-info-label">Backoffice URL</span>

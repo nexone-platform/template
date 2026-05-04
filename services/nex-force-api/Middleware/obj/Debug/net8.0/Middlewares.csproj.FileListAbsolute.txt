@@ -1,0 +1,15 @@
+C:\Task\Template\services\nex-force-api\Middleware\bin\Debug\net8.0\Middlewares.deps.json
+C:\Task\Template\services\nex-force-api\Middleware\bin\Debug\net8.0\Middlewares.runtimeconfig.json
+C:\Task\Template\services\nex-force-api\Middleware\bin\Debug\net8.0\Middlewares.dll
+C:\Task\Template\services\nex-force-api\Middleware\bin\Debug\net8.0\Middlewares.pdb
+C:\Task\Template\services\nex-force-api\Middleware\obj\Debug\net8.0\Middlewares.csproj.AssemblyReference.cache
+C:\Task\Template\services\nex-force-api\Middleware\obj\Debug\net8.0\Middlewares.GeneratedMSBuildEditorConfig.editorconfig
+C:\Task\Template\services\nex-force-api\Middleware\obj\Debug\net8.0\Middlewares.AssemblyInfoInputs.cache
+C:\Task\Template\services\nex-force-api\Middleware\obj\Debug\net8.0\Middlewares.AssemblyInfo.cs
+C:\Task\Template\services\nex-force-api\Middleware\obj\Debug\net8.0\Middlewares.csproj.CoreCompileInputs.cache
+C:\Task\Template\services\nex-force-api\Middleware\obj\Debug\net8.0\Middlewares.sourcelink.json
+C:\Task\Template\services\nex-force-api\Middleware\obj\Debug\net8.0\Middlewares.dll
+C:\Task\Template\services\nex-force-api\Middleware\obj\Debug\net8.0\refint\Middlewares.dll
+C:\Task\Template\services\nex-force-api\Middleware\obj\Debug\net8.0\Middlewares.pdb
+C:\Task\Template\services\nex-force-api\Middleware\obj\Debug\net8.0\Middlewares.genruntimeconfig.cache
+C:\Task\Template\services\nex-force-api\Middleware\obj\Debug\net8.0\ref\Middlewares.dll

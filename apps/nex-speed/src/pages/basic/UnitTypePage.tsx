@@ -8,12 +8,22 @@ import StatusDropdown from '@/components/StatusDropdown';
 import Pagination from '@/components/Pagination';
 import { Plus, Edit2, Trash2, Eye } from 'lucide-react';
 import { api, UnitType as APIUnitType } from '@/services/api';
+import { useSystemConfig } from '@nexone/ui';
 
 export default function UnitTypePage() {
     const [data, setData] = useState<APIUnitType[]>([]);
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(15);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 15);
     
     // CRUD State
     const [isModalOpen, setIsModalOpen] = useState(false);

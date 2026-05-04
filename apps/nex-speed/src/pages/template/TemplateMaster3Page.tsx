@@ -6,6 +6,7 @@ import { Search, Plus, Eye, Pencil, Trash2, X, FileSpreadsheet, FileText, Downlo
 import { api, Order, LocationItem } from '@/services/api';
 import { ExportButtons } from '@/components/CrudComponents';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
+import { useSystemConfig } from '@nexone/ui';
 
 const statusLabels: Record<string, string> = { pending: 'รอจัดส่ง', 'in-transit': 'กำลังขนส่ง', completed: 'สำเร็จ', cancelled: 'ยกเลิก' };
 const statusColors: Record<string, string> = { pending: 'pending', 'in-transit': 'active', completed: 'completed', cancelled: 'inactive' };
@@ -84,7 +85,16 @@ export default function TemplateMaster3Page() {
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
 
     // View mode
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');

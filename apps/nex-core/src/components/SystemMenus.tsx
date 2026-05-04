@@ -1,3 +1,4 @@
+import { useSystemConfig } from '@nexone/ui';
 import React, { useState, useEffect } from "react";
 import CrudLayout from "@/components/CrudLayout";
 import {
@@ -75,11 +76,9 @@ const ICON_CATEGORIES = [
 ];
 
 interface PageMenu {
-  menus_id?: number;
+  menu_id?: number;
   menu_code?: string;
   title?: string;
-  title_th?: string;
-  menu_value?: string;
   route?: string;
   page_key?: string;
   is_active?: boolean;
@@ -90,9 +89,20 @@ interface PageMenu {
 export default function SystemMenus() {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const { configs, loading: configLoading } = useSystemConfig();
+  const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
+  const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+  useEffect(() => {
+    if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+      setPageSize(configs.pageRecordDefault);
+      setHasSetDefaultPageSize(true);
+    }
+  }, [configs, configLoading, hasSetDefaultPageSize]);
+
   const [menus, setMenus] = useState<PageMenu[]>([]);
   const [systemApps, setSystemApps] = useState<any[]>([]);
+  const [activeAppNames, setActiveAppNames] = useState<string[]>([]);
 
   // CRUD State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -148,18 +158,16 @@ export default function SystemMenus() {
 
   const [formData, setFormData] = useState<Partial<PageMenu>>({
     title: "",
-    title_th: "",
     route: "",
-    menu_value: "",
     menu_code: "",
     icon: "",
-    app_name: "",
+    app_name: "ALL",
     is_active: true,
   });
 
   const { getEndpoint } = useApiConfig();
-    const coreApi = getEndpoint('NexCore', 'http://localhost:8001/api');
-    const API_URL = `${coreApi}/menus`;
+  const coreApi = getEndpoint('NexCore', 'http://localhost:8001/api');
+  const API_URL = `${coreApi}/menus`;
 
   const fetchMenus = async () => {
     try {
@@ -173,20 +181,38 @@ export default function SystemMenus() {
     }
   };
 
+  const fetchAppsData = async () => {
+    try {
+      const res = await fetch(`${coreApi}/v1/system-apps?all=true`, { credentials: 'include' });
+      if (!res.ok) throw new Error('API returned ' + res.status);
+      const data = await res.json();
+      const appsList = data.data || data;
+      if (Array.isArray(appsList)) {
+        setSystemApps(appsList);
+        const activeNames = appsList.filter((a: any) => a.is_active === true || a.is_active === 'true' || a.is_active === 1).map((a: any) => a.app_name);
+        setActiveAppNames(['All App (ใช้กับทุกระบบ)', ...activeNames]);
+      } else {
+        setActiveAppNames(['All App (ใช้กับทุกระบบ)', ...SYSTEM_APPS]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch system apps:', error);
+      setActiveAppNames(['All App (ใช้กับทุกระบบ)', ...SYSTEM_APPS]);
+    }
+  };
+
   useEffect(() => {
     fetchMenus();
-  }, []);
+    fetchAppsData();
+  }, [coreApi]);
 
   // Action Handlers
   const handleAdd = () => {
     setFormData({
       title: "",
-      title_th: "",
       route: "",
-      menu_value: "",
       menu_code: "",
       icon: "",
-      app_name: "",
+      app_name: "ALL",
       is_active: true,
     });
     setModalMode("add");
@@ -220,8 +246,8 @@ export default function SystemMenus() {
     try {
       const method = modalMode === "edit" ? "PUT" : "POST";
       const url =
-        modalMode === "edit" ? `${API_URL}/${selectedItem?.menus_id}` : API_URL;
-      const res = await fetch(url, {
+        modalMode === "edit" ? `${API_URL}/${selectedItem?.menu_id}` : API_URL;
+      const res = await fetch(url, { credentials: 'include', 
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -238,7 +264,7 @@ export default function SystemMenus() {
   const confirmDelete = async () => {
     if (!selectedItem) return;
     try {
-      const res = await fetch(`${API_URL}/${selectedItem.menus_id}`, {
+      const res = await fetch(`${API_URL}/${selectedItem.menu_id}`, { credentials: 'include', 
         method: "DELETE",
       });
       if (res.ok) {
@@ -252,7 +278,7 @@ export default function SystemMenus() {
 
   const toggleStatus = async (val: boolean, item: PageMenu) => {
     try {
-      const res = await fetch(`${API_URL}/${item.menus_id}/status`, {
+      const res = await fetch(`${API_URL}/${item.menu_id}/status`, { credentials: 'include', 
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_active: val }),
@@ -272,8 +298,7 @@ export default function SystemMenus() {
       !searchLower ||
       item.title?.toLowerCase().includes(searchLower) ||
       item.route?.toLowerCase().includes(searchLower) ||
-      item.menu_code?.toLowerCase().includes(searchLower) ||
-      item.menu_value?.toLowerCase().includes(searchLower),
+      item.menu_code?.toLowerCase().includes(searchLower),
   );
 
   // Pagination
@@ -304,28 +329,25 @@ export default function SystemMenus() {
       toolbarLeft={
         <ExportButtons
           onExportXLSX={() => exportToXLSX(filteredData, "SystemMenus", [
-            { key: "menus_id", label: "ID" },
+            { key: "menu_id", label: "ID" },
             { key: "menu_code", label: "รหัส (CODE)" },
             { key: "title", label: "เมนู (TITLE)" },
-            { key: "menu_value", label: "ค่าเมนู (LABEL)" },
             { key: "route", label: "เส้นทาง (PATH)" },
             { key: "app_name", label: "เชื่อมโยงแอป" },
             { key: "is_active", label: "สถานะ", format: (item: any) => (item.is_active ? "ใช้งาน" : "ไม่ใช้งาน") }
           ])}
           onExportCSV={() => exportToCSV(filteredData, "SystemMenus", [
-            { key: "menus_id", label: "ID" },
+            { key: "menu_id", label: "ID" },
             { key: "menu_code", label: "รหัส (CODE)" },
             { key: "title", label: "เมนู (TITLE)" },
-            { key: "menu_value", label: "ค่าเมนู (LABEL)" },
             { key: "route", label: "เส้นทาง (PATH)" },
             { key: "app_name", label: "เชื่อมโยงแอป" },
             { key: "is_active", label: "สถานะ", format: (item: any) => (item.is_active ? "ใช้งาน" : "ไม่ใช้งาน") }
           ])}
           onExportPDF={() => exportToPDF(filteredData, "SystemMenus", [
-            { key: "menus_id", label: "ID" },
+            { key: "menu_id", label: "ID" },
             { key: "menu_code", label: "รหัส (CODE)" },
             { key: "title", label: "เมนู (TITLE)" },
-            { key: "menu_value", label: "ค่าเมนู (LABEL)" },
             { key: "route", label: "เส้นทาง (PATH)" },
             { key: "app_name", label: "เชื่อมโยงแอป" },
             { key: "is_active", label: "สถานะ", format: (item: any) => (item.is_active ? "ใช้งาน" : "ไม่ใช้งาน") }
@@ -384,7 +406,7 @@ export default function SystemMenus() {
           </thead>
           <tbody>
             {paginatedData.map((item, index) => (
-              <tr key={item.menus_id}>
+              <tr key={item.menu_id}>
                 <td style={{ textAlign: "center", color: "var(--text-muted)" }}>
                   {(currentPage - 1) * pageSize + index + 1}
                 </td>
@@ -451,9 +473,7 @@ export default function SystemMenus() {
                       gap: "8px",
                     }}
                   >
-                    <span style={{ fontWeight: 500, color: "#475569" }}>
-                      {item.menu_value || item.page_key || "-"}
-                    </span>
+                      {item.page_key || "-"}
                   </div>
                 </td>
                 <td>
@@ -692,19 +712,6 @@ export default function SystemMenus() {
             }}
           >
             <div>
-              <label style={crudStyles.label}>ค่าเมนู (Label/Value)</label>
-              <input
-                type="text"
-                style={crudStyles.input}
-                value={formData.menu_value || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, menu_value: e.target.value })
-                }
-                disabled={modalMode === "view"}
-                placeholder="เช่น /dashboard หรือ key"
-              />
-            </div>
-            <div>
               <label style={crudStyles.label}>เส้นทาง (Route/Path)</label>
               <input
                 type="text"
@@ -717,14 +724,6 @@ export default function SystemMenus() {
                 placeholder="เช่น /dashboard"
               />
             </div>
-          </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "16px",
-            }}
-          >
             <div>
               <label style={crudStyles.label}>ไอคอน (Icon)</label>
               <div style={{ display: "flex", gap: "8px" }}>
@@ -766,7 +765,7 @@ export default function SystemMenus() {
                 <input
                   type="text"
                   style={crudStyles.input}
-                  value={formData.menus_id || ""}
+                  value={formData.menu_id || ""}
                   disabled
                 />
               </div>

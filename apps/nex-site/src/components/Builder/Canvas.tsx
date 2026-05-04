@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { usePageBuilderStore } from '../../store/pageBuilderStore';
 import './Canvas.css';
 
-const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:3000';
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || '';
 
 export default function Canvas() {
     const {

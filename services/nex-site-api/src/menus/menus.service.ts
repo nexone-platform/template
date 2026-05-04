@@ -16,7 +16,7 @@ export class MenusService {
       if (appName) where.app_name = appName;
       return await this.menuRepository.find({
         where,
-        order: { menu_seq: 'ASC', menus_id: 'ASC' }
+        order: { menu_seq: 'ASC', menu_id: 'ASC' }
       });
     } catch (err) {
       console.error('FIND ALL ERROR:', err);
@@ -25,7 +25,7 @@ export class MenusService {
   }
 
   async findOne(id: number): Promise<Menu> {
-    const menu = await this.menuRepository.findOne({ where: { menus_id: id } });
+    const menu = await this.menuRepository.findOne({ where: { menu_id: id } });
     if (!menu) {
       throw new NotFoundException(`Menu with ID ${id} not found`);
     }

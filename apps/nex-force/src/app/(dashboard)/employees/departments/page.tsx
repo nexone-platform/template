@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useEffect,  useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMessages } from "@/hooks/use-messages";
 import { ROUTES } from "@/lib/routes";
@@ -24,6 +24,7 @@ import {
     ui, SelectAllCheckbox, RowCheckbox,
 } from "@/components/shared/ui-components";
 import { usePageTranslation } from "@/lib/language";
+import { useSystemConfig } from '@nexone/ui';
 
 
 export default function DepartmentsPage() {
@@ -57,7 +58,16 @@ export default function DepartmentsPage() {
     const [searchText, setSearchText] = useState("");
     const [sortKey, setSortKey] = useState<string | null>(null);
     const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
 
     const [modalOpen, setModalOpen] = useState(false);
     const [mode, setMode] = useState<"add" | "edit">("add");

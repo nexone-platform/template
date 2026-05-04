@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect,  useState } from 'react';
 import CrudLayout from '@/components/CrudLayout';
 import { SearchInput, crudStyles, BaseModal, ExportButtons } from '@/components/CrudComponents';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
@@ -8,6 +8,7 @@ import StatusDropdown from '@/components/StatusDropdown';
 import Pagination from '@/components/Pagination';
 import { Plus, Edit2, Trash2, Eye, ClipboardList } from 'lucide-react';
 import { api } from '@/services/api';
+import { useSystemConfig } from '@nexone/ui';
 
 export interface MaintenancePlan {
     id: string;
@@ -31,7 +32,16 @@ export default function MaintenancePlanPage() {
     const [plans, setPlans] = useState<MaintenancePlan[]>(mockPlans);
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(15);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 15);
 
     // CRUD State
     const [isModalOpen, setIsModalOpen] = useState(false);

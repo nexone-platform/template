@@ -2,11 +2,11 @@ import { NextResponse } from 'next/server';
 import { Pool } from 'pg';
 
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'nexone_techbiz',
-  password: 'qwerty',
-  port: 5432,
+  user: process.env.DATABASE_USER || 'postgres',
+  host: process.env.DATABASE_HOST || 'localhost',
+  database: process.env.DATABASE_NAME || 'nexone_techbiz',
+  password: process.env.DATABASE_PASSWORD || 'qwerty',
+  port: parseInt(process.env.DATABASE_PORT || '5432', 10),
 });
 
 export async function GET() {

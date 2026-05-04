@@ -8,6 +8,7 @@ import { SummaryCard, ExportButtons, SearchInput, BaseModal, crudStyles } from '
 import StatusDropdown from '@/components/StatusDropdown';
 import Pagination from '@/components/Pagination';
 import { exportToXLSX, exportToCSV, exportToPDF } from '@/utils/exportUtils';
+import { useSystemConfig } from '@nexone/ui';
 
 interface ParkingLot { 
     id: string; 
@@ -53,7 +54,16 @@ export default function ParkingPage() {
     const [newType, setNewType] = useState('');
     const [selected, setSelected] = useState<ParkingLot | null>(null);
     const [form, setForm] = useState<Partial<ParkingLot>>(emptyForm);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
     const [dbParkingTypes, setDbParkingTypes] = useState<APIParkingType[]>([]);
 
     const loadData = async () => { 

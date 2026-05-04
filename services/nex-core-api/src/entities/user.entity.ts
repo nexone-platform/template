@@ -1,9 +1,17 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, BeforeInsert, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
+import { v7 as uuidv7 } from 'uuid';
 
 @Entity({ name: 'users' })
 export class User {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('uuid')
   id: string;
+
+  @BeforeInsert()
+  generateId() {
+    if (!this.id) {
+      this.id = uuidv7();
+    }
+  }
 
   @Column({ length: 100 })
   email: string;
@@ -14,42 +22,71 @@ export class User {
   @Column({ name: 'display_name', length: 100, nullable: true })
   displayName: string;
 
-  @Column({ name: 'role_id', default: 2 })
-  roleId: number;
-
-  @Column({ name: 'role_name', length: 50, default: 'user' })
-  roleName: string;
+  @Column({ name: 'role_id', type: 'uuid', nullable: true })
+  roleId: string;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
-  @Column({ name: 'employee_id', length: 50, nullable: true })
+  @Column({ name: 'employee_id', type: 'uuid', nullable: true })
   employeeId: string;
 
   @Column({ name: 'avatar_url', length: 500, nullable: true })
   avatarUrl: string;
 
-  @Column({ name: 'app_access', type: 'text', nullable: true })
-  appAccess: string; // JSON array string e.g. '["nex-core","nexspeed"]'
-
-  @Column({ name: 'last_login_at', type: 'timestamp', nullable: true })
-  lastLoginAt: Date;
+  @Column({ name: 'last_login_at', type: 'timestamptz', nullable: true })
+  lastLoginAt: Date | null;
 
   @Column({ name: 'failed_login_count', default: 0 })
   failedLoginCount: number;
 
-  @Column({ name: 'locked_until', type: 'timestamp', nullable: true })
-  lockedUntil: Date;
+  @Column({ name: 'locked_until', type: 'timestamptz', nullable: true })
+  lockedUntil: Date | null;
 
-  @CreateDateColumn({ name: 'create_date' })
+  // --- ERP Standard Fields ---
+
+  // Security & Authentication
+  @Column({ name: 'require_password_change', default: false })
+  requirePasswordChange: boolean;
+
+  @Column({ name: 'password_changed_at', type: 'timestamptz', nullable: true })
+  passwordChangedAt: Date | null;
+
+  @Column({ name: 'mfa_enabled', default: false })
+  mfaEnabled: boolean;
+
+  @Column({ name: 'mfa_secret', length: 255, nullable: true })
+  mfaSecret: string;
+
+
+
+  // Lifecycle
+  @Column({ name: 'valid_from', type: 'timestamptz', nullable: true })
+  validFrom: Date | null;
+
+  @Column({ name: 'valid_to', type: 'timestamptz', nullable: true })
+  validTo: Date | null;
+
+  @DeleteDateColumn({ name: 'deleted_at', type: 'timestamptz', nullable: true })
+  deletedAt: Date | null;
+
+  // Localization
+  @Column({ name: 'timezone', length: 50, default: 'Asia/Bangkok' })
+  timezone: string;
+
+  @Column({ name: 'language', length: 10, default: 'TH' })
+  language: string;
+  // ---------------------------
+
+  @CreateDateColumn({ name: 'create_date', type: 'timestamptz' })
   createDate: Date;
 
-  @Column({ name: 'create_by', length: 50, nullable: true })
+  @Column({ name: 'create_by', type: 'uuid', nullable: true })
   createBy: string;
 
-  @UpdateDateColumn({ name: 'update_date' })
+  @UpdateDateColumn({ name: 'update_date', type: 'timestamptz' })
   updateDate: Date;
 
-  @Column({ name: 'update_by', length: 50, nullable: true })
+  @Column({ name: 'update_by', type: 'uuid', nullable: true })
   updateBy: string;
 }

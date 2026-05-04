@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import StatusDropdown from '@/components/StatusDropdown';
 import { Search, Plus, Eye, Pencil, Trash2, X, FileSpreadsheet, FileText, Download, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, LayoutGrid, List, Package, MapPin, DollarSign, Truck, User, Calendar, Weight } from 'lucide-react';
 import { api, Order, LocationItem } from '@/services/api';
+import { useSystemConfig } from '@nexone/ui';
 
 const statusLabels: Record<string, string> = { pending: '⏳ รอจัดส่ง', 'in-transit': '🚛 กำลังขนส่ง', completed: 'สำเร็จ', cancelled: '❌ ยกเลิก' };
 const statusColors: Record<string, string> = { pending: 'pending', 'in-transit': 'active', completed: 'completed', cancelled: 'inactive' };
@@ -82,7 +83,16 @@ export default function OrdersPage() {
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
 
     // View mode
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');

@@ -5,7 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { API_BASE_URL } from '../services/api';
 import './Dashboard.css';
 
-const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:3000';
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || '';
 
 interface AuthLog {
     id: string;

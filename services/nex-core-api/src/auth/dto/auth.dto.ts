@@ -1,6 +1,10 @@
 import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength, MaxLength, Matches } from 'class-validator';
 
 export class LoginDto {
+  @IsNotEmpty({ message: 'กรุณาระบุรหัสองค์กร / Workspace ID' })
+  @IsString()
+  @MaxLength(50)
+  workspaceId: string;
   @IsEmail({}, { message: 'รูปแบบอีเมลไม่ถูกต้อง' })
   email: string;
 

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useSystemConfig } from '@nexone/ui';
+import React, { useEffect,  useState } from 'react';
 import CrudLayout from '@/components/CrudLayout';
 import { SearchInput, crudStyles, StatusDropdown, BaseModal, ExportButtons } from '@/components/CrudComponents';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
@@ -13,32 +14,100 @@ interface User {
   department: string;
   branch: string;
   status: boolean; // Changed to boolean to fit StatusDropdown
-  apps: string[];
 }
 
 const INITIAL_USERS: User[] = [
-  { id: 'USR-001', name: 'สมชาย รักดี', email: 'somchai.r@nexone.co.th', role: 'Super Admin', department: 'IT', branch: 'สำนักงานใหญ่', status: true, apps: ['NexCore', 'NexSpeed', 'NexStock', 'NexFinance'] },
-  { id: 'USR-002', name: 'สมหญิง จริงใจ', email: 'somying.j@nexone.co.th', role: 'Fleet Manager', department: 'Logistics', branch: 'คลังสินค้าบางนา', status: true, apps: ['NexSpeed', 'NexForce'] },
-  { id: 'USR-003', name: 'วิชัย มั่นคง', email: 'wichai.m@nexone.co.th', role: 'Warehouse Lead', department: 'Warehouse', branch: 'คลังสินค้าบางนา', status: true, apps: ['NexStock'] },
-  { id: 'USR-004', name: 'นารี สวยสด', email: 'naree.s@nexone.co.th', role: 'Accountant', department: 'Finance', branch: 'สำนักงานใหญ่', status: false, apps: ['NexFinance'] },
-  { id: 'USR-005', name: 'เอกพงษ์ กล้าหาญ', email: 'ekapong.k@nexone.co.th', role: 'Dispatcher', department: 'Logistics', branch: 'ศูนย์กระจายสินค้าภาคเหนือ', status: false, apps: ['NexSpeed'] },
+  { id: 'USR-001', name: 'สมชาย รักดี', email: 'somchai.r@nexone.co.th', role: 'Super Admin', department: 'IT', branch: 'สำนักงานใหญ่', status: true },
+  { id: 'USR-002', name: 'สมหญิง จริงใจ', email: 'somying.j@nexone.co.th', role: 'Fleet Manager', department: 'Logistics', branch: 'คลังสินค้าบางนา', status: true },
+  { id: 'USR-003', name: 'วิชัย มั่นคง', email: 'wichai.m@nexone.co.th', role: 'Warehouse Lead', department: 'Warehouse', branch: 'คลังสินค้าบางนา', status: true },
+  { id: 'USR-004', name: 'นารี สวยสด', email: 'naree.s@nexone.co.th', role: 'Accountant', department: 'Finance', branch: 'สำนักงานใหญ่', status: false },
+  { id: 'USR-005', name: 'เอกพงษ์ กล้าหาญ', email: 'ekapong.k@nexone.co.th', role: 'Dispatcher', department: 'Logistics', branch: 'ศูนย์กระจายสินค้าภาคเหนือ', status: false },
 ];
 
 export default function UserManagement() {
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
-    const [users, setUsers] = useState<User[]>(INITIAL_USERS);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [users, setUsers] = useState<User[]>([]);
+    const [totalItems, setTotalItems] = useState(0);
     
     // CRUD State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'add'|'edit'|'view'|'delete'>('add');
     const [selectedItem, setSelectedItem] = useState<User | null>(null);
-    const [formData, setFormData] = useState<Partial<User>>({ name: '', email: '', role: '', branch: '', department: '', status: true, apps: [] });
+    const [formData, setFormData] = useState<Partial<User>>({ name: '', email: '', role: '', branch: '', department: '', status: true });
+
+    const [roles, setRoles] = useState<{id: string | number, roleName: string}[]>([]);
+    const [emailError, setEmailError] = useState('');
+
+    const validateEmail = (email: string) => {
+        if (!email) {
+            setEmailError('');
+            return true;
+        }
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!re.test(email)) {
+            setEmailError('รูปแบบอีเมล์ไม่ถูกต้อง');
+            return false;
+        }
+        setEmailError('');
+        return true;
+    };
+
+    const fetchUsers = async () => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8101/api'}/users?page=${currentPage}&limit=${pageSize}&search=${search}`, { credentials: 'include' });
+            if (res.ok) {
+                const data = await res.json();
+                const mappedUsers = (data.data || []).map((u: any) => ({
+                    id: u.id,
+                    name: u.displayName || '-',
+                    email: u.email,
+                    role: u.roleName,
+                    department: u.costCenterCode || '-',
+                    branch: u.companyId || '-',
+                    status: u.isActive
+                }));
+                setUsers(mappedUsers);
+                setTotalItems(data.total || 0);
+            }
+        } catch (err) {
+            console.error('Failed to fetch users', err);
+        }
+    };
+
+    useEffect(() => {
+        const fetchRoles = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8101/api'}/roles`, { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    setRoles(Array.isArray(data) ? data : data?.data || []);
+                }
+            } catch (err) {
+                console.error('Failed to fetch roles', err);
+            }
+        };
+        fetchRoles();
+    }, []);
+
+    useEffect(() => {
+        fetchUsers();
+    }, [currentPage, pageSize, search]);
 
     // Action Handlers
     const handleAdd = () => {
-        setFormData({ name: '', email: '', role: '', branch: '', department: '', status: true, apps: [] });
+        setFormData({ name: '', email: '', role: '', branch: '', department: '', status: true });
+        setEmailError('');
         setModalMode('add');
         setIsModalOpen(true);
     };
@@ -46,6 +115,7 @@ export default function UserManagement() {
     const handleEdit = (item: User) => {
         setFormData({ ...item });
         setSelectedItem(item);
+        setEmailError('');
         setModalMode('edit');
         setIsModalOpen(true);
     };
@@ -53,6 +123,7 @@ export default function UserManagement() {
     const handleView = (item: User) => {
         setFormData({ ...item });
         setSelectedItem(item);
+        setEmailError('');
         setModalMode('view');
         setIsModalOpen(true);
     };
@@ -63,41 +134,74 @@ export default function UserManagement() {
         setIsModalOpen(true);
     };
 
-    const saveForm = () => {
+    const saveForm = async () => {
         if (!formData.name?.trim()) return;
-        if (modalMode === 'add') {
-            const newId = `USR-${String(users.length + 1).padStart(3, '0')}`;
-            setUsers([{ id: newId, ...formData } as User, ...users]);
-            setIsModalOpen(false);
-        } else if (modalMode === 'edit') {
-            setUsers(prev => prev.map(d => d.id === selectedItem?.id ? { ...d, ...formData } as User : d));
-            setIsModalOpen(false);
+        if (formData.email && !validateEmail(formData.email)) return;
+        
+        const payload = {
+            displayName: formData.name,
+            email: formData.email,
+            roleName: formData.role,
+            isActive: formData.status,
+            // Assuming branch = companyId, department = costCenterCode for demo mapping
+            companyId: formData.branch !== '-' ? formData.branch : null,
+            costCenterCode: formData.department !== '-' ? formData.department : null
+        };
+
+        try {
+            if (modalMode === 'add') {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8101/api'}/users`, { credentials: 'include', 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    fetchUsers();
+                    setIsModalOpen(false);
+                } else {
+                    const errData = await res.json();
+                    alert(errData.message || 'Error saving user');
+                }
+            } else if (modalMode === 'edit') {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8101/api'}/users/${selectedItem?.id}`, { credentials: 'include', 
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    fetchUsers();
+                    setIsModalOpen(false);
+                } else {
+                    const errData = await res.json();
+                    alert(errData.message || 'Error saving user');
+                }
+            }
+        } catch (error) {
+            console.error('Error saving:', error);
+            alert('Cannot connect to server');
         }
     };
 
-    const confirmDelete = () => {
-        setUsers(prev => prev.filter(d => d.id !== selectedItem?.id));
-        setIsModalOpen(false);
-    };
-    
-    const getAppBadgeColor = (app: string) => {
-        if(app.includes('Speed')) return 'bg-blue-100 text-blue-700 border-blue-200';
-        if(app.includes('Stock')) return 'bg-purple-100 text-purple-700 border-purple-200';
-        if(app.includes('Finance')) return 'bg-amber-100 text-amber-700 border-amber-200';
-        if(app.includes('Core')) return 'bg-rose-100 text-rose-700 border-rose-200';
-        return 'bg-slate-100 text-slate-700 border-slate-200';
+    const confirmDelete = async () => {
+        if (!selectedItem) return;
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8101/api'}/users/${selectedItem.id}`, { credentials: 'include', 
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                fetchUsers();
+                setIsModalOpen(false);
+            } else {
+                alert('Error deleting user');
+            }
+        } catch (error) {
+            console.error('Error deleting:', error);
+        }
     };
 
-    // Filter
-    const searchLower = search.toLowerCase();
-    const filteredData = users.filter(item => 
-        !searchLower || 
-        item.name.toLowerCase().includes(searchLower) || 
-        item.email.toLowerCase().includes(searchLower)
-    );
-
-    // Pagination
-    const paginatedData = filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    // Filter - local filtering removed since API handles it via search
+    const filteredData = users;
+    const paginatedData = users;
 
     return (
         <CrudLayout
@@ -140,7 +244,6 @@ export default function UserManagement() {
                         <th>พนักงาน (Employee)</th>
                         <th>สิทธิ์การใช้งาน (Role)</th>
                         <th>สาขา / แผนก</th>
-                        <th>แอปพลิเคชันที่เข้าถึง</th>
                         <th className="text-center" style={{ width: '120px' }}>สถานะ</th>
                         <th className="text-center" style={{ width: '100px', paddingRight: '24px' }}>จัดการ</th>
                     </tr>
@@ -181,20 +284,25 @@ export default function UserManagement() {
                                     </div>
                                 </div>
                             </td>
-                            <td>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                                    {item.apps.map(app => (
-                                        <span key={app} className={`px-2 py-0.5 border rounded-md text-[10px] font-bold tracking-wide uppercase ${getAppBadgeColor(app)}`}>
-                                            {app}
-                                        </span>
-                                    ))}
-                                </div>
-                            </td>
                             <td className="text-center">
                                 <StatusDropdown 
                                     status={item.status} 
-                                    onChange={(val) => {
-                                        setUsers(prev => prev.map(d => d.id === item.id ? { ...d, status: val } : d));
+                                    onChange={async (val) => {
+                                        try {
+                                            const res = await fetch(`${process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8101/api'}/users/${item.id}`, { credentials: 'include', 
+                                                method: 'PATCH',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ isActive: val })
+                                            });
+                                            if (res.ok) {
+                                                setUsers(prev => prev.map(d => d.id === item.id ? { ...d, status: val } : d));
+                                            } else {
+                                                alert('Failed to update status');
+                                            }
+                                        } catch (e) {
+                                            console.error(e);
+                                            alert('Failed to connect to server');
+                                        }
                                     }} 
                                 />
                             </td>
@@ -224,11 +332,11 @@ export default function UserManagement() {
                 </table>
             </div>
 
-            {filteredData.length > 0 && (
+            {totalItems > 0 && (
                 <Pagination
                     currentPage={currentPage}
                     pageSize={pageSize}
-                    totalItems={filteredData.length}
+                    totalItems={totalItems}
                     setCurrentPage={setCurrentPage}
                     setPageSize={setPageSize}
                 />
@@ -256,21 +364,39 @@ export default function UserManagement() {
                     </div>
                     <div>
                         <label style={crudStyles.label}>อีเมล์</label>
-                        <input type="email" style={crudStyles.input} placeholder="user@nexone.co.th" value={formData.email || ''} onChange={(e) => setFormData({...formData, email: e.target.value})} disabled={modalMode === 'view'} />
+                        <input 
+                            type="email" 
+                            style={{ ...crudStyles.input, borderColor: emailError ? '#ef4444' : 'var(--border-color)' }} 
+                            placeholder="user@nexone.co.th" 
+                            value={formData.email || ''} 
+                            onChange={(e) => {
+                                setFormData({...formData, email: e.target.value});
+                                if (emailError) validateEmail(e.target.value);
+                            }} 
+                            onBlur={(e) => validateEmail(e.target.value)}
+                            disabled={modalMode === 'view'} 
+                        />
+                        {emailError && <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', display: 'block' }}>{emailError}</span>}
                     </div>
                     <div>
                         <label style={crudStyles.label}>สิทธิ์การใช้งาน (Role)</label>
-                        <input type="text" style={crudStyles.input} placeholder="เช่น Super Admin, Manager" value={formData.role || ''} onChange={(e) => setFormData({...formData, role: e.target.value})} disabled={modalMode === 'view'} />
+                        <select style={crudStyles.input} value={formData.role || ''} onChange={(e) => setFormData({...formData, role: e.target.value})} disabled={modalMode === 'view'}>
+                            <option value="">-- เลือกสิทธิ์การใช้งาน --</option>
+                            {roles.map(r => (
+                                <option key={r.id} value={r.roleName}>{r.roleName}</option>
+                            ))}
+                            {/* Fallback if API fails to load roles */}
+                            {roles.length === 0 && (
+                                <>
+                                    <option value="Super Admin">Super Admin</option>
+                                    <option value="Fleet Manager">Fleet Manager</option>
+                                    <option value="Warehouse Lead">Warehouse Lead</option>
+                                    <option value="Accountant">Accountant</option>
+                                    <option value="Dispatcher">Dispatcher</option>
+                                </>
+                            )}
+                        </select>
                     </div>
-                    {modalMode !== 'add' && (
-                        <div>
-                            <label style={crudStyles.label}>สถานะการใช้งาน</label>
-                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                <StatusDropdown status={formData.status || false} onChange={(val) => { if (modalMode !== 'view') setFormData({...formData, status: val}); }} />
-                                {modalMode === 'view' && <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>*(ดูอย่างเดียว)</span>}
-                            </div>
-                        </div>
-                    )}
                 </div>
             </BaseModal>
 

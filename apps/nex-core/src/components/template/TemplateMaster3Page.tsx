@@ -1,4 +1,5 @@
 'use client';
+import { useSystemConfig } from '@nexone/ui';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import StatusDropdown from '@/components/StatusDropdown';
@@ -88,7 +89,16 @@ export default function TemplateMaster3Page() {
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
 
     // View mode
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');

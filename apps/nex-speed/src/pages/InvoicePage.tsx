@@ -9,7 +9,7 @@ import { api, Trip, Invoice } from '@/services/api';
 
 const API_BASE = typeof window !== 'undefined'
     ? `http://${window.location.hostname}:8081/api/v1`
-    : 'http://localhost:8081/api/v1';
+    : '';
 
 type InvStatus = 'all' | 'draft' | 'sent' | 'paid' | 'overdue';
 
@@ -160,9 +160,9 @@ function InvoiceModal({ inv, onClose }: { inv: Invoice; onClose: () => void }) {
                     </div>
                 </div>
 
-                {inv.notes && (
+                {(inv as any).notes && (
                     <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', color: '#92400e', marginBottom: '16px' }}>
-                        📝 {inv.notes}
+                        📝 {(inv as any).notes}
                     </div>
                 )}
 

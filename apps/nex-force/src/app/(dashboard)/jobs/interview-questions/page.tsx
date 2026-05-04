@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useEffect,  useState, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
@@ -12,6 +12,7 @@ import {
     LoadingSpinner, PaginationBar, ModalWrapper, FormField, ui,
 } from "@/components/shared/ui-components";
 import { usePageTranslation } from "@/lib/language";
+import { useSystemConfig } from '@nexone/ui';
 
 /* ── Types ── */
 interface QuestionRow {
@@ -59,7 +60,16 @@ export default function InterviewQuestionsPage() {
     const [categoryModalOpen, setCategoryModalOpen] = useState(false);
     const [searchCategory, setSearchCategory] = useState("");
     const [searchPosition, setSearchPosition] = useState("");
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
     const [currentPage, setCurrentPage] = useState(1);
     const [sortKey, setSortKey] = useState("");
     const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");

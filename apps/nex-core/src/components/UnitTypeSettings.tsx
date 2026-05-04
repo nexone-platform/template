@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useSystemConfig } from '@nexone/ui';
+import React, { useEffect,  useState } from 'react';
 import CrudLayout from '@/components/CrudLayout';
 import { SearchInput, crudStyles, StatusDropdown, BaseModal } from '@/components/CrudComponents';
 import { Plus, Edit2, Trash2, Box, Eye } from 'lucide-react';
@@ -16,17 +17,26 @@ interface UnitType {
 export default function UnitTypeSettings() {
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
     const [data, setData] = useState<UnitType[]>([]);
     
     // Fetch data from API
     const { getEndpoint } = useApiConfig();
-    const coreApi = getEndpoint('NexCore', 'http://localhost:8001/api');
+    const coreApi = getEndpoint('NexCore', '');
     const API_URL = `${coreApi}/unit-types`;
 
     const fetchUnitTypes = async () => {
         try {
-            const res = await fetch(API_URL);
+            const res = await fetch(API_URL, { credentials: 'include' });
             if (res.ok) {
                 const json = await res.json();
                 const formattedList = json.map((p: any) => ({
@@ -43,7 +53,7 @@ export default function UnitTypeSettings() {
         }
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         fetchUnitTypes();
     }, []);
     
@@ -90,7 +100,7 @@ export default function UnitTypeSettings() {
         };
 
         if (modalMode === 'add') {
-            await fetch(API_URL, {
+            await fetch(API_URL, { credentials: 'include', 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -98,7 +108,7 @@ export default function UnitTypeSettings() {
             await fetchUnitTypes();
             setIsModalOpen(false);
         } else if (modalMode === 'edit' && selectedItem) {
-            await fetch(`${API_URL}/${selectedItem.id}`, {
+            await fetch(`${API_URL}/${selectedItem.id}`, { credentials: 'include', 
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -110,7 +120,7 @@ export default function UnitTypeSettings() {
 
     const confirmDelete = async () => {
         if (selectedItem) {
-            await fetch(`${API_URL}/${selectedItem.id}`, { method: 'DELETE' });
+            await fetch(`${API_URL}/${selectedItem.id}`, { credentials: 'include',  method: 'DELETE' });
             await fetchUnitTypes();
             setIsModalOpen(false);
         }
@@ -167,7 +177,7 @@ export default function UnitTypeSettings() {
                                             // Optimistic update — เปลี่ยน UI ทันที
                                             setData(prev => prev.map(d => d.id === item.id ? { ...d, status: val } : d));
                                             try {
-                                                await fetch(`${API_URL}/${item.id}`, {
+                                                await fetch(`${API_URL}/${item.id}`, { credentials: 'include', 
                                                     method: 'PUT',
                                                     headers: { 'Content-Type': 'application/json' },
                                                     body: JSON.stringify({ status: val })

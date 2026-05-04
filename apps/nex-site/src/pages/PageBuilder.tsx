@@ -104,8 +104,8 @@ export default function PageBuilder() {
     const [isGeneratingTranslations, setIsGeneratingTranslations] = useState(false);
     const [translationResult, setTranslationResult] = useState<string | null>(null);
 
-    const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
-    const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:3000';
+    const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
+    const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || '';
 
     // Preview: open frontend in new tab with current viewport mode
     const handlePreview = () => {

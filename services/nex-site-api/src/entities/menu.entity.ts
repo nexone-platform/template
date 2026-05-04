@@ -3,7 +3,7 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateCol
 @Entity('menus', { schema: 'nex_core' })
 export class Menu {
   @PrimaryGeneratedColumn()
-  menus_id: number;
+  menu_id: number;
 
   @Column({ name: 'menu_code', nullable: true })
   menu_code: string;
@@ -11,11 +11,11 @@ export class Menu {
   @Column({ nullable: true })
   title: string;
 
-  @Column({ nullable: true })
-  title_th: string;
-
   @Column({ name: 'menu_value', nullable: true })
   menu_value: string;
+
+  @Column({ nullable: true })
+  base: string;
 
   @Column({ nullable: true })
   route: string;
@@ -30,10 +30,7 @@ export class Menu {
   icon: string;
 
   @Column({ nullable: true })
-  materialicons: string;
-
-  @Column({ nullable: true })
-  parent_id: string;
+  parent_id: number;
 
   @Column({ nullable: true })
   menu_seq: number;

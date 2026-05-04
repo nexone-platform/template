@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Fuel, Plus, Eye, Pencil, Trash2, X, Truck, Calendar, Shield, Gauge, Weight, FileSpreadsheet, FileText, Download, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Activity, LayoutGrid, List } from 'lucide-react';
 import { api, Vehicle } from '@/services/api';
+import { useSystemConfig } from '@nexone/ui';
 
 // Download helper — uses showSaveFilePicker for "Save As" dialog
 async function triggerDownload(blob: Blob, filename: string, accept?: Record<string, string[]>) {
@@ -96,7 +97,16 @@ export default function FleetPage() {
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
 
     // View mode
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');

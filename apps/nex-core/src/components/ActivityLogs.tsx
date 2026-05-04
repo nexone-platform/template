@@ -1,4 +1,5 @@
 'use client';
+import { useSystemConfig } from '@nexone/ui';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Eye, X, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Activity, ShieldAlert, Users, ShieldCheck, Database, LayoutTemplate, Info, User, Clock, Globe } from 'lucide-react';
@@ -69,13 +70,22 @@ export default function ActivityLogs() {
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
 
     const loadOrders = useCallback(async () => {
         setLoading(true);
-        const CORE_API_URL = process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8001/api';
+        const CORE_API_URL = process.env.NEXT_PUBLIC_CORE_API_URL || '';
         try {
-            const res = await fetch(`${CORE_API_URL}/audit-logs`);
+            const res = await fetch(`${CORE_API_URL}/audit-logs`, { credentials: 'include' });
             if (res.ok) {
                 const data = await res.json();
                 setOrders(Array.isArray(data) ? data : []);

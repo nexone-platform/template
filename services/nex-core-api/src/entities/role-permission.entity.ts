@@ -1,15 +1,23 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert } from 'typeorm';
+import { v7 as uuidv7 } from 'uuid';
 
 @Entity('role_permissions', { schema: 'nex_core' })
 export class RolePermission {
-  @PrimaryGeneratedColumn({ name: 'permission_id' })
-  permissionId: number;
+  @PrimaryColumn('uuid', { name: 'permission_id' })
+  permissionId: string;
 
-  @Column({ name: 'role_id' })
-  roleId: number;
+  @BeforeInsert()
+  generateId() {
+    if (!this.permissionId) {
+      this.permissionId = uuidv7();
+    }
+  }
 
-  @Column({ name: 'menu_id' })
-  menuId: number;
+  @Column({ name: 'role_id', type: 'uuid' })
+  roleId: string;
+
+  @Column({ name: 'menu_id', type: 'uuid', nullable: true })
+  menuId: string;
 
   @Column({ name: 'app_name', nullable: true })
   appName: string;
@@ -35,15 +43,15 @@ export class RolePermission {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
-  @CreateDateColumn({ name: 'create_date' })
+  @CreateDateColumn({ name: 'create_date', type: 'timestamptz', nullable: true })
   createDate: Date;
 
-  @Column({ name: 'create_by', nullable: true })
+  @Column({ name: 'create_by', type: 'uuid', nullable: true })
   createBy: string;
 
-  @UpdateDateColumn({ name: 'update_date' })
+  @UpdateDateColumn({ name: 'update_date', type: 'timestamptz', nullable: true })
   updateDate: Date;
 
-  @Column({ name: 'update_by', nullable: true })
+  @Column({ name: 'update_by', type: 'uuid', nullable: true })
   updateBy: string;
 }

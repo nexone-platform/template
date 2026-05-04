@@ -7,6 +7,7 @@ import { SearchInput, crudStyles, BaseModal, ExportButtons } from '@/components/
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
 import { Plus, Edit2, Trash2, Truck, Eye } from 'lucide-react';
 import Pagination from '@/components/Pagination';
+import { useSystemConfig } from '@nexone/ui';
 
 export default function BrandsPage() {
     const [brands, setBrands] = useState<Brand[]>([]);
@@ -21,7 +22,16 @@ export default function BrandsPage() {
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(15);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 15);
 
     const loadData = useCallback(() => {
         setLoading(true);

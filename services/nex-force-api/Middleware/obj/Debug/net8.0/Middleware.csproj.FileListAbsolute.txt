@@ -1,0 +1,6 @@
+C:\Task\Template\services\nex-force-api\Middleware\obj\Debug\net8.0\Middleware.csproj.AssemblyReference.cache
+C:\Task\Template\services\nex-force-api\Middleware\obj\Debug\net8.0\Middleware.GeneratedMSBuildEditorConfig.editorconfig
+C:\Task\Template\services\nex-force-api\Middleware\obj\Debug\net8.0\Middleware.AssemblyInfoInputs.cache
+C:\Task\Template\services\nex-force-api\Middleware\obj\Debug\net8.0\Middleware.AssemblyInfo.cs
+C:\Task\Template\services\nex-force-api\Middleware\obj\Debug\net8.0\Middleware.csproj.CoreCompileInputs.cache
+C:\Task\Template\services\nex-force-api\Middleware\obj\Debug\net8.0\Middleware.sourcelink.json

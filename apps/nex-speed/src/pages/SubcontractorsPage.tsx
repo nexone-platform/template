@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Plus, Eye, Pencil, Trash2, X, Handshake, Award, Truck, Shield, FileSpreadsheet, FileText, Download, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, LayoutGrid, List, Activity, Phone, Building2 } from 'lucide-react';
 import { api, Subcontractor } from '@/services/api';
+import { useSystemConfig } from '@nexone/ui';
 
 // Download helper
 async function triggerDownload(blob: Blob, filename: string) {
@@ -147,7 +148,16 @@ export default function SubcontractorsPage() {
 
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
     const loadData = useCallback(() => {

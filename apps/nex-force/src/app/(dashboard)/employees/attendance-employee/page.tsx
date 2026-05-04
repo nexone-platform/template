@@ -14,6 +14,7 @@ import {
     PageHeader, FormField, SortableTh, TableHeaderBar, LoadingSpinner, EmptyState, PaginationBar, ui,
 } from "@/components/shared/ui-components";
 import { usePageTranslation } from "@/lib/language";
+import { useSystemConfig } from '@nexone/ui';
 
 
 const MONTHS = [
@@ -104,7 +105,16 @@ export default function AttendanceEmployeePage() {
         selectedYear: today.getFullYear(),
         employeeId: empIdNum,
     });
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
     const [sortKey, setSortKey] = useState<string | null>("checkInTime");
     const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 

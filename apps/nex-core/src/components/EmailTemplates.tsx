@@ -1,3 +1,4 @@
+import { useSystemConfig } from '@nexone/ui';
 import React, { useState, useEffect } from 'react';
 import CrudLayout from '@/components/CrudLayout';
 import { SearchInput, crudStyles, StatusDropdown, BaseModal, ExportButtons } from '@/components/CrudComponents';
@@ -83,7 +84,16 @@ const INITIAL_TEMPLATES: EmailTemplate[] = [
 export default function EmailTemplates() {
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
     const [templates, setTemplates] = useState<EmailTemplate[]>(INITIAL_TEMPLATES);
     const [systemApps, setSystemApps] = useState<string[]>([]);
     const [languages, setLanguages] = useState<any[]>([]);
@@ -99,7 +109,7 @@ export default function EmailTemplates() {
     const [langForm, setLangForm] = useState({ languageCode: '', languageName: '', description: '' });
 
     const { getEndpoint } = useApiConfig();
-    const coreApi = getEndpoint('NexCore', 'http://localhost:8001/api');
+    const coreApi = getEndpoint('NexCore', '');
     const API_URL = `${coreApi}/email-templates`;
     const LANG_API_URL = `${coreApi}/translations/languages`;
     const SYSTEM_APPS_API_URL = `${coreApi}/v1/system-apps?all=true`;
@@ -108,7 +118,7 @@ export default function EmailTemplates() {
 
     const fetchTemplates = async () => {
         try {
-            const res = await fetch(API_URL);
+            const res = await fetch(API_URL, { credentials: 'include' });
             const json = await res.json();
             if (json.data) setTemplates(json.data);
         } catch (error) {
@@ -118,7 +128,7 @@ export default function EmailTemplates() {
 
     const fetchLanguages = async () => {
         try {
-            const res = await fetch(LANG_API_URL);
+            const res = await fetch(LANG_API_URL, { credentials: 'include' });
             const data = await res.json();
             if (Array.isArray(data)) setLanguages(data);
         } catch (error) {
@@ -128,7 +138,7 @@ export default function EmailTemplates() {
 
     const fetchSystemApps = async () => {
         try {
-            const res = await fetch(SYSTEM_APPS_API_URL);
+            const res = await fetch(SYSTEM_APPS_API_URL, { credentials: 'include' });
             const json = await res.json();
             const apps: any[] = json.data ?? json;
             if (Array.isArray(apps) && apps.length > 0) {
@@ -185,14 +195,14 @@ export default function EmailTemplates() {
         if (!formData.title?.trim()) return;
         try {
             if (modalMode === 'add') {
-                const res = await fetch(API_URL, {
+                const res = await fetch(API_URL, { credentials: 'include', 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData),
                 });
                 if (res.ok) { await fetchTemplates(); setIsModalOpen(false); }
             } else if (modalMode === 'edit') {
-                const res = await fetch(`${API_URL}/${selectedItem?.template_id}`, {
+                const res = await fetch(`${API_URL}/${selectedItem?.template_id}`, { credentials: 'include', 
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData),
@@ -207,7 +217,7 @@ export default function EmailTemplates() {
     const handleSaveNewLanguage = async () => {
         if (!langForm.languageCode || !langForm.languageName) return;
         try {
-            const res = await fetch(LANG_API_URL, {
+            const res = await fetch(LANG_API_URL, { credentials: 'include', 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -234,7 +244,7 @@ export default function EmailTemplates() {
     const confirmDelete = async () => {
         if (!selectedItem) return;
         try {
-            const res = await fetch(`${API_URL}/${selectedItem.template_id}`, { method: 'DELETE' });
+            const res = await fetch(`${API_URL}/${selectedItem.template_id}`, { credentials: 'include',  method: 'DELETE' });
             if (res.ok) { await fetchTemplates(); setIsModalOpen(false); }
         } catch (error) {
             console.error('Error deleting template:', error);
@@ -370,7 +380,7 @@ export default function EmailTemplates() {
                                         status={item.is_active}
                                         onChange={async (val) => {
                                             try {
-                                                await fetch(`${API_URL}/${item.template_id}`, {
+                                                await fetch(`${API_URL}/${item.template_id}`, { credentials: 'include', 
                                                     method: 'PUT',
                                                     headers: { 'Content-Type': 'application/json' },
                                                     body: JSON.stringify({ is_active: val }),

@@ -18,7 +18,7 @@ if "%SERVICE%"=="" (
     echo   Starting ALL backend services with watch
     echo ============================================
     echo.
-    echo   [1] gateway          :8001
+    echo   [1] gateway          :8102
     echo   [2] solutionAPI      :5011
     echo   [3] authentication   :7246
     echo   [4] HrService        :7140

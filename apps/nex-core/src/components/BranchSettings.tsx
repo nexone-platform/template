@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useSystemConfig } from '@nexone/ui';
+import React, { useEffect,  useState } from 'react';
 import CrudLayout from '@/components/CrudLayout';
 import { SearchInput, crudStyles, StatusDropdown, BaseModal, ExportButtons } from '@/components/CrudComponents';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
@@ -24,7 +25,16 @@ const INITIAL_BRANCHES: Branch[] = [
 export default function BranchSettings() {
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
     const [branches, setBranches] = useState<Branch[]>(INITIAL_BRANCHES);
     
     // CRUD State

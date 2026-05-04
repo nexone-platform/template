@@ -8,6 +8,7 @@ import { SummaryCard, ExportButtons, SearchInput, BaseModal, crudStyles } from '
 import StatusDropdown from '@/components/StatusDropdown';
 import Pagination from '@/components/Pagination';
 import { exportToXLSX, exportToCSV, exportToPDF } from '@/utils/exportUtils';
+import { useSystemConfig } from '@nexone/ui';
 
 const TYPE_COLORS = ['#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
 const TYPE_ICONS = ['🚗', '📦', '🏗️', '🚜', '🛻', '🚙', '🔧'];
@@ -44,7 +45,16 @@ export default function ExpertisePage() {
     const [selected, setSelected] = useState<ExpertiseItem | null>(null);
     const [form, setForm] = useState<Partial<ExpertiseItem>>({ name: '', mechanicType: '', description: '', status: 'active' });
     const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
 
     const loadData = async () => {
         try {

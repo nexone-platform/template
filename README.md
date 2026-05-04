@@ -15,15 +15,15 @@ Monorepo Template สำหรับสร้างระบบ ERP/Admin ให
 
 ```
 ├── apps/               # Frontend Applications
-│   ├── nex-core/       # Admin Console (:3001)
-│   ├── nex-force/      # HRM (:3002)
-│   ├── nex-speed/      # TMS (:3008)
-│   ├── nex-stock/      # WMS (:3003)
-│   ├── nex-web/        # Web Portal (:3000)
-│   └── nex-site/       # CMS (:3006)
+│   ├── nex-core/       # Admin Console (:3101)
+│   ├── nex-force/      # HRM (:3102)
+│   ├── nex-speed/      # TMS (:3108)
+│   ├── nex-stock/      # WMS (:3103)
+│   ├── nex-web/        # Web Portal (:3100)
+│   └── nex-site/       # CMS (:3106)
 │
 ├── services/           # Backend APIs
-│   ├── nex-core-api/   # Core API - NestJS (:8001)
+│   ├── nex-core-api/   # Core API - NestJS (:8101)
 │   ├── nex-force-api/  # HRM API
 │   ├── nex-speed-api/  # TMS API - Go
 │   └── nex-site-api/   # CMS API - NestJS
@@ -69,10 +69,10 @@ npx turbo dev --filter=nex-core-api
 
 | App | Port |
 |-----|------|
-| nex-web | 3000 |
-| nex-core | 3001 |
-| nex-force | 3002 |
-| nex-stock | 3003 |
-| nex-site | 3006 |
-| nex-speed | 3008 |
-| nex-core-api | 8001 |
+| nex-web | 3100 |
+| nex-core | 3101 |
+| nex-force | 3102 |
+| nex-stock | 3103 |
+| nex-site | 3106 |
+| nex-speed | 3108 |
+| nex-core-api | 8101 |

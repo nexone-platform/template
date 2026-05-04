@@ -141,10 +141,10 @@ namespace authentication_server.Controllers
                 decimal roleId = user.RoleId.Value;
 
                 var permissions = await _context.RolePermissions
-                    .Where(rp => rp.RoleId == roleId && rp.IsActive && rp.MenusId == menuId) // เพิ่มเงื่อนไขตรงนี้
+                    .Where(rp => rp.RoleId == roleId && rp.IsActive && rp.MenuId == menuId) // เพิ่มเงื่อนไขตรงนี้
                     .Select(rp => new RolePermissionDto
                     {
-                        MenusId = rp.MenusId,
+                        MenuId = rp.MenuId,
                         CanView = rp.CanView,
                         CanEdit = rp.CanEdit,
                         CanAdd = rp.CanAdd,
@@ -164,7 +164,7 @@ namespace authentication_server.Controllers
 
         public class RolePermissionDto
         {
-            public int MenusId { get; set; }
+            public long MenuId { get; set; }
             public bool CanView { get; set; }
             public bool CanEdit { get; set; }
             public bool CanAdd { get; set; }

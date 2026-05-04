@@ -52,7 +52,7 @@ import TemplateMaster2Page from '@/pages/template/TemplateMaster2Page';
 import TemplateMaster3Page from '@/pages/template/TemplateMaster3Page';
 import TemplateMasterGraph1Page from '@/pages/template/TemplateMasterGraph1Page';
 
-const API_HOST = typeof window !== 'undefined' ? `http://${window.location.hostname}:8081` : 'http://localhost:8081';
+const API_HOST = typeof window !== 'undefined' ? `http://${window.location.hostname}:8081` : '';
 
 // ============ Types ============
 interface AuthUser {
@@ -555,7 +555,7 @@ export default function Home() {
         const dynamicMenus = JSON.parse(stored);
         const currentMenuEntity = dynamicMenus.find((m: any) => m.page_key === currentPage || m.route === currentPage || m.base === currentPage);
         if (currentMenuEntity) {
-          englishTitle = currentMenuEntity.translations?.['en'] || currentMenuEntity.title_en || currentMenuEntity.title;
+          englishTitle = currentMenuEntity.translations?.['en'] || currentMenuEntity.title;
         }
       }
     } catch(e) {}
@@ -589,7 +589,7 @@ export default function Home() {
           onNavigate={setCurrentPage}
           isOpen={sidebarOpen}
           appName="nex-speed"
-          menuApiUrl="http://localhost:8001/api"
+          menuApiUrl={process.env.NEXT_PUBLIC_CORE_API_URL || ''}
         />
       <main className={`main-content ${sidebarOpen ? '' : 'expanded'}`}>
         <Topbar

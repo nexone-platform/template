@@ -1,6 +1,6 @@
 import {
   Controller, Get, Post, Body, Param, Put, Delete,
-  ParseIntPipe, Query,
+  Query,
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { Role } from '../../entities/role.entity';
@@ -18,7 +18,7 @@ export class RolesController {
 
   @Get(':id')
   @AuditLog('Roles', 'Find One')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id') id: string) {
     return this.rolesService.findOne(id);
   }
 
@@ -30,13 +30,13 @@ export class RolesController {
 
   @Put(':id')
   @AuditLog('Roles', 'Update')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: Partial<Role>) {
+  update(@Param('id') id: string, @Body() updateDto: Partial<Role>) {
     return this.rolesService.update(id, updateDto);
   }
 
   @Delete(':id')
   @AuditLog('Roles', 'Remove')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id') id: string) {
     return this.rolesService.remove(id);
   }
 
@@ -44,7 +44,7 @@ export class RolesController {
   @Get(':id/permissions')
   @AuditLog('Roles', 'Get Permissions')
   getPermissions(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Query('app') app: string = 'nex-core',
   ) {
     return this.rolesService.getMenusWithPermissions(id, app);
@@ -54,7 +54,7 @@ export class RolesController {
   @Post(':id/permissions')
   @AuditLog('Roles', 'Save Permissions')
   savePermissions(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Query('app') app: string = 'nex-core',
     @Body() body: { permissions: any[] },
   ) {

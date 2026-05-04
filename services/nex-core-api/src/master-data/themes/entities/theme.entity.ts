@@ -87,13 +87,13 @@ export class Theme {
   @Column({ name: 'is_active', default: true })
   is_active: boolean;
 
-  @Column({ name: 'create_date', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ name: 'create_date', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   create_date: Date;
 
   @Column({ name: 'create_by', length: 50, default: 'system' })
   create_by: string;
 
-  @Column({ name: 'update_date', type: 'timestamp', nullable: true })
+  @Column({ name: 'update_date', type: 'timestamptz', nullable: true })
   update_date: Date;
 
   @Column({ name: 'compact_mode', default: false })

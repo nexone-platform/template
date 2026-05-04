@@ -22,6 +22,7 @@ import {
 import { usePageTranslation } from "@/lib/language";
 import { exportTimesheetExcel, exportTimesheetPDF } from "@/lib/timesheet-export";
 import type { CalendarData } from "@/lib/timesheet-export";
+import { useSystemConfig } from '@nexone/ui';
 
 
 function calculateHours(start: string, end: string): number {
@@ -263,7 +264,16 @@ export default function TimesheetPage() {
     const [filterDate, setFilterDate] = useState("");
     const [sortKey, setSortKey] = useState<string | null>("workDate");
     const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
     const [exportMonth, setExportMonth] = useState(new Date().getMonth() + 1);
     const [exportYear, setExportYear] = useState(new Date().getFullYear());
 

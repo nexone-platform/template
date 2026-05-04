@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useEffect,  useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Search, X, MapPin, Loader2 } from "lucide-react";
 import { format } from "date-fns";
@@ -14,6 +14,7 @@ import {
     PageHeader, FormField, LoadingSpinner, EmptyState, PaginationBar, ui, SelectAllCheckbox, RowCheckbox,
 } from "@/components/shared/ui-components";
 import { usePageTranslation } from "@/lib/language";
+import { useSystemConfig } from '@nexone/ui';
 
 const fmtDate = (v: any) => { if (!v) return ""; try { return format(new Date(v), "dd/MM/yyyy"); } catch { return ""; } };
 const fmtTime = (v: any) => { if (!v) return "--:--"; try { return format(new Date(v), "h:mm a"); } catch { return "--:--"; } };
@@ -159,7 +160,16 @@ export default function AttendanceListPage() {
     const [selectedDate, setSelectedDate] = useState("");
     const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
     const [selectedYear, setSelectedYear] = useState(currentYear);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
 
     // ── Departments ──
     const { data: deptResult } = useQuery({

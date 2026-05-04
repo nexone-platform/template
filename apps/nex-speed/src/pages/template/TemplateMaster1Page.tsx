@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect,  useState } from 'react';
 import CrudLayout from '@/components/CrudLayout';
 import { SearchInput, crudStyles, StatusDropdown, BaseModal, ExportButtons } from '@/components/CrudComponents';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
 import { Plus, Edit2, Trash2, Eye } from 'lucide-react';
 import Pagination from '@/components/Pagination';
+import { useSystemConfig } from '@nexone/ui';
 
 export default function TemplateMaster1Page() {
     const [search, setSearch] = useState('');
@@ -17,7 +18,16 @@ export default function TemplateMaster1Page() {
             status: i !== 2 && i % 4 !== 0
         }))
     );
-    const [pageSize, setPageSize] = useState(15);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 15);
     
     // CRUD State
     const [isModalOpen, setIsModalOpen] = useState(false);

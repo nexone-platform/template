@@ -4,7 +4,7 @@
  * Registration Report — Next.js port of Angular registration-report component.
  */
 
-import { useState, useMemo } from "react";
+import { useEffect,  useState, useMemo } from "react";
 import {
     useRegistrationReport,
     useWorkingYears,
@@ -28,6 +28,7 @@ import {
     ui,
 } from "@/components/shared/ui-components";
 import { usePageTranslation } from "@/lib/language";
+import { useSystemConfig } from '@nexone/ui';
 
 
 
@@ -98,7 +99,16 @@ export default function RegistrationReportPage() {
     const [tempCriteria, setTempCriteria] = useState<SearchCriteria>({ ...criteria });
 
     /* ── Pagination / sorting ── */
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
     const [sortKey, setSortKey] = useState<string | null>(null);
     const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 

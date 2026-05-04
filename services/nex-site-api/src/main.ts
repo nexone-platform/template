@@ -9,7 +9,7 @@ async function bootstrap() {
   // Enable CORS for Frontend and Backoffice
   const corsOrigins = process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim())
-    : ['http://localhost:3000', 'http://localhost:3002', 'http://localhost:3003', 'http://localhost:3004', 'http://localhost:5173', 'http://localhost:5174'];
+    : ['http://localhost:3100', 'http://localhost:3102', 'http://localhost:3103', 'http://localhost:3104', 'http://localhost:5173', 'http://localhost:5174'];
 
   app.enableCors({
     origin: corsOrigins,
@@ -34,7 +34,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port = process.env.PORT || 8082;
+  const port = process.env.PORT || 8103;
   await app.listen(port);
 
   console.log(`🚀 Backend API is running on: http://localhost:${port}`);

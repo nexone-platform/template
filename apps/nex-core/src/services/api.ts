@@ -1,7 +1,7 @@
-const API_BASE = 'http://localhost:8083/api/v1';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8101/api';
 
 async function fetchAPI<T>(endpoint: string): Promise<T> {
-    const res = await fetch(`${API_BASE}${endpoint}`);
+    const res = await fetch(`${API_BASE}${endpoint}`, { credentials: 'include' });
     if (!res.ok) throw new Error(`API Error: ${res.status}`);
     const json = await res.json();
     return (json && json.data !== undefined) ? json.data as T : json as T;
@@ -12,6 +12,7 @@ async function postAPI<T>(endpoint: string, body: unknown): Promise<T> {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+        credentials: 'include'
     });
     if (!res.ok) throw new Error(`API Error: ${res.status}`);
     const json = await res.json();
@@ -23,6 +24,7 @@ async function putAPI<T>(endpoint: string, body: unknown): Promise<T> {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+        credentials: 'include'
     });
     if (!res.ok) throw new Error(`API Error: ${res.status}`);
     const json = await res.json();
@@ -30,7 +32,7 @@ async function putAPI<T>(endpoint: string, body: unknown): Promise<T> {
 }
 
 async function deleteAPI<T>(endpoint: string): Promise<T> {
-    const res = await fetch(`${API_BASE}${endpoint}`, { method: 'DELETE' });
+    const res = await fetch(`${API_BASE}${endpoint}`, { method: 'DELETE', credentials: 'include' });
     if (!res.ok) throw new Error(`API Error: ${res.status}`);
     const json = await res.json();
     return (json && json.data !== undefined) ? json.data as T : json as T;
@@ -129,10 +131,10 @@ export const systemAppService = {
     getAll: () => fetchAPI<SystemApp[]>('/system-apps'),
 };
 
-// ========== Templates API (nex-core-api port 8001) ==========
+// ========== Templates API (nex-core-api port 8101) ==========
 const CORE_API_BASE = process.env.NEXT_PUBLIC_CORE_API_URL
     ? `${process.env.NEXT_PUBLIC_CORE_API_URL}/templates`
-    : 'http://localhost:8001/api/templates';
+    : 'http://localhost:8101/api/templates';
 
 export interface Template {
     template_id: number;
@@ -190,7 +192,7 @@ export interface Announcement {
 
 const CORE_V1_API_BASE = process.env.NEXT_PUBLIC_CORE_API_URL
     ? `${process.env.NEXT_PUBLIC_CORE_API_URL}/v1`
-    : 'http://localhost:8001/api/v1';
+    : 'http://localhost:8101/api/v1';
 
 async function coreV1Get<T>(path: string): Promise<T> {
     const res = await fetch(`${CORE_V1_API_BASE}${path}`);
@@ -248,7 +250,7 @@ export const coreDashboardApi = {
     getUsersStats: async () => {
         const baseUrl = process.env.NEXT_PUBLIC_CORE_API_URL 
             ? `${process.env.NEXT_PUBLIC_CORE_API_URL}/v1` 
-            : 'http://localhost:8001/api/v1';
+            : 'http://localhost:8101/api/v1';
         const res = await fetch(`${baseUrl}/dashboard/users-stats`);
         if (!res.ok) throw new Error(`Core API Error: ${res.status}`);
         return res.json() as Promise<{ totalUsers: number, onlineUsers: number }>;

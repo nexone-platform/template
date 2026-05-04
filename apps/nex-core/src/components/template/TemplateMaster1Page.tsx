@@ -2,10 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import CrudLayout from '@/components/CrudLayout';
 import { SearchInput, crudStyles, StatusDropdown, BaseModal, ExportButtons } from '@/components/CrudComponents';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
-import { Plus, Edit2, Trash2, Eye } from 'lucide-react';
+import { Plus, Edit2, Trash2, Eye, ArrowUp, ArrowDown, ChevronsUpDown } from 'lucide-react';
 import Pagination from '@/components/Pagination';
 import { templateApi, Template } from '@/services/api';
 import { usePagePermission } from '@/contexts/PermissionContext';
+import { useSystemConfig } from '@nexone/ui';
 
 export default function TemplateMaster1Page() {
     const perm = usePagePermission('Master Type 1');
@@ -13,7 +14,17 @@ export default function TemplateMaster1Page() {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' | null }>({ key: '', direction: null });
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
 
     // CRUD State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -89,13 +100,58 @@ export default function TemplateMaster1Page() {
         } catch (err) { console.error(err); }
     };
 
+    const handleSort = (key: string) => {
+        let direction: 'asc' | 'desc' | null = 'asc';
+        if (sortConfig.key === key) {
+            if (sortConfig.direction === 'asc') direction = 'desc';
+            else if (sortConfig.direction === 'desc') direction = null;
+            else direction = 'asc';
+        }
+        setSortConfig({ key, direction });
+    };
+
     const searchLower = search.toLowerCase();
     const filteredData = data.filter(item =>
         !searchLower ||
         item.template_name.toLowerCase().includes(searchLower) ||
         (item.template_desc || '').toLowerCase().includes(searchLower)
     );
-    const paginatedData = filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+    let sortedData = [...filteredData];
+    if (sortConfig.key && sortConfig.direction !== null) {
+        sortedData.sort((a, b) => {
+            const aVal = (a as any)[sortConfig.key];
+            const bVal = (b as any)[sortConfig.key];
+            
+            if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
+    const paginatedData = sortedData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+    const renderSortIcon = (columnKey: string) => {
+        if (sortConfig.key !== columnKey || sortConfig.direction === null) {
+            return <ChevronsUpDown size={14} style={{ opacity: 0.3 }} />;
+        }
+        if (sortConfig.direction === 'asc') {
+            return <ArrowDown size={14} />;
+        }
+        return <ArrowUp size={14} />;
+    };
+
+    const renderTh = (label: string, columnKey: string, width?: string) => (
+        <th 
+            style={{ width, cursor: 'pointer', whiteSpace: 'nowrap', userSelect: 'none' }} 
+            onClick={() => handleSort(columnKey)}
+        >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
+                <span>{label}</span>
+                {renderSortIcon(columnKey)}
+            </div>
+        </th>
+    );
 
     if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}><div className="loading-spinner" /></div>;
 
@@ -140,11 +196,11 @@ export default function TemplateMaster1Page() {
                 <table className="data-table">
                     <thead>
                         <tr>
-                            <th style={{ width: '60px' }}>ID</th>
-                            <th>ชื่อข้อมูล</th>
-                            <th>คำอธิบาย</th>
-                            <th className="text-center" style={{ width: '100px' }}>สถานะ</th>
-                            {hasActions && <th className="text-center" style={{ width: '100px', paddingRight: '24px' }}>จัดการ</th>}
+                            {renderTh('ID', 'template_id', '60px')}
+                            {renderTh('ชื่อข้อมูล', 'template_name')}
+                            {renderTh('คำอธิบาย', 'template_desc')}
+                            {renderTh('สถานะ', 'is_active', '100px')}
+                            {hasActions && <th className="text-center" style={{ width: '100px', paddingRight: '24px', whiteSpace: 'nowrap' }}>จัดการ</th>}
                         </tr>
                     </thead>
                     <tbody>

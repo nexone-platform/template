@@ -15,7 +15,7 @@ import (
 // @title NexSpeed TMS API
 // @version 2.0.0
 // @description The NextOne ERP Speed API
-// @host localhost:8081
+// @host localhost:8108
 // @BasePath /api/v1
 
 func main() {

@@ -168,8 +168,8 @@ export default function Notifications() {
       const payload = {
         ...formData,
         targetIds: Array.isArray(formData.targetIds) ? formData.targetIds : typeof formData.targetIds === 'string' ? formData.targetIds.split(',').map((s: string) => s.trim()) : formData.targetIds,
-        scheduleDate: formData.scheduleDate ? new Date(formData.scheduleDate).toISOString() : null,
-        endDate: formData.endDate ? new Date(formData.endDate).toISOString() : null,
+        scheduleDate: formData.scheduleDate ? new Date(formData.scheduleDate).toISOString() : undefined,
+        endDate: formData.endDate ? new Date(formData.endDate).toISOString() : undefined,
       };
 
       if (editingId) {
@@ -380,7 +380,7 @@ export default function Notifications() {
                   const isBroadcast = item.targetType === 'ALL';
                   const codeNumber = (1004 - index).toString().padStart(4, '0');
                   // Fake type for UI colors
-                  const uiType = isBroadcast ? 'broadcast' : (item.targetType === 'DEPARTMENT' ? 'info' : 'alert');
+                  const uiType: string = isBroadcast ? 'broadcast' : (item.targetType === 'DEPARTMENT' ? 'info' : 'alert');
                   const uiStatus = item.isActive ? 'sent' : 'scheduled';
                   
                   return (
@@ -555,7 +555,7 @@ export default function Notifications() {
                         </span>
                       )}
                       {Array.isArray(formData.targetIds) && formData.targetIds.map((id: string) => {
-                        const optionLabel = TARGET_OPTIONS[formData.targetType]?.find(o => o.id === id)?.label || id;
+                        const optionLabel = (formData.targetType && TARGET_OPTIONS[formData.targetType]?.find((o: any) => o.id === id)?.label) || id;
                         return (
                           <span key={id} style={{
                             background: "#eff6ff", color: "#3b82f6", padding: "4px 8px", borderRadius: "4px",
@@ -582,8 +582,8 @@ export default function Notifications() {
                         boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)", zIndex: 10,
                         maxHeight: "200px", overflowY: "auto"
                       }}>
-                        {TARGET_OPTIONS[formData.targetType]?.length > 0 ? (
-                          TARGET_OPTIONS[formData.targetType].map((option) => {
+                        {formData.targetType && TARGET_OPTIONS[formData.targetType]?.length > 0 ? (
+                          TARGET_OPTIONS[formData.targetType].map((option: any) => {
                             const isSelected = Array.isArray(formData.targetIds) && formData.targetIds.includes(option.id);
                             return (
                               <div 

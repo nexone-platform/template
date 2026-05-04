@@ -23,9 +23,9 @@ export class Province {
     @Column({ type: 'varchar', length: 255, nullable: true, name: 'update_by' })
     update_by: string;
 
-    @CreateDateColumn({ name: 'create_date' })
+    @CreateDateColumn({ name: 'create_date', type: 'timestamptz' })
     createdAt: Date;
 
-    @UpdateDateColumn({ name: 'update_date' })
+    @UpdateDateColumn({ name: 'update_date', type: 'timestamptz' })
     updatedAt: Date;
 }

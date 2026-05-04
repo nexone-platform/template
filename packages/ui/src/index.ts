@@ -17,6 +17,10 @@ export { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 export { ThemeProvider, useTheme, applyThemeToCSS } from './contexts/ThemeContext';
 export { ToastProvider, useToast } from './contexts/ToastContext';
 
+// Hooks
+export { useSystemConfig } from './hooks/useSystemConfig';
+export type { SystemConfigValues } from './hooks/useSystemConfig';
+
 // ── Component Library ──────────────────────────────────────────────────────────
 
 // Button

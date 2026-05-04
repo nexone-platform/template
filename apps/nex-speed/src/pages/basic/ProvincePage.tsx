@@ -7,6 +7,7 @@ import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
 import { Plus, Edit2, Trash2, MapPin, Eye, Map } from 'lucide-react';
 import Pagination from '@/components/Pagination';
 import { api, Province } from '@/services/api';
+import { useSystemConfig } from '@nexone/ui';
 
 const regionColors: Record<string, string> = {
     'กลาง': '#3b82f6',
@@ -25,7 +26,16 @@ export default function ProvincePage() {
     
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(15);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 15);
 
     // CRUD State
     const [isModalOpen, setIsModalOpen] = useState(false);

@@ -1,0 +1,10 @@
+{
+  "companyNameTH": "บริษัท ทดสอบ จำกัด",
+  "companyAbbreviation": "TESTING",
+  "email": "test@tester.com",
+  "businessGroup": "LOG",
+  "businessSubType": 1,
+  "adminName": "Admin Test",
+  "adminEmail": "admin@tester.com",
+  "adminPassword": "password"
+}

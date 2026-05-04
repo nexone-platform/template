@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Pencil, Trash2, Save, X, ShieldCheck, ChevronRight } from 'lucide-react';
 
-const API = 'http://localhost:8001';
+const API = process.env.NEXT_PUBLIC_API_URL || '';
 
 // App name mapping (display -> api value)
 const APP_MAP: Record<string, string> = {
@@ -275,7 +275,7 @@ export default function RoleSettings() {
   // ── Fetch roles list ──────────────────────────────────────────────────────
   const fetchRoles = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/api/roles`);
+      const res = await fetch(`${API}/api/roles`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         const mapped: Role[] = data.map((r: any) => ({
@@ -299,7 +299,7 @@ export default function RoleSettings() {
     const appKey = APP_MAP[appDisplay] || 'nex-core';
     setLoadingMenu(true);
     try {
-      const res = await fetch(`${API}/api/roles/${roleId}/permissions?app=${appKey}`);
+      const res = await fetch(`${API}/api/roles/${roleId}/permissions?app=${appKey}`, { credentials: 'include' });
       if (res.ok) {
         const data: MenuNode[] = await res.json();
         setMenuTree(data);
@@ -401,7 +401,7 @@ export default function RoleSettings() {
         canImport: n.canImport,
         canExport: n.canExport,
       }));
-      const res = await fetch(`${API}/api/roles/${selectedId}/permissions?app=${appKey}`, {
+      const res = await fetch(`${API}/api/roles/${selectedId}/permissions?app=${appKey}`, { credentials: 'include', 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ permissions }),
@@ -422,7 +422,7 @@ export default function RoleSettings() {
   const handleAddRole = async () => {
     if (!newName.trim()) return;
     try {
-      const res = await fetch(`${API}/api/roles`, {
+      const res = await fetch(`${API}/api/roles`, { credentials: 'include', 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roleName: newName.trim(), description: newDesc.trim() || undefined }),
@@ -438,7 +438,7 @@ export default function RoleSettings() {
     e.stopPropagation();
     if (!confirm('ยืนยันการลบบทบาทนี้?')) return;
     try {
-      const res = await fetch(`${API}/api/roles/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API}/api/roles/${id}`, { credentials: 'include',  method: 'DELETE' });
       if (res.ok) await fetchRoles();
     } catch (err) { console.error('Failed to delete role', err); }
   };
@@ -453,7 +453,7 @@ export default function RoleSettings() {
   const handleSaveEdit = async () => {
     if (!editName.trim()) return;
     try {
-      const res = await fetch(`${API}/api/roles/${editId}`, {
+      const res = await fetch(`${API}/api/roles/${editId}`, { credentials: 'include', 
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roleName: editName.trim(), description: editDesc.trim() || undefined }),

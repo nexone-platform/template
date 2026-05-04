@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useEffect,  useState, useMemo, useCallback } from "react";
 import apiClient from "@/lib/api-client";
 import {
     useMenusList,
@@ -31,6 +31,7 @@ import {
     ui, RowCheckbox,
 } from "@/components/shared/ui-components";
 import { usePageTranslation } from "@/lib/language";
+import { useSystemConfig } from '@nexone/ui';
 
 type AnyRow = Record<string, any>;
 
@@ -64,7 +65,16 @@ export default function MenuViewPage() {
     const [searchText, setSearchText] = useState("");
     const [sortKey, setSortKey] = useState<string | null>(null);
     const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
 
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedMenu, setSelectedMenu] = useState<MenuDto | null>(null);

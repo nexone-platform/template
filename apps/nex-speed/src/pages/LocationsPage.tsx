@@ -8,6 +8,7 @@ import { SearchInput, crudStyles, BaseModal, ExportButtons } from '@/components/
 import StatusDropdown from '@/components/StatusDropdown';
 import Pagination from '@/components/Pagination';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
+import { useSystemConfig } from '@nexone/ui';
 
 const typeLabels: Record<string, string> = { origin: 'ต้นทาง', destination: 'ปลายทาง', both: 'ทั้งสอง' };
 const typeColors: Record<string, string> = { origin: '#3b82f6', destination: '#10b981', both: '#8b5cf6' };
@@ -21,7 +22,16 @@ export default function LocationsPage() {
     const [search, setSearch] = useState('');
     const [typeFilter, setTypeFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(15);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 15);
     
     // CRUD State
     const [isModalOpen, setIsModalOpen] = useState(false);

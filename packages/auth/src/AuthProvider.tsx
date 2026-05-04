@@ -30,7 +30,7 @@ export interface AuthProviderProps {
 
 export function AuthProvider({
   children,
-  apiBaseUrl = 'http://localhost:8001/api',
+  apiBaseUrl = '/api',
   onSessionExpired,
   onLoginSuccess,
 }: AuthProviderProps) {
@@ -98,6 +98,9 @@ export function AuthProvider({
       }
 
       const data = await res.json();
+      if (typeof window !== 'undefined' && credentials.workspaceId) {
+        localStorage.setItem('workspaceId', credentials.workspaceId);
+      }
       const nexUser: NexUser = data.user;
       setUser(nexUser);
       setCachedUser(nexUser);

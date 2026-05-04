@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useEffect,  useState, useCallback, useMemo } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ROUTES } from "@/lib/routes";
@@ -14,8 +14,9 @@ import {
 } from "@/components/shared/ui-components";
 import ImportExcelButton from "@/components/ImportExcelButton";
 import { usePageTranslation } from "@/lib/language";
+import { useSystemConfig } from '@nexone/ui';
 
-/* โ”€โ”€ Types โ”€โ”€ */
+/* ?��?�� Types ?��?�� */
 interface CostDetail {
     costDetailId: number;
     employeeId: number;
@@ -56,7 +57,7 @@ interface ProjectCostRow {
     teamCount?: number;
 }
 
-/* โ”€โ”€ Helpers โ”€โ”€ */
+/* ?��?�� Helpers ?��?�� */
 const fmtDate = (d: string | null | undefined) => {
     if (!d) return "";
     const dt = new Date(d);
@@ -69,7 +70,7 @@ const fmtNumber = (n: number | null | undefined) => {
     return Number(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
 };
 
-/* โ”€โ”€ Page Component โ”€โ”€ */
+/* ?��?�� Page Component ?��?�� */
 export default function ProjectCostPage() {
     const { t } = usePageTranslation();
     const { showSuccess, showError, showWarning } = useMessages();
@@ -90,20 +91,29 @@ export default function ProjectCostPage() {
     const queryClient = useQueryClient();
     const userProfile = getUserProfile();
 
-    // โ”€โ”€ Search form state โ”€โ”€
+    // ?��?�� Search form state ?��?��
     const [searchProject, setSearchProject] = useState<number | null>(null);
     const [searchClient, setSearchClient] = useState<number | null>(null);
     const [searchStartDate, setSearchStartDate] = useState("");
     const [searchEndDate, setSearchEndDate] = useState("");
 
-    // โ”€โ”€ Table state โ”€โ”€
-    const [pageSize, setPageSize] = useState(10);
+    // ?��?�� Table state ?��?��
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
     const [currentPage, setCurrentPage] = useState(1);
     const [sortKey, setSortKey] = useState<string | null>(null);
     const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
     const [modalOpen, setModalOpen] = useState(false);
 
-    // โ”€โ”€ Data fetching โ”€โ”€
+    // ?��?�� Data fetching ?��?��
     const { data: costData, isLoading, refetch } = useQuery({
         queryKey: ["projectCost", searchProject, searchClient, searchStartDate, searchEndDate],
         queryFn: async () => {
@@ -136,7 +146,7 @@ export default function ProjectCostPage() {
         },
     });
 
-    // โ”€โ”€ Delete mutation โ”€โ”€
+    // ?��?�� Delete mutation ?��?��
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => {
             const { data } = await apiClient.delete<{ message: string }>(`projectCost/delete?id=${id}`);
@@ -151,7 +161,7 @@ export default function ProjectCostPage() {
         },
     });
 
-    // โ”€โ”€ Save mutation โ”€โ”€
+    // ?��?�� Save mutation ?��?��
     const saveMutation = useMutation({
         mutationFn: async (payload: unknown) => {
             const { data } = await apiClient.post<{ message: string }>("projectCost/update", payload);
@@ -168,7 +178,7 @@ export default function ProjectCostPage() {
         },
     });
 
-    // โ”€โ”€ react-hook-form โ”€โ”€
+    // ?��?�� react-hook-form ?��?��
     const { register, handleSubmit, reset, setValue, control, getValues, watch } = useForm<ProjectCostForm>({
         defaultValues: {
             costId: 0, projectId: null, budgetProject: 0,
@@ -179,7 +189,7 @@ export default function ProjectCostPage() {
 
     const { fields, append, remove } = useFieldArray({ control, name: "costDetail" });
 
-    // โ”€โ”€ Reset form โ”€โ”€
+    // ?��?�� Reset form ?��?��
     const resetFormState = useCallback(() => {
         reset({
             costId: 0, projectId: null, budgetProject: 0,
@@ -188,7 +198,7 @@ export default function ProjectCostPage() {
         });
     }, [reset]);
 
-    // โ”€โ”€ Calc header totals โ”€โ”€
+    // ?��?�� Calc header totals ?��?��
     const calcHeaderTotal = useCallback(() => {
         const details = getValues("costDetail");
         let totalCost = 0;
@@ -203,7 +213,7 @@ export default function ProjectCostPage() {
         setValue("mdPerMonth", totalMDProject);
     }, [getValues, setValue]);
 
-    // โ”€โ”€ Calc row โ”€โ”€
+    // ?��?�� Calc row ?��?��
     const calcRow = useCallback((index: number) => {
         const detail = getValues(`costDetail.${index}`);
         const costPerDay = Number(detail.costPerDay) || 0;
@@ -221,7 +231,7 @@ export default function ProjectCostPage() {
         calcHeaderTotal();
     }, [getValues, setValue, calcHeaderTotal]);
 
-    // โ”€โ”€ onProjectChange โ”€โ”€
+    // ?��?�� onProjectChange ?��?��
     const onProjectChange = useCallback((projectId: number) => {
         if (!projectId || !allProjects) return;
         const project = allProjects.find((p: any) => Number(p.projectId) === projectId);
@@ -264,13 +274,13 @@ export default function ProjectCostPage() {
         });
     }, [allProjects, setValue, getValues, remove, append]);
 
-    // โ”€โ”€ Open Add โ”€โ”€
+    // ?��?�� Open Add ?��?��
     const openAdd = () => {
         resetFormState();
         setModalOpen(true);
     };
 
-    // โ”€โ”€ Open Edit โ”€โ”€
+    // ?��?�� Open Edit ?��?��
     const openEdit = async (costId: number) => {
         if (!costId || costId <= 0) return;
         try {
@@ -295,19 +305,19 @@ export default function ProjectCostPage() {
         }
     };
 
-    // โ”€โ”€ Submit โ”€โ”€
+    // ?��?�� Submit ?��?��
     const onSubmit = (formData: ProjectCostForm) => {
         saveMutation.mutate({ ...formData, username: userProfile });
     };
 
-    // โ”€โ”€ Confirm Delete โ”€โ”€
+    // ?��?�� Confirm Delete ?��?��
     const confirmDelete = (id: number) => {
         showWarning('REQUIRED_FIELDS', 'Delete Project Cost', 'Are you sure want to delete?').then((result) => {
             if (result.isConfirmed) deleteMutation.mutate(id);
         });
     };
 
-    // โ”€โ”€ Search / Clear โ”€โ”€
+    // ?��?�� Search / Clear ?��?��
     const handleSearch = () => {
         setCurrentPage(1);
         refetch();
@@ -321,13 +331,13 @@ export default function ProjectCostPage() {
         setCurrentPage(1);
     };
 
-    // โ”€โ”€ Sort โ”€โ”€
+    // ?��?�� Sort ?��?��
     const handleSort = (key: string) => {
         if (sortKey === key) setSortDir(sortDir === "asc" ? "desc" : "asc");
         else { setSortKey(key); setSortDir("asc"); }
     };
 
-    // โ”€โ”€ Filtered / Sorted / Paginated โ”€โ”€
+    // ?��?�� Filtered / Sorted / Paginated ?��?��
     const { paginatedData, totalData, totalPages, safePage } = useMemo(() => {
         const allItems: ProjectCostRow[] = costData?.data || [];
         const source = Array.isArray(allItems) ? allItems : [];
@@ -463,8 +473,8 @@ export default function ProjectCostPage() {
                                             <td className={ui.td}>{item.clientName}</td>
                                             <td className={ui.td}>{fmtDate(item.startDate)}</td>
                                             <td className={ui.td}>{fmtDate(item.endDate)}</td>
-                                            <td className={ui.td}>{fmtNumber(item.budgetProject)} ฿</td>
-                                            <td className={ui.td}>{fmtNumber(item.totalCost)} ฿</td>
+                                            <td className={ui.td}>{fmtNumber(item.budgetProject)} ?</td>
+                                            <td className={ui.td}>{fmtNumber(item.totalCost)} ?</td>
                                             <td className={ui.td}>{item.mdPerMonth} MD</td>
                                             <td className={ui.td}>
                                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-violet-100 text-violet-700">
@@ -490,7 +500,7 @@ export default function ProjectCostPage() {
                 />
             </div>
 
-            {/* โ”€โ”€ Add/Edit Modal โ”€โ”€ */}
+            {/* ?��?�� Add/Edit Modal ?��?�� */}
             <ModalWrapper
                 open={modalOpen}
                 onClose={() => setModalOpen(false)}

@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect,  useState } from 'react';
 import CrudLayout from '@/components/CrudLayout';
 import { SummaryCard, SearchInput, crudStyles, BaseModal } from '@/components/CrudComponents';
 import { Plus, Edit2, Trash2, Eye, CheckCircle2, ChevronDown, Check, Clock, AlertTriangle, Receipt, BarChart3, LineChart as LineChartIcon } from 'lucide-react';
 import Pagination from '@/components/Pagination';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { useSystemConfig } from '@nexone/ui';
 
 export default function TemplateMasterGraph1Page() {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
     const [currentTab, setCurrentTab] = useState('ทั้งหมด');
     
     // ข้อมูลกราฟจำลอง

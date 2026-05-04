@@ -60,7 +60,8 @@ interface SidebarProps {
     sections?: any[];
     defaultThemeColor?: string;
     onToggleSidebar?: () => void;
-    menuApiUrl?: string; // e.g. 'http://localhost:8001/api' — if set, fetch menus dynamically
+    menuApiUrl?: string; // e.g. 'http://localhost:8101/api' — if set, fetch menus dynamically
+    systemConfig?: any;
 }
 
 export const navSections = [
@@ -194,7 +195,7 @@ function flatMenusToSections(menus: any[], lang: string = 'th'): any[] {
     
     if (parents.length === 0) return [];
 
-    const getTitle = (m: any) => m.translations?.[lang] || (lang === 'en' ? m.title_en : m.title_th) || m.title;
+    const getTitle = (m: any) => m.translations?.[lang] || m.title;
 
     // If all menus have no parent_id, just return them as a single flat section
     if (parents.length === activeMenus.length) {
@@ -203,33 +204,37 @@ function flatMenusToSections(menus: any[], lang: string = 'th'): any[] {
             title: getTitle({ translations: { th: 'เมนูหลัก', en: 'Main Menu' }, title: 'เมนูหลัก' }),
             icon: LayoutDashboard,
             items: activeMenus.map(m => ({
-                id: m.page_key || m.route || String(m.menus_id),
+                id: m.page_key || m.route || String(m.menu_id),
                 label: getTitle(m),
                 icon: getIconComponent(m.materialicons || m.icon),
+                menu_type: m.menu_type || 'menu',
             }))
         }];
     }
 
-    // Group children under their respective parents
-    const sections: any[] = [];
-    for (const parent of parents) {
-        const children = activeMenus.filter(m => m.parent_id === parent.menus_id);
-        sections.push({
-            id: parent.page_key || parent.route || String(parent.menus_id),
-            title: getTitle(parent),
-            icon: getIconComponent(parent.materialicons || parent.icon),
-            items: children.map(child => ({
-                id: child.page_key || child.route || String(child.menus_id),
-                label: getTitle(child),
-                icon: getIconComponent(child.materialicons || child.icon),
-            }))
-        });
-    }
+    const buildMenuTree = (parentId: string | null): any[] => {
+        const children = activeMenus.filter(m => m.parent_id === parentId);
+        return children.map(child => ({
+            id: child.page_key || child.route || String(child.menu_id),
+            label: getTitle(child),
+            title: getTitle(child),
+            icon: getIconComponent(child.materialicons || child.icon),
+            route: child.route,
+            menu_type: child.menu_type || 'menu',
+            items: buildMenuTree(child.menu_id)
+        }));
+    };
 
-    return sections;
+    return parents.map(parent => ({
+        id: parent.page_key || parent.route || String(parent.menu_id),
+        title: getTitle(parent),
+        icon: getIconComponent(parent.materialicons || parent.icon),
+        items: buildMenuTree(parent.menu_id),
+        menu_type: parent.menu_type || 'menu',
+    }));
 }
 
-export default function Sidebar({ currentPage, onNavigate, isOpen = true, appName = 'nexspeed', sections = navSections, defaultThemeColor, onToggleSidebar, menuApiUrl }: SidebarProps) {
+export default function Sidebar({ currentPage, onNavigate, isOpen = true, appName = 'nexspeed', sections = navSections, defaultThemeColor, onToggleSidebar, menuApiUrl, systemConfig }: SidebarProps) {
     const [dynamicSections, setDynamicSections] = React.useState<any[] | null>(null);
     const [rawMenus, setRawMenus] = React.useState<any[]>([]);
     
@@ -263,10 +268,10 @@ export default function Sidebar({ currentPage, onNavigate, isOpen = true, appNam
         if (!menuApiUrl || !appName) return;
         const fetchMenus = async () => {
             try {
-                // Map appName to kebab-case for API if needed (e.g. NexCore -> nex-core)
-                const apiAppName = appName.toLowerCase() === 'nexcore' ? 'nex-core' : 
-                                   appName.toLowerCase() === 'nexsite' ? 'nex-site' : 
-                                   appName.toLowerCase() === 'nexspeed' ? 'nex-speed' : 
+                // Use the exact appName or match the new CamelCase conventions
+                const apiAppName = appName.toLowerCase() === 'nexcore' ? 'NexCore' : 
+                                   appName.toLowerCase() === 'nexsite' ? 'NexSite' : 
+                                   appName.toLowerCase() === 'nexspeed' ? 'NexSpeed' : 
                                    appName;
                 const res = await fetch(`${menuApiUrl}/menus?app_name=${encodeURIComponent(apiAppName)}`);
                 if (!res.ok) return;
@@ -526,6 +531,114 @@ export default function Sidebar({ currentPage, onNavigate, isOpen = true, appNam
         );
     };
 
+    const RenderMenuItem = ({ item, depth = 0, isDual = false }: { item: any, depth?: number, isDual?: boolean }) => {
+        const hasChildren = item.items && item.items.length > 0;
+        const isActive = currentPage === item.id;
+        const [isItemExpanded, setIsItemExpanded] = React.useState(expandedSections[item.id] !== false);
+
+        if (item.menu_type === 'heading') {
+            return (
+                <div key={item.id} style={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    alignItems: 'center', 
+                    padding: '8px 0 4px',
+                    margin: '0px',
+                    width: '100%',
+                    textTransform: 'uppercase',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    letterSpacing: '1px',
+                    color: isDual ? '#94a3b8' : 'rgba(255,255,255,0.4)',
+                    userSelect: 'none'
+                }}>
+                    <span>{item.label}</span>
+                </div>
+            );
+        }
+
+        if (hasChildren || item.menu_type === 'submenu') {
+            return (
+                <div key={item.id} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                    <div
+                        className={!isDual ? `sidebar-link ${isActive ? 'active' : ''}` : undefined}
+                        onClick={() => setIsItemExpanded(!isItemExpanded)}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px',
+                            paddingLeft: isDual ? `${12 + (depth * 16)}px` : undefined,
+                            borderRadius: '8px', cursor: 'pointer',
+                            background: isDual ? (isActive ? '#eff6ff' : 'transparent') : undefined,
+                            color: isDual ? (isActive ? '#2563eb' : '#64748b') : undefined,
+                            fontWeight: isActive ? 600 : 500,
+                            fontSize: 'var(--sidebar-font-size, 14px)', transition: 'all 0.2s',
+                            marginLeft: !isDual ? `${depth * 12}px` : undefined,
+                            marginBottom: !isDual ? '2px' : undefined,
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!isActive && isDual) {
+                                e.currentTarget.style.background = 'var(--sidebar-item-hover, #f1f5f9)';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!isActive && isDual) {
+                                e.currentTarget.style.background = 'transparent';
+                            }
+                        }}
+                    >
+                        <item.icon className={!isDual ? "sidebar-link-icon" : undefined} size={isDual ? 18 : 20} />
+                        <span>{item.label}</span>
+                        {isItemExpanded ? <ChevronDown size={14} style={{ marginLeft: 'auto', opacity: 0.5 }} /> : <ChevronRight size={14} style={{ marginLeft: 'auto', opacity: 0.5 }} />}
+                    </div>
+                    {isItemExpanded && (
+                        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginTop: '2px' }}>
+                            {(item.items || []).map((child: any) => <RenderMenuItem key={child.id} item={child} depth={depth + 1} isDual={isDual} />)}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        return (
+            <div
+                key={item.id}
+                className={!isDual ? `sidebar-link ${isActive ? 'active' : ''}` : undefined}
+                onClick={() => onNavigate(item.id)}
+                style={{
+                    display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px',
+                    paddingLeft: isDual ? `${12 + (depth * 16)}px` : undefined,
+                    borderRadius: '8px', cursor: 'pointer',
+                    background: isDual ? (isActive ? '#eff6ff' : 'transparent') : undefined,
+                    color: isDual ? (isActive ? '#2563eb' : '#64748b') : undefined,
+                    fontWeight: isActive ? 600 : 500,
+                    fontSize: 'var(--sidebar-font-size, 14px)', transition: 'all 0.2s',
+                    marginLeft: !isDual ? `${depth * 12}px` : undefined,
+                    marginBottom: !isDual ? '2px' : undefined,
+                }}
+                onMouseEnter={(e) => {
+                    if (!isActive && isDual) {
+                        e.currentTarget.style.background = 'var(--sidebar-item-hover, #f1f5f9)';
+                    }
+                }}
+                onMouseLeave={(e) => {
+                    if (!isActive && isDual) {
+                        e.currentTarget.style.background = 'transparent';
+                    }
+                }}
+            >
+                <item.icon className={!isDual ? "sidebar-link-icon" : undefined} size={isDual ? 18 : 20} />
+                <span>{item.label}</span>
+                {item.badge && (
+                    <span className={!isDual ? "sidebar-link-badge" : undefined} style={isDual ? { marginLeft: 'auto', background: '#ef4444', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '10px' } : undefined}>
+                        {item.badge}
+                    </span>
+                )}
+                {isActive && !isDual && (
+                    <ChevronRight size={14} style={{ marginLeft: 'auto', opacity: 0.5 }} />
+                )}
+            </div>
+        );
+    };
+
     if (menuStyle === 'dual') {
         const isMenuStyleActive = activeDualSection === 'menu-style';
         const activeSectionData = isMenuStyleActive 
@@ -653,6 +766,11 @@ export default function Sidebar({ currentPage, onNavigate, isOpen = true, appNam
                         <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b' }}>
                             {activeSectionData.title}
                         </h2>
+                        {systemConfig?.showTenantName && systemConfig?.tenantNameDisplayPosition === 'SIDEBAR_TOP' && systemConfig?.tenantName && (
+                            <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px', fontWeight: 500 }}>
+                                Workspace: {systemConfig.tenantName}
+                            </div>
+                        )}
                     </div>
                     
                     <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
@@ -698,47 +816,9 @@ export default function Sidebar({ currentPage, onNavigate, isOpen = true, appNam
                                 </div>
                             </div>
                         ) : (
-                            activeSectionData.items.map((item: any) => {
-                                const isActive = currentPage === item.id;
-                                return (
-                                    <div
-                                        key={item.id}
-                                        onClick={() => onNavigate(item.id)}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '12px',
-                                            padding: '10px 12px',
-                                            borderRadius: '8px',
-                                            cursor: 'pointer',
-                                            background: isActive ? '#eff6ff' : 'transparent',
-                                            color: isActive ? '#2563eb' : '#64748b',
-                                            fontWeight: isActive ? 600 : 500,
-                                            fontSize: 'var(--sidebar-font-size, 14px)',
-                                            fontFamily: 'var(--sidebar-font-family, inherit)',
-                                            transition: 'all 0.2s'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            if (!isActive) {
-                                                e.currentTarget.style.background = 'var(--sidebar-item-hover, #f1f5f9)';
-                                            }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            if (!isActive) {
-                                                e.currentTarget.style.background = 'transparent';
-                                            }
-                                        }}
-                                    >
-                                        <item.icon size={18} />
-                                        <span>{item.label}</span>
-                                        {item.badge && (
-                                            <span style={{ marginLeft: 'auto', background: '#ef4444', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '10px' }}>
-                                                {item.badge}
-                                            </span>
-                                        )}
-                                    </div>
-                                );
-                            })
+                            activeSectionData.items.map((item: any) => (
+                                <RenderMenuItem key={item.id} item={item} isDual={true} />
+                            ))
                         )}
                     </div>
 
@@ -778,6 +858,11 @@ export default function Sidebar({ currentPage, onNavigate, isOpen = true, appNam
                     <div className="sidebar-brand-text">
                         <span className="sidebar-brand-name">{currentApp ? currentApp.app_name : 'NexSpeed'}</span>
                         <span className="sidebar-brand-subtitle uppercase" style={{ fontSize: '10px' }}>{currentApp ? currentApp.desc_en : 'TMS'}</span>
+                        {systemConfig?.showTenantName && systemConfig?.tenantNameDisplayPosition === 'SIDEBAR_TOP' && systemConfig?.tenantName && (
+                            <span style={{ display: 'block', fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontWeight: 500, marginTop: '2px' }}>
+                                Workspace: {systemConfig.tenantName}
+                            </span>
+                        )}
                     </div>
                 )}
             </div>
@@ -828,31 +913,38 @@ export default function Sidebar({ currentPage, onNavigate, isOpen = true, appNam
 
                     return (
                         <div key={section.title} className="sidebar-section">
-                            <div 
-                                className="sidebar-section-title"
-                                onClick={() => toggleSection(section.title)}
-                                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}
-                                title={isExpanded ? "ซ่อนเมนู" : "แสดงเมนู"}
-                            >
-                                <span>{section.title}</span>
-                                {isExpanded ? <ChevronDown size={14} style={{ opacity: 0.5 }} /> : <ChevronRight size={14} style={{ opacity: 0.5 }} />}
-                            </div>
-                            
-                            {isExpanded && section.items.map((item: any) => (
-                                <div
-                                    key={item.id}
-                                    className={`sidebar-link ${currentPage === item.id ? 'active' : ''}`}
-                                    onClick={() => onNavigate(item.id)}
+                            {section.menu_type === 'heading' ? (
+                                <div 
+                                    className="sidebar-section-title"
+                                    style={{ 
+                                        display: 'flex', 
+                                        justifyContent: 'center', 
+                                        alignItems: 'center', 
+                                        userSelect: 'none',
+                                        textTransform: 'uppercase',
+                                        textAlign: 'center',
+                                        letterSpacing: '1px',
+                                        fontSize: '11px',
+                                        fontWeight: 700,
+                                        margin: '0px',
+                                        color: 'rgba(255,255,255,0.4)'
+                                    }}
                                 >
-                                    <item.icon className="sidebar-link-icon" size={20} />
-                                    <span>{item.label}</span>
-                                    {item.badge && (
-                                        <span className="sidebar-link-badge">{item.badge}</span>
-                                    )}
-                                    {currentPage === item.id && (
-                                        <ChevronRight size={14} style={{ marginLeft: 'auto', opacity: 0.5 }} />
-                                    )}
+                                    <span>{section.title}</span>
                                 </div>
+                            ) : (
+                                <div 
+                                    className="sidebar-section-title"
+                                    onClick={() => toggleSection(section.title)}
+                                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}
+                                    title={isExpanded ? "ซ่อนเมนู" : "แสดงเมนู"}
+                                >
+                                    <span>{section.title}</span>
+                                    {isExpanded ? <ChevronDown size={14} style={{ opacity: 0.5 }} /> : <ChevronRight size={14} style={{ opacity: 0.5 }} />}
+                                </div>
+                            )}
+                            {isExpanded && section.items.map((item: any) => (
+                                <RenderMenuItem key={item.id} item={item} isDual={false} />
                             ))}
                         </div>
                     );

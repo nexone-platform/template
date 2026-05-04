@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import CrudLayout from '@/components/CrudLayout';
 import { SearchInput, crudStyles, StatusDropdown, BaseModal, ExportButtons, SummaryCard } from '@/components/CrudComponents';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
-import { Edit2, Eye, LayoutDashboard, Tags, Box, Trash2, Plus } from 'lucide-react';
+import { Edit2, Eye, LayoutDashboard, Tags, Box, Trash2, Plus, Settings } from 'lucide-react';
 import Pagination from '@/components/Pagination';
+import { useSystemConfig } from '@nexone/ui';
 
 interface SystemApp {
   id: number;
@@ -19,18 +20,22 @@ interface SystemApp {
   route_path?: string;
   api_path?: string;
   app_url?: string;
+  translations?: Record<string, string>;
 }
 
 import { useApiConfig } from '../contexts/ApiConfigContext';
 
 export default function SystemApps() {
+    // ----------------- State & Initialization -----------------
+    const { configs, loading: configLoading } = useSystemConfig();
     const { getEndpoint } = useApiConfig();
-    const coreApi = getEndpoint('NexCore', 'http://localhost:8083/api');
+    const coreApi = getEndpoint('NexCore', '');
     const API_URL = `${coreApi}/v1/system-apps`;
     const [search, setSearch] = useState('');
     const [filterType, setFilterType] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 20);
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
     const [data, setData] = useState<SystemApp[]>([]);
     const [languages, setLanguages] = useState<any[]>([]); // To store available languages
     
@@ -38,6 +43,13 @@ export default function SystemApps() {
     const [lang, setLang] = useState<string>(
         (typeof window !== 'undefined' ? localStorage.getItem('nexone_lang') || 'th' : 'th').toLowerCase()
     );
+
+    useEffect(() => {
+        if (!configLoading && configs.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs.pageRecordDefault, hasSetDefaultPageSize]);
 
     useEffect(() => {
         const handleLangChange = (e: any) => {
@@ -61,9 +73,21 @@ export default function SystemApps() {
     // Alert State
     const [alertConfig, setAlertConfig] = useState<{isOpen: boolean, message: string, isError: boolean}>({isOpen: false, message: '', isError: false});
 
+    // Column Settings State
+    const [isColumnSettingsOpen, setIsColumnSettingsOpen] = useState(false);
+    const [visibleColumns, setVisibleColumns] = useState({
+        seq_no: true,
+        icon: true,
+        app_name: true,
+        app_group: true,
+        desc: true,
+        status: true
+    });
+    const [sortConfig, setSortConfig] = useState<{key: string, direction: 'asc'|'desc'|'none'}>({ key: 'seq_no', direction: 'asc' });
+
     const fetchData = async () => {
         try {
-            const res = await fetch(`${API_URL}?all=true`);
+            const res = await fetch(`${API_URL}?all=true`, { credentials: 'include' });
             const json = await res.json();
             const apps = (json && json.data !== undefined) ? json.data : json;
             if (Array.isArray(apps)) {
@@ -78,7 +102,7 @@ export default function SystemApps() {
 
     const fetchLanguages = async () => {
         try {
-            const res = await fetch(`${coreApi}/translations/languages`);
+            const res = await fetch(`${coreApi}/translations/languages`, { credentials: 'include' });
             const json = await res.json();
             const langs = (json && json.data !== undefined) ? json.data : json;
             if (Array.isArray(langs)) {
@@ -121,7 +145,7 @@ export default function SystemApps() {
         
         try {
             if (modalMode === 'add') {
-                const res = await fetch(API_URL, {
+                const res = await fetch(API_URL, { credentials: 'include', 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
@@ -136,7 +160,7 @@ export default function SystemApps() {
                     setAlertConfig({isOpen: true, message: errorJson.details || errorJson.error || 'เพิ่มข้อมูลไม่สำเร็จ', isError: true});
                 }
             } else if (modalMode === 'edit' && selectedItem) {
-                const res = await fetch(`${API_URL}/${selectedItem.id}`, {
+                const res = await fetch(`${API_URL}/${selectedItem.id}`, { credentials: 'include', 
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
@@ -160,7 +184,7 @@ export default function SystemApps() {
     const handleDelete = async (item: SystemApp) => {
         if (window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบแอป "${item.app_name}"?`)) {
             try {
-                const res = await fetch(`${API_URL}/${item.id}`, {
+                const res = await fetch(`${API_URL}/${item.id}`, { credentials: 'include', 
                     method: 'DELETE',
                 });
                 if (res.ok) {
@@ -195,8 +219,48 @@ export default function SystemApps() {
         return (item.app_group || 'ไม่ระบุหมวดหมู่') === filterType;
     });
 
+    // ฟังก์ชันจัดการการเรียงลำดับเมื่อคลิกที่หัวตาราง
+    const handleSort = (key: keyof SystemApp) => {
+        if (sortConfig.key === key && sortConfig.direction !== 'none') {
+            setSortConfig({ key, direction: sortConfig.direction === 'asc' ? 'desc' : 'asc' });
+        } else {
+            setSortConfig({ key, direction: 'asc' });
+        }
+    };
+
+    // ฟังก์ชันสำหรับแสดงไอคอนเรียงลำดับ
+    const renderSortIcon = (key: keyof SystemApp) => {
+        if (sortConfig.key !== key || sortConfig.direction === 'none') {
+            // แสดงไอคอนสีเทาเมื่อไม่ได้เป็นคอลัมน์ที่กำลังเรียงอยู่
+            return <span style={{ marginLeft: '4px', fontSize: '12px', color: '#cbd5e1' }}>↕</span>;
+        }
+        // ลูกศรลง = เรียงจากน้อยไปมาก (asc), ลูกศรขึ้น = เรียงจากมากไปน้อย (desc)
+        return sortConfig.direction === 'asc' 
+            ? <span style={{ marginLeft: '4px', fontSize: '12px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>↓</span> 
+            : <span style={{ marginLeft: '4px', fontSize: '12px', color: 'var(--accent-primary)', fontWeight: 'bold' }}>↑</span>;
+    };
+
+    // เรียงลำดับข้อมูล
+    let sortedData = [...filteredData];
+    if (sortConfig && sortConfig.direction !== 'none') {
+        sortedData.sort((a, b) => {
+            let aVal = (a as any)[sortConfig.key];
+            let bVal = (b as any)[sortConfig.key];
+            
+            if (aVal === undefined || aVal === null) aVal = '';
+            if (bVal === undefined || bVal === null) bVal = '';
+
+            if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+            if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+
+            if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
     // คำนวณข้อมูลที่จะนำมาแสดงในตาราง
-    const paginatedData = filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    const paginatedData = sortedData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
     return (
         <CrudLayout
@@ -252,38 +316,45 @@ export default function SystemApps() {
                 <table className="data-table">
                     <thead>
                         <tr>
-                        <th style={{ width: '60px' }}>No.</th>
-                        <th style={{ width: '60px' }}>Icon</th>
-                        <th>ชื่อแอป (App Name)</th>
-                        <th>กลุ่ม (Group)</th>
-                        <th>คำอธิบาย</th>
-                        <th className="text-center" style={{ width: '120px' }}>สถานะ</th>
-                        <th className="text-center" style={{ width: '100px', paddingRight: '24px' }}>จัดการ</th>
+                        {visibleColumns.seq_no && <th style={{ width: '60px', cursor: 'pointer', userSelect: 'none' }} onClick={() => handleSort('seq_no')}>No. {renderSortIcon('seq_no')}</th>}
+                        {visibleColumns.icon && <th style={{ width: '60px' }}>Icon</th>}
+                        {visibleColumns.app_name && <th style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => handleSort('app_name')}>ชื่อแอป (App Name) {renderSortIcon('app_name')}</th>}
+                        {visibleColumns.app_group && <th style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => handleSort('app_group')}>กลุ่ม (Group) {renderSortIcon('app_group')}</th>}
+                        {visibleColumns.desc && <th>คำอธิบาย</th>}
+                        {visibleColumns.status && <th className="text-center" style={{ width: '120px', cursor: 'pointer', userSelect: 'none' }} onClick={() => handleSort('status')}>สถานะ {renderSortIcon('status')}</th>}
+                        <th className="text-center" style={{ width: '120px', paddingRight: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
+                                <span>จัดการ</span>
+                                <span title="ตั้งค่าคอลัมน์" style={{ display: 'flex', alignItems: 'center' }}>
+                                    <Settings size={16} style={{ cursor: 'pointer', color: 'var(--text-muted)' }} onClick={() => setIsColumnSettingsOpen(true)} />
+                                </span>
+                            </div>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     {paginatedData.map((item) => (
                         <tr key={item.id}>
-                            <td className="text-medium font-medium" style={{ color: 'var(--accent-blue)' }}>{item.seq_no}</td>
-                            <td>
+                            {visibleColumns.seq_no && <td className="text-medium font-medium" style={{ color: 'var(--accent-blue)' }}>{item.seq_no}</td>}
+                            {visibleColumns.icon && <td>
                                 {item.icon_path && (
                                     <img src={item.icon_path} alt={item.app_name} style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
                                 )}
-                            </td>
-                            <td><span className="font-medium" style={{ color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', gap: '8px' }}>{item.app_name}</span></td>
-                            <td><span className="text-sm px-2 py-1 bg-slate-100 rounded-md border border-slate-200">{item.app_group || '-'}</span></td>
-                            <td className="text-muted text-sm">
+                            </td>}
+                            {visibleColumns.app_name && <td><span className="font-medium" style={{ color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', gap: '8px' }}>{item.app_name}</span></td>}
+                            {visibleColumns.app_group && <td><span className="text-sm px-2 py-1 bg-slate-100 rounded-md border border-slate-200">{item.app_group || '-'}</span></td>}
+                            {visibleColumns.desc && <td className="text-muted text-sm">
                                 {((item as any).translations && (item as any).translations[lang]) || 
                                  (lang === 'th' ? item.desc_th : item.desc_en) || 
                                  item.desc_th}
-                            </td>
-                            <td className="text-center">
+                            </td>}
+                            {visibleColumns.status && <td className="text-center">
                                 <StatusDropdown 
                                     status={item.status === 'active' || item.is_active || false} 
                                     onChange={async (val) => {
                                         try {
                                             const updatedItem = { ...item, status: val ? 'active' : 'inactive', is_active: val };
-                                            const res = await fetch(`${API_URL}/${item.id}`, {
+                                            const res = await fetch(`${API_URL}/${item.id}`, { credentials: 'include', 
                                                 method: 'PUT',
                                                 headers: { 'Content-Type': 'application/json' },
                                                 body: JSON.stringify(updatedItem)
@@ -296,7 +367,7 @@ export default function SystemApps() {
                                         } catch(e) { console.error(e); }
                                     }} 
                                 />
-                            </td>
+                            </td>}
                             <td className="text-center" style={{ paddingRight: '24px' }}>
                                 <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
                                     <button onClick={() => handleView(item)} style={{ ...crudStyles.actionBtn, color: 'var(--accent-blue)', background: 'rgba(59,130,246,0.1)' }} title="เรียกดู">
@@ -314,7 +385,7 @@ export default function SystemApps() {
                     ))}
                     {data.length === 0 && (
                         <tr>
-                            <td colSpan={7} className="text-center" style={{ padding: '40px 0', color: 'var(--text-muted)' }}>
+                            <td colSpan={Object.values(visibleColumns).filter(Boolean).length + 1} className="text-center" style={{ padding: '40px 0', color: 'var(--text-muted)' }}>
                                 ไม่พบข้อมูล
                             </td>
                         </tr>
@@ -409,7 +480,7 @@ export default function SystemApps() {
                         <input 
                             type="text" 
                             style={crudStyles.input} 
-                            placeholder="http://localhost:3001"
+                            placeholder="http://localhost:3101"
                             value={formData.route_path || formData.app_url || ''}
                             onChange={(e) => setFormData({...formData, route_path: e.target.value, app_url: e.target.value})}
                             disabled={modalMode === 'view'}
@@ -420,7 +491,7 @@ export default function SystemApps() {
                         <input 
                             type="text" 
                             style={crudStyles.input} 
-                            placeholder="http://localhost:8083/api/v1"
+                            placeholder="http://localhost:8101/api/v1"
                             value={formData.api_path || ''}
                             onChange={(e) => setFormData({...formData, api_path: e.target.value})}
                             disabled={modalMode === 'view'}
@@ -502,6 +573,106 @@ export default function SystemApps() {
             >
                 <div style={{ textAlign: 'center', padding: '10px 0' }}>
                     <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)', fontSize: '15px' }}>{alertConfig.message}</p>
+                </div>
+            </BaseModal>
+
+            {/* Column Settings Modal */}
+            <BaseModal 
+                isOpen={isColumnSettingsOpen} 
+                onClose={() => setIsColumnSettingsOpen(false)}
+                title="ตั้งค่าการแสดงผลตาราง"
+                width="450px"
+                footer={
+                    <button onClick={() => setIsColumnSettingsOpen(false)} style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>ตกลง</button>
+                }
+            >
+                <div style={{ marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>
+                        <h4 style={{ margin: 0, fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>เลือกคอลัมน์ที่ต้องการแสดง</h4>
+                        <h4 style={{ margin: 0, fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600, width: '130px' }}>เรียงลำดับข้อมูล</h4>
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {/* No. */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.seq_no} onChange={(e) => setVisibleColumns({...visibleColumns, seq_no: e.target.checked})} /> No.
+                            </label>
+                            <select 
+                                style={{...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0}}
+                                value={sortConfig.key === 'seq_no' && sortConfig.direction !== 'none' ? 'asc' : 'none'}
+                                onChange={(e) => setSortConfig({ key: 'seq_no', direction: e.target.value as 'asc'|'none' })}
+                            >
+                                <option value="none">ไม่เรียง</option>
+                                <option value="asc">เรียง</option>
+                            </select>
+                        </div>
+
+                        {/* Icon */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.icon} onChange={(e) => setVisibleColumns({...visibleColumns, icon: e.target.checked})} /> Icon
+                            </label>
+                            <select disabled style={{...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0, opacity: 0.5}}>
+                                <option value="none">ไม่เรียง</option>
+                            </select>
+                        </div>
+
+                        {/* ชื่อแอป */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.app_name} onChange={(e) => setVisibleColumns({...visibleColumns, app_name: e.target.checked})} /> ชื่อแอป
+                            </label>
+                            <select 
+                                style={{...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0}}
+                                value={sortConfig.key === 'app_name' && sortConfig.direction !== 'none' ? 'asc' : 'none'}
+                                onChange={(e) => setSortConfig({ key: 'app_name', direction: e.target.value as 'asc'|'none' })}
+                            >
+                                <option value="none">ไม่เรียง</option>
+                                <option value="asc">เรียง</option>
+                            </select>
+                        </div>
+
+                        {/* กลุ่ม */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.app_group} onChange={(e) => setVisibleColumns({...visibleColumns, app_group: e.target.checked})} /> กลุ่ม
+                            </label>
+                            <select 
+                                style={{...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0}}
+                                value={sortConfig.key === 'app_group' && sortConfig.direction !== 'none' ? 'asc' : 'none'}
+                                onChange={(e) => setSortConfig({ key: 'app_group', direction: e.target.value as 'asc'|'none' })}
+                            >
+                                <option value="none">ไม่เรียง</option>
+                                <option value="asc">เรียง</option>
+                            </select>
+                        </div>
+
+                        {/* คำอธิบาย */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.desc} onChange={(e) => setVisibleColumns({...visibleColumns, desc: e.target.checked})} /> คำอธิบาย
+                            </label>
+                            <select disabled style={{...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0, opacity: 0.5}}>
+                                <option value="none">ไม่เรียง</option>
+                            </select>
+                        </div>
+
+                        {/* สถานะ */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.status} onChange={(e) => setVisibleColumns({...visibleColumns, status: e.target.checked})} /> สถานะ
+                            </label>
+                            <select 
+                                style={{...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0}}
+                                value={sortConfig.key === 'status' && sortConfig.direction !== 'none' ? 'asc' : 'none'}
+                                onChange={(e) => setSortConfig({ key: 'status', direction: e.target.value as 'asc'|'none' })}
+                            >
+                                <option value="none">ไม่เรียง</option>
+                                <option value="asc">เรียง</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </BaseModal>
         </CrudLayout>

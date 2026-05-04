@@ -28,6 +28,7 @@ import {
     FormField, ui,
 } from "@/components/shared/ui-components";
 import { usePageTranslation } from "@/lib/language";
+import { useSystemConfig } from '@nexone/ui';
 
 /* ── Enums matching Angular: AdditionTypeEnum, DeductionTypeEnum ── */
 const AdditionTypeLabels: Record<number, string> = {
@@ -512,7 +513,16 @@ function AddSalaryDetailContent() {
 
 
     // ── Table pagination ──
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
     const [currentPage, setCurrentPage] = useState(1);
     const totalData = employees.length;
     const totalPages = Math.max(1, Math.ceil(totalData / pageSize));

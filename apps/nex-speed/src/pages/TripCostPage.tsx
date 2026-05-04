@@ -13,7 +13,7 @@ import {
 
 const API_BASE = typeof window !== 'undefined'
     ? `http://${window.location.hostname}:8081/api/v1`
-    : 'http://localhost:8081/api/v1';
+    : '';
 
 // ── Cost calculation helpers ──────────────────────────────────────────────────
 const FUEL_RATE   = 0.35; // L/km

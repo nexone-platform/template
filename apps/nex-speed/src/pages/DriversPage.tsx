@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import StatusDropdown from '@/components/StatusDropdown';
 import { Users, Search, Shield, AlertTriangle, Plus, Eye, Pencil, Trash2, X, Phone, Calendar, Truck, FileSpreadsheet, FileText, Download, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, LayoutGrid, List } from 'lucide-react';
 import { api, Driver, Vehicle } from '@/services/api';
+import { useSystemConfig } from '@nexone/ui';
 
 const statusLabels: Record<string, string> = { 'on-duty': '🟢 ปฏิบัติงาน', 'off-duty': '🔵 พักงาน', 'on-leave': '🟡 ลา' };
 const statusColors: Record<string, string> = { 'on-duty': 'active', 'off-duty': 'inactive', 'on-leave': 'pending' };
@@ -78,7 +79,16 @@ export default function DriversPage() {
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
 
     // View mode
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');

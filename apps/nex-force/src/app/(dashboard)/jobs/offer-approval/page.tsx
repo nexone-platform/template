@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect,  useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Check, X } from "lucide-react";
 import apiClient from "@/lib/api-client";
@@ -9,11 +9,21 @@ import {
     PaginationBar, StatusBadge, ui,
 } from "@/components/shared/ui-components";
 import { usePageTranslation } from "@/lib/language";
+import { useSystemConfig } from '@nexone/ui';
 
 export default function OfferApprovalPage() {
     const { t } = usePageTranslation();
     const [search, setSearch] = useState("");
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
     const [currentPage, setCurrentPage] = useState(1);
     const [sortKey, setSortKey] = useState("");
     const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");

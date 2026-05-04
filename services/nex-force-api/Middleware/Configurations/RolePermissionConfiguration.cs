@@ -13,10 +13,10 @@ namespace Middlewares.Configurations
     {
         public void Configure(EntityTypeBuilder<RolePermission> builder)
         {
-            builder.HasKey(p => p.PermissionsId);
-            builder.Property(p => p.PermissionsId)
-                   .HasColumnName("permissions_id")
-                   .HasDefaultValueSql("nextval('\"solution-one\".auth-sq-role-permissions-id'::regclass)") // Use sequence for auto-incrementing ID
+            builder.HasKey(p => p.PermissionId);
+            builder.Property(p => p.PermissionId)
+                   .HasColumnName("permission_id")
+                   .HasDefaultValueSql("nextval('nex_core.role_permissions_permission_id_seq'::regclass)") // Use sequence for auto-incrementing ID
                    .IsRequired();
 
             builder.Property(e => e.IsActive)
@@ -26,8 +26,11 @@ namespace Middlewares.Configurations
             builder.Property(e => e.RoleId)
                 .HasColumnName("role_id");
 
-            builder.Property(e => e.MenusId)
-                .HasColumnName("menus_id");
+            builder.Property(e => e.MenuId)
+                .HasColumnName("menu_id");
+
+            builder.Property(e => e.AppName)
+                .HasColumnName("app_name");
 
             builder.Property(e => e.CanView)
                 .HasColumnName("can_view");
@@ -67,11 +70,11 @@ namespace Middlewares.Configurations
 
             builder.HasOne(e => e.Menu)
                 .WithMany()  // Assuming one-to-many relationship
-                .HasForeignKey(e => e.MenusId)
+                .HasForeignKey(e => e.MenuId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Unique constraint on RoleId and MenusId
-            builder.HasIndex(e => new { e.RoleId, e.MenusId })
+            // Unique constraint on RoleId and MenuId
+            builder.HasIndex(e => new { e.RoleId, e.MenuId })
                 .IsUnique();
         }
     }

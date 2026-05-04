@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useEffect,  useState, useMemo, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import { Copy, Pencil, Trash2, X, Loader2, Check, Search } from "lucide-react";
@@ -18,6 +18,7 @@ import {
     PageHeader, ModalWrapper, FormField, LoadingSpinner, EmptyState, PaginationBar, ui, SelectAllCheckbox, RowCheckbox,
 } from "@/components/shared/ui-components";
 import { usePageTranslation } from "@/lib/language";
+import { useSystemConfig } from '@nexone/ui';
 
 
 export default function WorkingDaysPage() {
@@ -36,7 +37,16 @@ export default function WorkingDaysPage() {
     const [copyModalOpen, setCopyModalOpen] = useState(false);
     const [editingDay, setEditingDay] = useState<Special | null>(null);
 
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
 
     const { data: holidaysData, isLoading } = useSpecialWorkingDays();
     const updateMutation = useUpdateWorkingDay();

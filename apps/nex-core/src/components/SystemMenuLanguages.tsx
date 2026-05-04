@@ -1,3 +1,4 @@
+import { useSystemConfig } from '@nexone/ui';
 import React, { useState, useEffect } from 'react';
 import CrudLayout from '@/components/CrudLayout';
 import { SearchInput, crudStyles, BaseModal, ExportButtons, StatusDropdown } from '@/components/CrudComponents';
@@ -18,7 +19,16 @@ interface FlatTranslation {
 export default function SystemMenuLanguages() {
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
     const [translations, setTranslations] = useState<FlatTranslation[]>([]);
     
     const [languages, setLanguages] = useState<any[]>([]);
@@ -34,12 +44,12 @@ export default function SystemMenuLanguages() {
     const [langForm, setLangForm] = useState({ languageCode: '', languageName: '', description: '' });
 
     const { getEndpoint } = useApiConfig();
-    const coreApi = getEndpoint('NexCore', 'http://localhost:8001/api');
+    const coreApi = getEndpoint('NexCore', '');
     const API_URL = `${coreApi}/translations`;
 
     const fetchTranslations = async () => {
         try {
-            const res = await fetch(API_URL);
+            const res = await fetch(API_URL, { credentials: 'include' });
             const data = await res.json();
             if (data && Array.isArray(data)) {
                 // Flatten the grouped response
@@ -74,7 +84,7 @@ export default function SystemMenuLanguages() {
 
     const fetchLanguages = async () => {
         try {
-            const res = await fetch(`${API_URL}/languages`);
+            const res = await fetch(`${API_URL}/languages`, { credentials: 'include' });
             const data = await res.json();
             if (Array.isArray(data)) setLanguages(data);
         } catch (error) {
@@ -117,7 +127,7 @@ export default function SystemMenuLanguages() {
     const confirmDelete = async () => {
         if (!selectedItem) return;
         try {
-            const res = await fetch(`${API_URL}/id/${selectedItem.id}`, { method: 'DELETE' });
+            const res = await fetch(`${API_URL}/id/${selectedItem.id}`, { credentials: 'include',  method: 'DELETE' });
             if (res.ok) {
                 setIsModalOpen(false);
                 fetchTranslations();
@@ -130,7 +140,7 @@ export default function SystemMenuLanguages() {
     const saveForm = async () => {
         try {
             if (modalMode === 'add') {
-                const res = await fetch(API_URL, {
+                const res = await fetch(API_URL, { credentials: 'include', 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -144,7 +154,7 @@ export default function SystemMenuLanguages() {
                     fetchTranslations();
                 }
             } else if (selectedItem) {
-                const res = await fetch(`${API_URL}/${selectedItem.id}`, {
+                const res = await fetch(`${API_URL}/${selectedItem.id}`, { credentials: 'include', 
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ labelValue: formData.labelValue, is_active: formData.is_active })
@@ -162,7 +172,7 @@ export default function SystemMenuLanguages() {
     const handleSaveNewLanguage = async () => {
         if (!langForm.languageCode || !langForm.languageName) return;
         try {
-            const res = await fetch(`${API_URL}/languages`, {
+            const res = await fetch(`${API_URL}/languages`, { credentials: 'include', 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -291,7 +301,7 @@ export default function SystemMenuLanguages() {
                                         status={item.is_active} 
                                         onChange={async (val) => {
                                             try {
-                                                await fetch(`${API_URL}/${item.id}`, {
+                                                await fetch(`${API_URL}/${item.id}`, { credentials: 'include', 
                                                     method: 'PUT',
                                                     headers: { 'Content-Type': 'application/json' },
                                                     body: JSON.stringify({ is_active: val })

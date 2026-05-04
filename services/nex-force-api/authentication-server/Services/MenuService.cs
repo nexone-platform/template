@@ -1,4 +1,4 @@
-﻿using Middleware.Data;
+using Middleware.Data;
 using Middlewares.Models;
 using Microsoft.EntityFrameworkCore;
 using static authentication_server.Controllers.RegistationController;
@@ -34,16 +34,16 @@ namespace authentication_server.Services
         {
             Menu menuEntity;
 
-            if (menuDto.MenusId > 0)
+            if (menuDto.MenuId > 0)
             {
                 // Update existing menu
-                menuEntity = await _context.Menus.FindAsync(menuDto.MenusId);
+                menuEntity = await _context.Menus.FindAsync(menuDto.MenuId);
                 if (menuEntity == null)
                 {
                     throw new Exception("Menu not found.");
                 }
                 var parentMenuSeq = (await _context.Menus
-                 .Where(m => m.MenusId == menuDto.ParentId)
+                 .Where(m => m.MenuId == menuDto.ParentId)
                  .Select(m => m.MenuSeq)
                  .FirstOrDefaultAsync()) ?? 0; // กรณีที่ไม่พบเมนู จะใช้ค่า 0 เป็นค่าเริ่มต้น
 
@@ -51,25 +51,10 @@ namespace authentication_server.Services
                 // Map DTO to entity
                 menuEntity.Title = menuDto.Title;
                 menuEntity.Icon = menuDto.Icon;
-                menuEntity.ShowAsTab = menuDto.ShowAsTab;
-                menuEntity.SeparateRoute = menuDto.SeparateRoute;
                 menuEntity.MenuValue = menuDto.MenuValue;
                 menuEntity.Route = menuDto.Route;
-                menuEntity.HasSubRoute = menuDto.HasSubRoute;
-                menuEntity.ShowSubRoute = menuDto.ShowSubRoute;
                 menuEntity.ParentId = menuDto.ParentId;
                 menuEntity.Base = menuDto.Base;
-                menuEntity.Materialicons = menuDto.Materialicons;
-                menuEntity.Page = menuDto.Page;
-                menuEntity.Page1 = menuDto.Page1;
-                menuEntity.Page2 = menuDto.Page2;
-                menuEntity.Base2 = menuDto.Base2;
-                menuEntity.Base3 = menuDto.Base3;
-                menuEntity.Base4 = menuDto.Base4;
-                menuEntity.Base5 = menuDto.Base5;
-                menuEntity.Base6 = menuDto.Base6;
-                menuEntity.Base7 = menuDto.Base7;
-                menuEntity.Base8 = menuDto.Base8;
                 menuEntity.UpdateDate = DateTime.UtcNow;
                 menuEntity.UpdateBy = menuDto.Username;
                 menuEntity.CreateDate = menuEntity.CreateDate = menuEntity.CreateDate.HasValue
@@ -79,15 +64,15 @@ namespace authentication_server.Services
                 menuEntity.MenuCode = menuDto.Menucode;
                 menuEntity.MenuSeq = parentMenuSeq;
                 menuEntity.PageKey = menuDto.Base;
-                menuEntity.TitleTh = menuDto.TitleTh;
+                menuEntity.AppName = menuDto.AppName;
                 _context.Menus.Update(menuEntity);
             }
             else
             {
-                int newMenusId  = (await _context.Menus.MaxAsync(r => (int?)r.MenusId) ?? 0) + 1;
+                long newMenuId  = (await _context.Menus.MaxAsync(r => (long?)r.MenuId) ?? 0) + 1;
 
                 var parentMenuSeq = (await _context.Menus
-                     .Where(m => m.MenusId == menuDto.ParentId)
+                     .Where(m => m.MenuId == menuDto.ParentId)
                      .Select(m => m.MenuSeq)
                      .FirstOrDefaultAsync()) ?? 0; // กรณีที่ไม่พบเมนู จะใช้ค่า 0 เป็นค่าเริ่มต้น
 
@@ -97,35 +82,20 @@ namespace authentication_server.Services
                 // Create new menu
                 menuEntity = new Menu
                 {
-                    MenusId = newMenusId,
+                    MenuId = newMenuId,
                     Title = menuDto.Title,
                     Icon = menuDto.Icon,
-                    ShowAsTab = menuDto.ShowAsTab,
-                    SeparateRoute = menuDto.SeparateRoute,
                     MenuValue = menuDto.MenuValue,
                     Route = menuDto.Route,
-                    HasSubRoute = menuDto.HasSubRoute,
-                    ShowSubRoute = menuDto.ShowSubRoute,
                     ParentId = menuDto.ParentId,
                     Base = menuDto.Base,
-                    Materialicons = menuDto.Materialicons,
-                    Page = menuDto.Page,
-                    Page1 = menuDto.Page1,
-                    Page2 = menuDto.Page2,
-                    Base2 = menuDto.Base2,
-                    Base3 = menuDto.Base3,
-                    Base4 = menuDto.Base4,
-                    Base5 = menuDto.Base5,
-                    Base6 = menuDto.Base6,
-                    Base7 = menuDto.Base7,
-                    Base8 = menuDto.Base8,
                     CreateBy  = menuDto.Username,
                     CreateDate = DateTime.UtcNow,
                     IsActive = menuDto.IsActive,
                     MenuCode = menuDto.Menucode,
                     MenuSeq = parentMenuSeq,
                     PageKey = menuDto.Base,
-                    TitleTh = menuDto.TitleTh
+                    AppName = menuDto.AppName
                 };
 
                 _context.Menus.Add(menuEntity);
@@ -134,7 +104,7 @@ namespace authentication_server.Services
                 var rolePermissions = roles.Select(role => new RolePermission
                 {
                     RoleId = role.RoleId,
-                    MenusId = menuEntity.MenusId, // ใช้ MenuId ที่เพิ่งถูกสร้าง
+                    MenuId = (int)menuEntity.MenuId, // ใช้ MenuId ที่เพิ่งถูกสร้าง
                     CanView = true,  
                     CanEdit = true,
                     CanAdd = true,
@@ -143,7 +113,8 @@ namespace authentication_server.Services
                     CanExport = true,
                     IsActive = true,
                     CreateDate = DateTime.UtcNow,
-                    CreateBy = menuDto.Username
+                    CreateBy = menuDto.Username,
+                    AppName = menuDto.AppName
                 }).ToList();
 
                 await _context.RolePermissions.AddRangeAsync(rolePermissions);
@@ -180,34 +151,6 @@ namespace authentication_server.Services
                 var pageKey = menuDto.Base;
                 var labelKey = "title";
 
-                // ---------- ภาษาไทย
-                if (!string.IsNullOrWhiteSpace(menuDto.TitleTh))
-                {
-                    var translationTh = await _context.LanguageTranslations.FirstOrDefaultAsync(t =>
-                        t.PageKey == pageKey &&
-                        t.LabelKey == labelKey &&
-                        t.LanguageCode == "th");
-
-                    if (translationTh != null)
-                    {
-                        translationTh.LabelValue = menuDto.TitleTh;
-                        translationTh.UpdateDate = DateTime.UtcNow;
-                        translationTh.UpdateBy = menuDto.Username;
-                    }
-                    else
-                    {
-                        _context.LanguageTranslations.Add(new LanguageTranslation
-                        {
-                            LanguageCode = "th",
-                            PageKey = pageKey,
-                            LabelKey = labelKey,
-                            LabelValue = menuDto.TitleTh,
-                            CreateDate = DateTime.UtcNow,
-                            CreateBy = menuDto.Username
-                        });
-                    }
-                }
-
                 // ---------- ภาษาอังกฤษ
                 if (!string.IsNullOrWhiteSpace(menuDto.Title))
                 {
@@ -243,7 +186,7 @@ namespace authentication_server.Services
 
         public class MenuRes
         {
-            public int MenusId { get; set; }
+            public long MenuId { get; set; }
             public string Title { get; set; }
             public int? ParentId { get; set; }
             public List<MenuRes>? Children { get; set; }
@@ -257,7 +200,7 @@ namespace authentication_server.Services
                 .ThenBy(m => m.ParentId)  
                 .Select(m => new MenuRes
                 {
-                    MenusId = m.MenusId,
+                    MenuId = m.MenuId,
                     Title = m.Title,
                     ParentId = m.ParentId
                 })
@@ -268,7 +211,7 @@ namespace authentication_server.Services
 
         private List<MenuRes> BuildTree(List<MenuRes> menus)
         {
-            var menuMap = menus.ToDictionary(m => m.MenusId);
+            var menuMap = menus.ToDictionary(m => m.MenuId);
             List<MenuRes> rootMenus = new();
 
             foreach (var menu in menus)
@@ -292,38 +235,23 @@ namespace authentication_server.Services
 
         public class SubMenuDto
         {
-            public int MenusId { get; set; }
+            public long MenuId { get; set; }
             public string? MenuValue { get; set; }
             public string? Route { get; set; }
             public string? Base { get; set; }
-            public string? Base2 { get; set; }
-            public string? Base3 { get; set; }
-            public string? Base4 { get; set; }
-            public string? Base5 { get; set; }
-            public string? Base6 { get; set; }
-            public string? Base7 { get; set; }
-            public string? Base8 { get; set; }
             public bool CurrentActive { get; set; } = false;
-            public bool HasSubRoute { get; set; }
-            public bool ShowSubRoute { get; set; }
             public string? Icon { get; set; }
-            public string? MaterialIcons { get; set; }
-            public string? TitleTh { get; set; }
             public string? PageKey { get; set; }
             public List<SubMenuDto> SubMenus { get; set; } = new List<SubMenuDto>();
         }
 
         public class MenuDto
         {
-          
-            public int MenusId { get; set; }
+            public long MenuId { get; set; }
             public string? Tittle { get; set; }
             public string? Icon { get; set; }
-            public bool? ShowAsTab { get; set; }
-            public bool? SeparateRoute { get; set; }
             public string? Route { get; set; }
             public string? PageKey { get; set; }
-            public string? TitleTh { get; set; }
             public List<SubMenuDto> Menu { get; set; } = new List<SubMenuDto>();
             public PermissionDto Permissions { get; set; }
         }
@@ -340,33 +268,18 @@ namespace authentication_server.Services
 
         public class MenuDTO
         {
-            public int MenusId { get; set; }
+            public long MenuId { get; set; }
             public string? Title { get; set; }
             public string? Icon { get; set; }
-            public bool? ShowAsTab { get; set; }
-            public bool? SeparateRoute { get; set; }
             public string? MenuValue { get; set; }
             public string? Route { get; set; }
-            public bool HasSubRoute { get; set; }
-            public bool ShowSubRoute { get; set; }
             public int? ParentId { get; set; }
             public string? Base { get; set; }
-            public string? Materialicons { get; set; }
-            public string? Page { get; set; }
-            public string? Page1 { get; set; }
-            public string? Page2 { get; set; }
-            public string? Base2 { get; set; }
-            public string? Base3 { get; set; }
-            public string? Base4 { get; set; }
-            public string? Base5 { get; set; }
-            public string? Base6 { get; set; }
-            public string? Base7 { get; set; }
-            public string? Base8 { get; set; }
+            public string? AppName { get; set; }
             public string? Username { get; set; }
             public string? Menucode { get; set; }
             public bool IsActive { get; set; }
             public string? PageKey { get; set; }
-            public string? TitleTh { get; set; }
         }
     }
 }

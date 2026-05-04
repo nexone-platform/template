@@ -21,10 +21,12 @@ async function bootstrap() {
 
   // ── CORS ──
   app.enableCors({
-    origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000', 'http://localhost:3001'],
+    origin: process.env.CORS_ORIGINS 
+      ? process.env.CORS_ORIGINS.split(',') 
+      : isProduction ? [] : true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
   });
 
   // ── Validation ──
@@ -48,7 +50,7 @@ async function bootstrap() {
     SwaggerModule.setup('api/docs', app, document);
   }
 
-  const port = process.env.PORT || 8001;
+  const port = process.env.PORT || 8101;
   await app.listen(port);
   console.log(`NexCore API is running on port ${port} [${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'}]`);
   if (!isProduction) {

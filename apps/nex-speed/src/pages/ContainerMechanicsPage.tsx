@@ -6,6 +6,7 @@ import CrudLayout from '@/components/CrudLayout';
 import { SearchInput, crudStyles, BaseModal, ExportButtons, SummaryCard } from '@/components/CrudComponents';
 import Pagination from '@/components/Pagination';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
+import { useSystemConfig } from '@nexone/ui';
 
 interface ContainerMechanic { id: string; name: string; specialty: string; phone: string; address: string; rating: number; status: string; experience: number; certifications: string; notes: string; }
 
@@ -21,7 +22,16 @@ export default function ContainerMechanicsPage() {
     const [data, setData] = useState<ContainerMechanic[]>([]);
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
     const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view' | 'delete' | null>(null);
     const [selected, setSelected] = useState<ContainerMechanic | null>(null);
     const [form, setForm] = useState<Partial<ContainerMechanic>>(emptyForm);

@@ -125,7 +125,7 @@ export default function DisplaySettings() {
     const [loadingSystem, setLoadingSystem] = useState(true);
 
     const { getEndpoint } = useApiConfig();
-    const coreApi = getEndpoint('NexCore', 'http://localhost:8001/api');
+    const coreApi = getEndpoint('NexCore', '');
     const API_THEMES_URL = `${coreApi}/v1/themes`;
 
     useEffect(() => {
@@ -170,7 +170,7 @@ export default function DisplaySettings() {
         setSaving(true);
         try {
             if (themeData && themeData.theme_id) {
-                const res = await fetch(`${API_THEMES_URL}/${themeData.theme_id}`, {
+                const res = await fetch(`${API_THEMES_URL}/${themeData.theme_id}`, { credentials: 'include', 
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(themeData)

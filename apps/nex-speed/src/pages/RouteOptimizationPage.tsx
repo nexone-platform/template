@@ -20,7 +20,7 @@ const CircleMarker  = dynamic(() => import('react-leaflet').then(m => m.CircleMa
 
 const API_BASE = typeof window !== 'undefined'
     ? `http://${window.location.hostname}:8081/api/v1`
-    : 'http://localhost:8081/api/v1';
+    : '';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface RouteWaypoint {

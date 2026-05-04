@@ -9,10 +9,6 @@ export class Session {
   @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
-  user: User;
-
   @Column({ name: 'ip_address', length: 45, nullable: true })
   ipAddress: string;
 
@@ -25,12 +21,15 @@ export class Session {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
-  @Column({ name: 'expires_at', type: 'timestamp' })
+  @Column({ name: 'expires_at', type: 'timestamptz' })
   expiresAt: Date;
 
-  @Column({ name: 'created_at', type: 'timestamp', default: () => 'now()' })
+  @Column({ name: 'created_at', type: 'timestamptz', default: () => 'now()' })
   createdAt: Date;
 
-  @Column({ name: 'last_activity_at', type: 'timestamp', default: () => 'now()' })
+  @Column({ name: 'schema_name', length: 100, nullable: true })
+  schemaName: string;
+
+  @Column({ name: 'last_activity_at', type: 'timestamptz', default: () => 'now()' })
   lastActivityAt: Date;
 }

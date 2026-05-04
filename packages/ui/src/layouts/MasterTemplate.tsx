@@ -1,6 +1,7 @@
 import React from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
+import { useSystemConfig } from '../hooks/useSystemConfig';
 
 interface MasterTemplateProps {
   children: React.ReactNode;
@@ -35,6 +36,13 @@ export default function MasterTemplate({
   onLogout,
   onToggleSidebar,
 }: MasterTemplateProps) {
+  const { configs } = useSystemConfig();
+
+  // If the position is BREADCRUMB, inject the tenant name into breadcrumb list
+  const displayBreadcrumb = configs.showTenantName && configs.tenantNameDisplayPosition === 'BREADCRUMB' && configs.tenantName
+    ? [configs.tenantName, ...(breadcrumb || [])]
+    : breadcrumb || [];
+
   return (
     <div className="app-layout" style={{ display: 'flex', width: '100%', height: '100vh', overflow: 'hidden' }}>
       <Sidebar
@@ -46,16 +54,18 @@ export default function MasterTemplate({
         defaultThemeColor={defaultThemeColor}
         menuApiUrl={menuApiUrl}
         onToggleSidebar={onToggleSidebar}
+        systemConfig={configs}
       />
       <main className={`main-content ${isOpen ? '' : 'expanded'}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', transition: 'all 0.3s' }}>
         <Topbar
           pageTitle={pageTitle}
           pageSubtitle={pageSubtitle || ''}
-          breadcrumb={breadcrumb || []}
+          breadcrumb={displayBreadcrumb}
           user={user}
           onLogout={onLogout}
           onToggleSidebar={onToggleSidebar}
           coreApiUrl={menuApiUrl}
+          systemConfig={configs}
         />
         <div className="page-content" style={{ flex: 1, overflowY: 'auto', padding: '15px', background: 'var(--bg-page, #f8fafc)' }}>
           {children}

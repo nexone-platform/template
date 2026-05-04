@@ -56,12 +56,12 @@ export default function CompanySettings() {
   }, []);
 
   const { getEndpoint } = useApiConfig();
-    const coreApi = getEndpoint('NexCore', 'http://localhost:8001/api');
+    const coreApi = getEndpoint('NexCore', '');
     const API_URL = `${coreApi}/v1/company`;
 
   const fetchCompanyData = async () => {
     try {
-      const res = await fetch(API_URL);
+      const res = await fetch(API_URL, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         if (data && data.data && Object.keys(data.data).length > 0) {
@@ -91,7 +91,7 @@ export default function CompanySettings() {
       setSaving(true);
       setMessage('');
       
-      const res = await fetch(API_URL, {
+      const res = await fetch(API_URL, { credentials: 'include', 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

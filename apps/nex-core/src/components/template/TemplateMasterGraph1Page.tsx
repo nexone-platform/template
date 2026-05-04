@@ -1,3 +1,4 @@
+import { useSystemConfig } from '@nexone/ui';
 import React, { useState, useEffect, useCallback } from 'react';
 import CrudLayout from '@/components/CrudLayout';
 import { SummaryCard, SearchInput, crudStyles, BaseModal } from '@/components/CrudComponents';
@@ -33,7 +34,7 @@ const EMPTY_FORM = { invoice: '', customer: '', amount: 0, status: 'รอชำ
 
 export default function TemplateMasterGraph1Page() {
     const perm = usePagePermission('Master Graph 1');
-    const API = process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8001/api';
+    const API = process.env.NEXT_PUBLIC_CORE_API_URL || '';
 
     // ---------- State ----------
     const [data, setData] = useState<InvoiceRecord[]>([]);
@@ -41,7 +42,16 @@ export default function TemplateMasterGraph1Page() {
     const [saving, setSaving] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
     const [currentTab, setCurrentTab] = useState('ทั้งหมด');
 
     // CRUD modal state
@@ -54,7 +64,7 @@ export default function TemplateMasterGraph1Page() {
     const loadData = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API}/template-master-graph`);
+            const res = await fetch(`${API}/template-master-graph`, { credentials: 'include' });
             if (res.ok) {
                 const json = await res.json();
                 // map snake_case → camelCase
@@ -122,9 +132,9 @@ export default function TemplateMasterGraph1Page() {
                 order_id: formData.orderId || null,
             };
             if (modalMode === 'add') {
-                await fetch(`${API}/template-master-graph`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                await fetch(`${API}/template-master-graph`, { credentials: 'include',  method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
             } else if (modalMode === 'edit' && selectedItem) {
-                await fetch(`${API}/template-master-graph/${selectedItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                await fetch(`${API}/template-master-graph/${selectedItem.id}`, { credentials: 'include',  method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
             }
             setIsModalOpen(false);
             loadData();
@@ -136,7 +146,7 @@ export default function TemplateMasterGraph1Page() {
         if (!selectedItem) return;
         setSaving(true);
         try {
-            await fetch(`${API}/template-master-graph/${selectedItem.id}`, { method: 'DELETE' });
+            await fetch(`${API}/template-master-graph/${selectedItem.id}`, { credentials: 'include',  method: 'DELETE' });
             setIsModalOpen(false);
             loadData();
         } catch (e) { console.error(e); }

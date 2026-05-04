@@ -29,13 +29,13 @@ export class TemplateMasterGraph {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
-  @CreateDateColumn({ name: 'create_date' })
+  @CreateDateColumn({ name: 'create_date', type: 'timestamptz' })
   createDate: Date;
 
   @Column({ name: 'create_by', length: 50, nullable: true })
   createBy: string;
 
-  @UpdateDateColumn({ name: 'update_date' })
+  @UpdateDateColumn({ name: 'update_date', type: 'timestamptz' })
   updateDate: Date;
 
   @Column({ name: 'update_by', length: 50, nullable: true })

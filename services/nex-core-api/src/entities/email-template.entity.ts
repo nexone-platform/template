@@ -35,9 +35,9 @@ export class EmailTemplate {
     @Column({ type: 'varchar', length: 50, nullable: true })
     update_by: string;
 
-    @CreateDateColumn({ type: 'timestamp', nullable: true })
+    @CreateDateColumn({ type: 'timestamptz', nullable: true })
     create_date: Date;
 
-    @UpdateDateColumn({ type: 'timestamp', nullable: true })
+    @UpdateDateColumn({ type: 'timestamptz', nullable: true })
     update_date: Date;
 }

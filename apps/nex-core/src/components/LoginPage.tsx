@@ -4,36 +4,48 @@ import React, { useState } from 'react';
 import { Shield, Eye, EyeOff, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
 
 interface LoginPageProps {
-  onLogin: (email: string, password: string) => Promise<boolean>;
+  onLogin: (workspaceId: string, email: string, password: string) => Promise<boolean>;
   appName?: string;
   error?: string | null;
   loading?: boolean;
 }
 
 export default function LoginPage({ onLogin, appName = 'NexOne', error: externalError, loading: externalLoading }: LoginPageProps) {
+  const [workspaceId, setWorkspaceId] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [internalLoading, setInternalLoading] = useState(false);
   const [internalError, setInternalError] = useState<string | null>(null);
+  const [isEmailFocused, setIsEmailFocused] = useState(false);
+  const [isWorkspaceFocused, setIsWorkspaceFocused] = useState(false);
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
 
   const loading = externalLoading ?? internalLoading;
   const error = externalError ?? internalError;
+
+  const isEmailValid = email === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const emailBorderColor = isEmailFocused
+    ? '#6366f1'
+    : (!isEmailValid ? '#ef4444' : (email !== '' ? '#6366f1' : 'rgba(148,163,184,0.15)'));
+
+  const workspaceBorderColor = isWorkspaceFocused || workspaceId !== '' ? '#6366f1' : 'rgba(148,163,184,0.15)';
+  const passwordBorderColor = isPasswordFocused || password !== '' ? '#6366f1' : 'rgba(148,163,184,0.15)';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setInternalError(null);
 
-    if (!email || !password) {
-      setInternalError('กรุณากรอกอีเมลและรหัสผ่าน');
+    if (!workspaceId || !email || !password) {
+      setInternalError('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
 
     setInternalLoading(true);
     try {
-      const success = await onLogin(email, password);
+      const success = await onLogin(workspaceId, email, password);
       if (!success) {
-        setInternalError('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+        setInternalError('ตัวย่อบริษัท อีเมล หรือรหัสผ่านไม่ถูกต้อง');
       }
     } catch {
       setInternalError('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
@@ -127,6 +139,39 @@ export default function LoginPage({ onLogin, appName = 'NexOne', error: external
           )}
 
           <form onSubmit={handleSubmit}>
+            {/* Workspace ID */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block', fontSize: '13px', fontWeight: 500,
+                color: '#94a3b8', marginBottom: '8px',
+              }}>
+                ตัวย่อบริษัท (Workspace ID)
+              </label>
+              <input
+                type="text"
+                value={workspaceId}
+                onChange={(e) => {
+                  // Allow only uppercase English letters and numbers
+                  const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                  setWorkspaceId(val);
+                }}
+                placeholder="Ex. NEXONE"
+                autoComplete="organization"
+                autoFocus
+                disabled={loading}
+                style={{
+                  width: '100%', padding: '12px 16px',
+                  background: 'rgba(15,23,42,0.6)', border: `1px solid ${workspaceBorderColor}`,
+                  borderRadius: '12px', color: '#f1f5f9', fontSize: '14px',
+                  outline: 'none', transition: 'all 0.2s',
+                  boxSizing: 'border-box',
+                  textTransform: 'uppercase',
+                }}
+                onFocus={() => setIsWorkspaceFocused(true)}
+                onBlur={() => setIsWorkspaceFocused(false)}
+              />
+            </div>
+
             {/* Email */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{
@@ -141,17 +186,16 @@ export default function LoginPage({ onLogin, appName = 'NexOne', error: external
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@company.com"
                 autoComplete="email"
-                autoFocus
                 disabled={loading}
                 style={{
                   width: '100%', padding: '12px 16px',
-                  background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(148,163,184,0.15)',
+                  background: 'rgba(15,23,42,0.6)', border: `1px solid ${emailBorderColor}`,
                   borderRadius: '12px', color: '#f1f5f9', fontSize: '14px',
                   outline: 'none', transition: 'all 0.2s',
                   boxSizing: 'border-box',
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#6366f1'}
-                onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(148,163,184,0.15)'}
+                onFocus={() => setIsEmailFocused(true)}
+                onBlur={() => setIsEmailFocused(false)}
               />
             </div>
 
@@ -173,13 +217,13 @@ export default function LoginPage({ onLogin, appName = 'NexOne', error: external
                   disabled={loading}
                   style={{
                     width: '100%', padding: '12px 48px 12px 16px',
-                    background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(148,163,184,0.15)',
+                    background: 'rgba(15,23,42,0.6)', border: `1px solid ${passwordBorderColor}`,
                     borderRadius: '12px', color: '#f1f5f9', fontSize: '14px',
                     outline: 'none', transition: 'all 0.2s',
                     boxSizing: 'border-box',
                   }}
-                  onFocus={(e) => e.currentTarget.style.borderColor = '#6366f1'}
-                  onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(148,163,184,0.15)'}
+                  onFocus={() => setIsPasswordFocused(true)}
+                  onBlur={() => setIsPasswordFocused(false)}
                 />
                 <button
                   type="button"
@@ -253,6 +297,18 @@ export default function LoginPage({ onLogin, appName = 'NexOne', error: external
           to { transform: rotate(360deg); }
         }
         input::placeholder { color: #475569; }
+        
+        /* Override browser autofill styling */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 1000px #0f172a inset !important;
+            -webkit-text-fill-color: #f1f5f9 !important;
+            border-color: #6366f1 !important;
+            caret-color: #f1f5f9 !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
       `}</style>
     </div>
   );

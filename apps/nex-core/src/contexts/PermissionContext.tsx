@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { useAuth } from '@nexone/auth';
 
 // ---------- Types ----------
 
@@ -19,11 +20,11 @@ export interface MenuPermission {
 }
 
 interface PermissionContextValue {
-  roleId: number;
+  roleId: string | number;
   appName: string;
   permissions: MenuPermission[];
   loading: boolean;
-  setRoleId: (id: number) => void;
+  setRoleId: (id: string | number) => void;
   setAppName: (name: string) => void;
   /** ค้นหา permission ของ menu ใดก็ได้จาก menuCode หรือ title (case-insensitive) */
   getPermission: (menuCode: string) => MenuPermission | null;
@@ -44,7 +45,7 @@ const ALL_ALLOW: Omit<MenuPermission, 'menuId' | 'menuCode' | 'title' | 'parentI
 };
 
 const PermissionContext = createContext<PermissionContextValue>({
-  roleId: 1,
+  roleId: '',
   appName: 'nex-core',
   permissions: [],
   loading: false,
@@ -83,19 +84,29 @@ function flatten(nodes: any[]): MenuPermission[] {
 
 // ---------- Provider ----------
 
-export function PermissionProvider({ children, initialRoleId = 1, initialApp = 'nex-core' }: {
+export function PermissionProvider({ children, initialRoleId = '', initialApp = 'nex-core' }: {
   children: ReactNode;
-  initialRoleId?: number;
+  initialRoleId?: string | number;
   initialApp?: string;
 }) {
-  const [roleId, setRoleId] = useState(initialRoleId);
+  const { user, isLoggedIn } = useAuth();
+  
+  const [roleId, setRoleId] = useState<string | number>(initialRoleId);
   const [appName, setAppName] = useState(initialApp);
   const [permissions, setPermissions] = useState<MenuPermission[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const API = process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8001/api';
+  useEffect(() => {
+    if (user?.roleId || (user as any)?.role_id) {
+      setRoleId(user.roleId || (user as any)?.role_id);
+    }
+  }, [user]);
+
+  const API = process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8101/api';
 
   const fetchPermissions = useCallback(async () => {
+    if (!roleId || String(roleId).length < 10) return; // Skip if no valid UUID roleId
+    
     setLoading(true);
     try {
       const res = await fetch(`${API}/roles/${roleId}/permissions?app=${appName}`);

@@ -62,15 +62,15 @@ export class Company {
     @Column({ type: 'boolean', default: true })
     isactive: boolean;
 
-    @CreateDateColumn({ name: 'create_date' })
+    @CreateDateColumn({ name: 'create_date', type: 'timestamptz' })
     createdAt: Date;
 
-    @Column({ name: 'create_by', type: 'varchar', length: 50, nullable: true })
+    @Column({ name: 'create_by', type: 'uuid', nullable: true })
     createdBy: string;
 
-    @UpdateDateColumn({ name: 'update_date' })
+    @UpdateDateColumn({ name: 'update_date', type: 'timestamptz' })
     updatedAt: Date;
 
-    @Column({ name: 'update_by', type: 'varchar', length: 50, nullable: true })
+    @Column({ name: 'update_by', type: 'uuid', nullable: true })
     updatedBy: string;
 }

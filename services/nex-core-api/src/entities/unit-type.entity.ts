@@ -17,13 +17,13 @@ export class UnitType {
     @Column({ name: 'is_active', type: 'boolean', default: true })
     status: boolean;
 
-    @CreateDateColumn({ name: 'create_date' })
+    @CreateDateColumn({ name: 'create_date', type: 'timestamptz' })
     createdAt: Date;
 
     @Column({ name: 'create_by', type: 'varchar', length: 50, nullable: true, default: 'system' })
     createdBy: string;
 
-    @UpdateDateColumn({ name: 'update_date', nullable: true })
+    @UpdateDateColumn({ name: 'update_date', nullable: true, type: 'timestamptz' })
     updatedAt: Date;
 
     @Column({ name: 'update_by', type: 'varchar', length: 50, nullable: true })

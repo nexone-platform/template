@@ -137,7 +137,7 @@ export default function GPSLivePage() {
     // WS
     const wsRef = useRef<WebSocket | null>(null);
     const [wsConnected, setWsConnected] = useState(false);
-    const reconnectTimer = useRef<ReturnType<typeof setTimeout>>();
+    const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // UI
     const [selectedTruckId, setSelectedTruckId] = useState<string | null>(null);
@@ -297,7 +297,7 @@ export default function GPSLivePage() {
                 }
 
                 if (msg.type === 'trip_recycled') {
-                    setAlerts(prev => [{
+                    const recycledAlert: TruckAlert = {
                         id: `${Date.now()}-recycled`,
                         tripId: msg.tripId ?? '',
                         vehicleId: '',
@@ -306,7 +306,8 @@ export default function GPSLivePage() {
                         message: msg.message ?? `ทริปเริ่มเส้นทางใหม่`,
                         timestamp: new Date().toISOString(),
                         read: false,
-                    }, ...prev].slice(0, 50));
+                    };
+                    setAlerts(prev => [recycledAlert, ...prev].slice(0, 50));
                 }
             } catch { }
         };
@@ -315,7 +316,7 @@ export default function GPSLivePage() {
     useEffect(() => {
         connect();
         return () => {
-            clearTimeout(reconnectTimer.current);
+            if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
             wsRef.current?.close();
         };
     }, [connect]);

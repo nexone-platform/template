@@ -35,44 +35,30 @@ namespace authentication_server.Controllers
                 .OrderBy(m => m.MenuCode)
                 .Select(menu => new MenuDto
                 {
-                    MenusId = menu.MenusId,
+                    MenuId = menu.MenuId,
                     Tittle = menu.Title,
                     Icon = menu.Icon,
-                    ShowAsTab = menu.ShowAsTab,
-                    SeparateRoute = menu.SeparateRoute,
-                    TitleTh = menu.TitleTh,
+                    Route = menu.Route,
                     Menu = menus
-                        .Where(subMenu => subMenu.ParentId == menu.MenusId && subMenu.IsActive == true) // Find submenus for this parent
+                        .Where(subMenu => subMenu.ParentId == menu.MenuId && subMenu.IsActive == true) // Find submenus for this parent
                         .OrderBy(m => m.MenuCode)
                         .Select(subMenu => new SubMenuDto
                         {
-                            MenusId = subMenu.MenusId,  
+                            MenuId = subMenu.MenuId,  
                             MenuValue = subMenu.MenuValue,
                             Route = subMenu.Route,
                             Base = subMenu.Base,
-                            HasSubRoute = subMenu.HasSubRoute,
-                            ShowSubRoute = subMenu.ShowSubRoute,
                             Icon = subMenu.Icon,
-                            MaterialIcons = subMenu.Materialicons,
-                            TitleTh = menu.TitleTh,
                             SubMenus = menus
-                                .Where(subSubMenu => subSubMenu.ParentId == subMenu.MenusId && subMenu.IsActive == true) // Find subsubmenus for this submenu
+                                .Where(subSubMenu => subSubMenu.ParentId == subMenu.MenuId && subMenu.IsActive == true) // Find subsubmenus for this submenu
                                 .OrderBy(m => m.MenuCode)
                                 .Select(subSubMenu => new SubMenuDto
                                 {
-                                    MenusId = subSubMenu.MenusId,  
+                                    MenuId = subSubMenu.MenuId,  
                                     MenuValue = subSubMenu.MenuValue,
                                     Route = subSubMenu.Route,
                                     Base = subSubMenu.Base,
-                                    Base2 = subMenu.Base2,
-                                    Base3 = subMenu.Base3,
-                                    Base4 = subMenu.Base4,
-                                    Base5 = subMenu.Base5,
-                                    Base6 = subMenu.Base6,
-                                    Base7 = subMenu.Base7,
-                                    Base8 = subMenu.Base8,
                                     CurrentActive = false,
-                                    TitleTh = subSubMenu.TitleTh,
                                 }).ToList()
                         }).ToList()
                 }).ToList();
@@ -104,7 +90,7 @@ namespace authentication_server.Controllers
             // Join menus with permissions for the user's role
             var menusWithPermissions = await (from m in _context.Menus
                                               join rp in _context.RolePermissions
-                                              on m.MenusId equals rp.MenusId
+                                              on m.MenuId equals rp.MenuId
                                               where rp.RoleId == roleId && rp.IsActive && m.IsActive
                                               select new
                                               {
@@ -116,44 +102,29 @@ namespace authentication_server.Controllers
                 .OrderBy(m => m.Menu.MenuCode)
                 .Select(menu => new MenuDto
                 {
-                    MenusId = menu.Menu.MenusId,
+                    MenuId = menu.Menu.MenuId,
                     Tittle = menu.Menu.Title,
                     Icon = menu.Menu.Icon,
-                    ShowAsTab = menu.Menu.ShowAsTab,
-                    SeparateRoute = menu.Menu.SeparateRoute,
                     Route = menu.Menu.Route,
-                    TitleTh = menu.Menu.TitleTh,
                     Menu = menusWithPermissions
-                        .Where(subMenu => subMenu.Menu.ParentId == menu.Menu.MenusId)
+                        .Where(subMenu => subMenu.Menu.ParentId == menu.Menu.MenuId)
                         .OrderBy(m => m.Menu.MenuCode)
                         .Select(subMenu => new SubMenuDto
                         {
-                            MenusId = subMenu.Menu.MenusId,
+                            MenuId = subMenu.Menu.MenuId,
                             MenuValue = subMenu.Menu.MenuValue,
                             Route = subMenu.Menu.Route,
                             Base = subMenu.Menu.Base,
-                            HasSubRoute = subMenu.Menu.HasSubRoute,
-                            ShowSubRoute = subMenu.Menu.ShowSubRoute,
                             Icon = subMenu.Menu.Icon,
-                            MaterialIcons = subMenu.Menu.Materialicons,
-                            TitleTh = subMenu.Menu.TitleTh,
                             SubMenus = menusWithPermissions
-                                .Where(subSubMenu => subSubMenu.Menu.ParentId == subMenu.Menu.MenusId)
+                                .Where(subSubMenu => subSubMenu.Menu.ParentId == subMenu.Menu.MenuId)
                                 .OrderBy(m => m.Menu.MenuCode)
                                 .Select(subSubMenu => new SubMenuDto
                                 {
-                                    MenusId = subSubMenu.Menu.MenusId,
+                                    MenuId = subSubMenu.Menu.MenuId,
                                     MenuValue = subSubMenu.Menu.MenuValue,
                                     Route = subSubMenu.Menu.Route,
                                     Base = subSubMenu.Menu.Base,
-                                    Base2 = subMenu.Menu.Base2,
-                                    Base3 = subMenu.Menu.Base3,
-                                    Base4 = subMenu.Menu.Base4,
-                                    Base5 = subMenu.Menu.Base5,
-                                    Base6 = subMenu.Menu.Base6,
-                                    Base7 = subMenu.Menu.Base7,
-                                    Base8 = subMenu.Menu.Base8,
-                                    TitleTh = subMenu.Menu.TitleTh,
                                     CurrentActive = false,
                                 }).ToList()
                         }).ToList()
@@ -181,7 +152,7 @@ namespace authentication_server.Controllers
             // โหลดเมนู พร้อมคำแปลภาษา
             var menusWithLabels = await (
                 from m in _context.Menus
-                join rp in _context.RolePermissions on m.MenusId equals rp.MenusId
+                join rp in _context.RolePermissions on m.MenuId equals rp.MenuId
                 where rp.RoleId == roleId && rp.IsActive && m.IsActive
 
                 join label in _context.LanguageTranslations
@@ -200,8 +171,7 @@ namespace authentication_server.Controllers
                     Menu = m,
                     Label = t.LabelValue ?? m.Title,
                     PageKey = page.PageKey,
-                    PageDescription = page.Description ,
-                    TitleTh = m.TitleTh
+                    PageDescription = page.Description 
                 }
             ).ToListAsync();
 
@@ -211,47 +181,32 @@ namespace authentication_server.Controllers
                 .OrderBy(m => m.Menu.MenuCode)
                 .Select(menu => new MenuDto
                 {
-                    MenusId = menu.Menu.MenusId,
+                    MenuId = menu.Menu.MenuId,
                     Tittle = menu.Label, 
                     Icon = menu.Menu.Icon,
-                    ShowAsTab = menu.Menu.ShowAsTab,
-                    SeparateRoute = menu.Menu.SeparateRoute,
                     Route = menu.Menu.Route,
                     PageKey = menu.PageKey,
-                    TitleTh = menu.TitleTh,
                     Menu = menusWithLabels
-                        .Where(sub => sub.Menu.ParentId == menu.Menu.MenusId)
+                        .Where(sub => sub.Menu.ParentId == menu.Menu.MenuId)
                         .OrderBy(m => m.Menu.MenuCode)
                         .Select(subMenu => new SubMenuDto
                         {
-                            MenusId = subMenu.Menu.MenusId,
+                            MenuId = subMenu.Menu.MenuId,
                             MenuValue = subMenu.Label,
                             Route = subMenu.Menu.Route,
                             Base = subMenu.Menu.Base,
-                            HasSubRoute = subMenu.Menu.HasSubRoute,
-                            ShowSubRoute = subMenu.Menu.ShowSubRoute,
                             Icon = subMenu.Menu.Icon,
-                            MaterialIcons = subMenu.Menu.Materialicons,
                             PageKey = subMenu.PageKey,
-                            TitleTh = subMenu.TitleTh,
                             SubMenus = menusWithLabels
-                                .Where(ssm => ssm.Menu.ParentId == subMenu.Menu.MenusId)
+                                .Where(ssm => ssm.Menu.ParentId == subMenu.Menu.MenuId)
                                 .OrderBy(m => m.Menu.MenuCode)
                                 .Select(subSubMenu => new SubMenuDto
                                 {
-                                    MenusId = subSubMenu.Menu.MenusId,
+                                    MenuId = subSubMenu.Menu.MenuId,
                                     PageKey = subSubMenu.PageKey,
                                     MenuValue = subSubMenu.Label,
                                     Route = subSubMenu.Menu.Route,
                                     Base = subSubMenu.Menu.Base,
-                                    Base2 = subSubMenu.Menu.Base2,
-                                    Base3 = subSubMenu.Menu.Base3,
-                                    Base4 = subSubMenu.Menu.Base4,
-                                    Base5 = subSubMenu.Menu.Base5,
-                                    Base6 = subSubMenu.Menu.Base6,
-                                    Base7 = subSubMenu.Menu.Base7,
-                                    Base8 = subSubMenu.Menu.Base8,
-                                    TitleTh = subMenu.TitleTh,
                                     CurrentActive = false
                                 }).ToList()
                         }).ToList()
@@ -306,7 +261,7 @@ namespace authentication_server.Controllers
             }
 
             // ค้นหา RolePermissions ที่เกี่ยวข้องกับเมนูนี้
-            var rolePermissions = _context.RolePermissions.Where(rp => rp.MenusId == id);
+            var rolePermissions = _context.RolePermissions.Where(rp => rp.MenuId == id);
 
             // ลบ RolePermissions ทั้งหมดที่เกี่ยวข้อง
             _context.RolePermissions.RemoveRange(rolePermissions);

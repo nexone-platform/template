@@ -20,21 +20,21 @@ export class Announcement {
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;
 
-  @Column({ name: 'schedule_date', type: 'timestamp', nullable: true })
+  @Column({ name: 'schedule_date', type: 'timestamptz', nullable: true })
   scheduleDate: Date;
 
-  @Column({ name: 'end_date', type: 'timestamp', nullable: true })
+  @Column({ name: 'end_date', type: 'timestamptz', nullable: true })
   endDate: Date;
 
   @Column({ name: 'create_by', type: 'varchar', length: 50, nullable: true })
   createBy: string;
 
-  @CreateDateColumn({ name: 'create_date' })
+  @CreateDateColumn({ name: 'create_date', type: 'timestamptz' })
   createDate: Date;
 
   @Column({ name: 'update_by', type: 'varchar', length: 50, nullable: true })
   updateBy: string;
 
-  @UpdateDateColumn({ name: 'update_date' })
+  @UpdateDateColumn({ name: 'update_date', type: 'timestamptz' })
   updateDate: Date;
 }

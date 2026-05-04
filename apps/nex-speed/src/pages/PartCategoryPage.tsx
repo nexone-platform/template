@@ -8,6 +8,7 @@ import CrudLayout from '@/components/CrudLayout';
 import { SummaryCard, ExportButtons, SearchInput, BaseModal, crudStyles } from '@/components/CrudComponents';
 import { exportToXLSX, exportToCSV, exportToPDF } from '@/utils/exportUtils';
 import Pagination from '@/components/Pagination';
+import { useSystemConfig } from '@nexone/ui';
 
 interface PartCategory {
     id: number;
@@ -27,7 +28,16 @@ export default function PartCategoryPage() {
     const [search, setSearch] = useState('');
     const [groupFilter, setGroupFilter] = useState<'all' | number>('all');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
     const [modal, setModal] = useState<'add' | 'edit' | 'view' | 'delete' | null>(null);
     const [selected, setSelected] = useState<PartCategory | null>(null);
     const [form, setForm] = useState<Partial<PartCategory>>({ name: '', description: '', status: 'active', partGroupId: null });

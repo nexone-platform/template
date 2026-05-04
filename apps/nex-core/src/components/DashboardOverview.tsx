@@ -68,15 +68,15 @@ export default function DashboardOverview({ onNavigate }: { onNavigate?: (page: 
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      const CORE_API_URL = process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8001/api';
+      const CORE_API_URL = process.env.NEXT_PUBLIC_CORE_API_URL || '';
       try {
-        const logsRes = await fetch(`${CORE_API_URL}/audit-logs/recent?limit=5`);
+        const logsRes = await fetch(`${CORE_API_URL}/audit-logs/recent?limit=5`, { credentials: 'include' });
         if (logsRes.ok) {
           const data = await logsRes.json();
           setAuditLogs(Array.isArray(data) ? data : []);
         }
 
-        const appsRes = await fetch(`${CORE_API_URL}/v1/system-apps?all=true`);
+        const appsRes = await fetch(`${CORE_API_URL}/v1/system-apps?all=true`, { credentials: 'include' });
         if (appsRes.ok) {
           const appsData = await appsRes.json();
           const apps = Array.isArray(appsData) ? appsData : (appsData?.data || []);
@@ -84,7 +84,7 @@ export default function DashboardOverview({ onNavigate }: { onNavigate?: (page: 
           setAppCount(apps.filter((a: any) => a.is_active || a.status === 'active').length);
         }
 
-        const statsRes = await fetch(`${CORE_API_URL}/v1/dashboard/users-stats`);
+        const statsRes = await fetch(`${CORE_API_URL}/v1/dashboard/users-stats`, { credentials: 'include' });
         if (statsRes.ok) {
           const stats = await statsRes.json();
           if (stats.totalUsers !== undefined) setTotalUsers(stats.totalUsers);

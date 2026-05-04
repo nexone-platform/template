@@ -172,7 +172,7 @@ export default function JobApplicationForm({ jobTitle, onClose }: Props) {
         };
 
         try {
-            const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+            const apiBase = process.env.NEXT_PUBLIC_API_URL || '';
             const res = await fetch(`${apiBase}/jobs/apply`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

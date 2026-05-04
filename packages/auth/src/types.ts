@@ -20,6 +20,7 @@ export interface AuthSession {
 }
 
 export interface LoginCredentials {
+  workspaceId: string;
   email: string;
   password: string;
   appName?: string;  // which app is requesting login

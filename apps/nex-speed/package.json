@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3008 -H 0.0.0.0",
-    "dev:https": "next dev -p 3003 -H 0.0.0.0 --experimental-https",
+    "dev": "next dev -p 3108 -H 0.0.0.0",
+    "dev:https": "next dev -p 3103 -H 0.0.0.0 --experimental-https",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect,  useState, useMemo } from "react";
 import { useEmployeeSalary, PayrollRequest } from "@/hooks/use-payroll";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,6 +9,7 @@ import {
     PaginationBar, FormField, ui,
 } from "@/components/shared/ui-components";
 import { usePageTranslation } from "@/lib/language";
+import { useSystemConfig } from '@nexone/ui';
 
 /* ── helpers ── */
 const fmtDate = (d: string | Date | null | undefined, fmt: "dd/MM/yyyy" | "MM/yyyy" = "dd/MM/yyyy") => {
@@ -54,7 +55,16 @@ export default function EmployeeSalaryPage() {
     const navigateSlip = (payrollId: number) => { router.push(`/payroll/salary-view/${payrollId}`); };
 
     // ── Table state ──
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
     const [currentPage, setCurrentPage] = useState(1);
     const [sortKey, setSortKey] = useState("");
     const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");

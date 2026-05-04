@@ -57,10 +57,10 @@ export class SystemAppsService {
     if (savedApp && savedApp.app_name && Object.keys(translations).length > 0) {
       for (const [lang, value] of Object.entries(translations)) {
         if (value) {
-          await this.repo.query(
-            `INSERT INTO nex_core.language_translations (language_code, page_key, label_key, label_value) VALUES ($1, 'system-app', $2, $3)`,
-            [lang, savedApp.app_name, value]
-          );
+            await this.repo.query(
+                `INSERT INTO nex_core.language_translations (translation_id, language_code, page_key, label_key, label_value) VALUES (gen_random_uuid(), $1, 'system_apps', $2, $3)`,
+                [lang, savedApp.app_name, value]
+            );
         }
       }
     }
@@ -98,7 +98,7 @@ export class SystemAppsService {
           for (const [lang, value] of Object.entries(translations)) {
               if (value) {
                   await this.repo.query(
-                      `INSERT INTO nex_core.language_translations (language_code, page_key, label_key, label_value) VALUES ($1, 'system_apps', $2, $3)`,
+                      `INSERT INTO nex_core.language_translations (translation_id, language_code, page_key, label_key, label_value) VALUES (gen_random_uuid(), $1, 'system_apps', $2, $3)`,
                       [lang, finalAppName, value]
                   );
               }

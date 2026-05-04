@@ -34,6 +34,7 @@ interface TopbarProps {
     onLogout?: () => void;
     onToggleSidebar?: () => void;
     coreApiUrl?: string;
+    systemConfig?: any;
 }
 
 // ──────────────────────────────────────────
@@ -108,8 +109,8 @@ function FlagImg({ code, size = 22 }: { code: string; size?: number }) {
 
 const CORE_API_URL =
     typeof window !== 'undefined' && window.location.hostname !== 'localhost'
-        ? `http://${window.location.hostname}:8001/api`
-        : 'http://localhost:8001/api';
+        ? `http://${window.location.hostname}:8101/api`
+        : 'http://localhost:8101/api';
 
 // ──────────────────────────────────────────
 // Component
@@ -122,6 +123,7 @@ export default function Topbar({
     onLogout,
     onToggleSidebar,
     coreApiUrl,
+    systemConfig,
 }: TopbarProps) {
     const { lang, setLang } = useLanguage();
 
@@ -253,6 +255,13 @@ export default function Topbar({
 
             {/* RIGHT */}
             <div className="topbar-right">
+                {systemConfig?.showTenantName && systemConfig?.tenantNameDisplayPosition === 'TOP_HEADER_RIGHT' && systemConfig?.tenantName && (
+                    <div style={{ marginRight: '16px', display: 'flex', alignItems: 'center' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--topbar-text-color, #ffffff)', background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)' }}>
+                            Workspace: {systemConfig.tenantName}
+                        </span>
+                    </div>
+                )}
                 {actions && <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: '12px' }}>{actions}</div>}
 
                 {/* ── Language Switcher ── */}

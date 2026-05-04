@@ -1,4 +1,4 @@
-﻿using Middleware.Models;
+using Middleware.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,15 +8,15 @@ using System.Threading.Tasks;
 
 namespace Middlewares.Models
 {
-    [Table("auth-tb-ms-role-permissions")]
+    [Table("role_permissions", Schema = "nex_core")]
     public class RolePermission
     {
-        public int PermissionsId { get; set; }
+        public int PermissionId { get; set; }
         public bool IsActive { get; set; } 
 
         public decimal? RoleId { get; set; }
 
-        public int MenusId { get; set; }
+        public int MenuId { get; set; }
 
         public bool CanView { get; set; } 
 
@@ -37,6 +37,8 @@ namespace Middlewares.Models
         public DateTime? UpdateDate { get; set; }
 
         public string? UpdateBy { get; set; }
+
+        public string? AppName { get; set; }
 
         // Navigation Properties
         public virtual Role Role { get; set; }

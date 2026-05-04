@@ -53,6 +53,6 @@ export class AuditLog {
   error_message: string;
 
   // ── WHEN: เมื่อไหร่ ──
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
 }

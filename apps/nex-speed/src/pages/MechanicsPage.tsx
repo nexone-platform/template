@@ -7,6 +7,7 @@ import Pagination from '@/components/Pagination';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
 import { Plus, Eye, Edit2, Trash2, X, Wrench, Phone, Star, CheckCircle, ShieldCheck, Tags, Box } from 'lucide-react';
 import { api, Mechanic as APIMechanic } from '@/services/api';
+import { useSystemConfig } from '@nexone/ui';
 
 interface Mechanic {
     id: string;
@@ -43,7 +44,16 @@ export default function MechanicsPage() {
     const [search, setSearch] = useState('');
     const [filterType, setFilterType] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
     const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view' | 'delete' | null>(null);
     const [selected, setSelected] = useState<Mechanic | null>(null);
     const [form, setForm] = useState<Partial<Mechanic>>(emptyForm);

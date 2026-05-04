@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useEffect,  useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencil, MoreVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -19,6 +19,7 @@ import {
     LoadingSpinner, EmptyState, PaginationBar, SortableTh, SelectAllCheckbox, RowCheckbox, ui,
 } from "@/components/shared/ui-components";
 import { usePageTranslation } from "@/lib/language";
+import { useSystemConfig } from '@nexone/ui';
 
 const STATUS_COLORS: Record<string, string> = {
     New: "text-nv-violet-dark bg-nv-violet-light border-nv-violet/20",
@@ -144,7 +145,16 @@ export default function LeaveAdminPage() {
     // Sort / pagination
     const [sortKey, setSortKey] = useState<string | null>(null);
     const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
 
     // Approve / Decline / Cancel modal
     const [approveModal, setApproveModal] = useState<{

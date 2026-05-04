@@ -11,17 +11,20 @@ interface SidebarProps {
 }
 
 interface MenuItem {
-    menus_id: number;
+    menu_id: number | string;
     title: string;
-    title_th?: string;
-    route: string;
-    icon?: string;
-    materialicons?: string;
-    page_key?: string;
+    route: string | null;
+    icon?: string | null;
+    materialicons?: string | null;
+    page_key?: string | null;
     menu_seq?: number;
     is_active: boolean;
-    parent_id?: string;
+    parent_id?: string | null;
     app_name?: string;
+}
+
+interface MenuItemWithChildren extends MenuItem {
+    children: MenuItemWithChildren[];
 }
 
 /* ── SVG Icons ── */
@@ -85,14 +88,14 @@ function resolveIcon(item: MenuItem): React.ReactNode {
 
 /** Fallback static menu ถ้า API ไม่ตอบสนอง */
 const FALLBACK_ITEMS: MenuItem[] = [
-    { menus_id: 1, title: 'Dashboard', route: '/', page_key: 'dashboard', is_active: true, materialicons: 'dashboard' },
-    { menus_id: 2, title: 'Pages', route: '/pages', page_key: 'pages', is_active: true, materialicons: 'pages' },
-    { menus_id: 3, title: 'Theme', route: '/theme', page_key: 'theme', is_active: true, materialicons: 'palette' },
-    { menus_id: 4, title: 'Language', route: '/translations', page_key: 'translations', is_active: true, materialicons: 'translate' },
-    { menus_id: 5, title: 'Settings', route: '/settings', page_key: 'settings', is_active: true, materialicons: 'settings' },
+    { menu_id: 1, title: 'Dashboard', route: '/', page_key: 'dashboard', is_active: true, materialicons: 'dashboard' },
+    { menu_id: 2, title: 'Pages', route: '/pages', page_key: 'pages', is_active: true, materialicons: 'pages' },
+    { menu_id: 3, title: 'Theme', route: '/theme', page_key: 'theme', is_active: true, materialicons: 'palette' },
+    { menu_id: 4, title: 'Language', route: '/translations', page_key: 'translations', is_active: true, materialicons: 'translate' },
+    { menu_id: 5, title: 'Settings', route: '/settings', page_key: 'settings', is_active: true, materialicons: 'settings' },
 ];
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8082/api';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 export default function Sidebar({ collapsed }: SidebarProps) {
     const { t } = useLanguage();
@@ -107,6 +110,13 @@ export default function Sidebar({ collapsed }: SidebarProps) {
     const [menuStyle, setMenuStyle] = useState(() => localStorage.getItem('nexone_menu_style') || 'classic');
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
     const [menuLoading, setMenuLoading] = useState(true);
+    const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
+
+    const toggleExpand = (id: string | number, e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setExpandedMenus(prev => ({ ...prev, [id]: !prev[id] }));
+    };
 
     // ดึงเมนูจากตาราง menus โดย filter app_name=nex-site
     useEffect(() => {
@@ -142,7 +152,107 @@ export default function Sidebar({ collapsed }: SidebarProps) {
     // Admin เห็นทุกเมนู / User เห็นเฉพาะ allowedPages
     const visibleItems = isAdmin
         ? menuItems
-        : menuItems.filter(item => allowedPages.includes(item.page_key || ''));
+        : menuItems.filter(item => !item.page_key || allowedPages.includes(item.page_key));
+
+    const buildTree = (items: MenuItem[]): MenuItemWithChildren[] => {
+        const map = new Map<string | number, MenuItemWithChildren>();
+        items.forEach(item => map.set(item.menu_id, { ...item, children: [] }));
+        
+        const tree: MenuItemWithChildren[] = [];
+        
+        items.forEach(item => {
+            if (item.parent_id && map.has(item.parent_id)) {
+                map.get(item.parent_id)!.children.push(map.get(item.menu_id)!);
+            } else {
+                tree.push(map.get(item.menu_id)!);
+            }
+        });
+        
+        // Sort by menu_seq
+        const sortTree = (nodes: MenuItemWithChildren[]) => {
+            nodes.sort((a, b) => (a.menu_seq || 0) - (b.menu_seq || 0));
+            nodes.forEach(node => sortTree(node.children));
+        };
+        sortTree(tree);
+        
+        return tree;
+    };
+
+    const treeData = buildTree(visibleItems);
+
+    const renderMenuItem = (item: MenuItemWithChildren, depth = 0) => {
+        const isSection = !item.parent_id && !item.route && !item.icon && !item.materialicons;
+        const hasChildren = item.children && item.children.length > 0;
+        const safeId = item.menu_id ? item.menu_id.toString() : Math.random().toString();
+        const isExpanded = !!expandedMenus[safeId];
+
+        if (isSection) {
+            return (
+                <div key={safeId} className="sidebar-section-heading" style={{
+                    padding: collapsed ? '12px 0' : '16px 16px 8px 16px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: '#64748b',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    textAlign: collapsed ? 'center' : 'left'
+                }}>
+                    {!collapsed ? item.title : '—'}
+                </div>
+            );
+        }
+
+        const icon = resolveIcon(item);
+
+        if (hasChildren) {
+            return (
+                <div key={safeId} className="nav-group">
+                    <div 
+                        className={`nav-item nav-parent ${isExpanded ? 'expanded' : ''}`}
+                        onClick={(e) => toggleExpand(safeId, e)}
+                        style={{ cursor: 'pointer', paddingLeft: depth === 0 ? undefined : `${(depth * 12) + 12}px` }}
+                    >
+                        <span className="nav-icon">{icon}</span>
+                        {!collapsed && (
+                            <>
+                                <span className="nav-text">{item.title}</span>
+                                <span className="nav-arrow" style={{ 
+                                    marginLeft: 'auto', 
+                                    transition: 'transform 0.2s',
+                                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
+                                }}>
+                                    <ChevronDown size={16} />
+                                </span>
+                            </>
+                        )}
+                    </div>
+                    {isExpanded && !collapsed && (
+                        <div className="nav-children" style={{ marginLeft: depth === 0 ? '12px' : '0' }}>
+                            {item.children.map(child => renderMenuItem(child, depth + 1))}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        return (
+            <NavLink
+                key={safeId}
+                to={item.route || '#'}
+                end={item.route === '/'}
+                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                title={collapsed ? item.title : undefined}
+                onClick={(e) => {
+                    if (!item.route) e.preventDefault();
+                    else handleNavClick(e, item.route);
+                }}
+                style={{ paddingLeft: depth === 0 ? undefined : `${(depth * 12) + 12}px` }}
+            >
+                <span className="nav-icon">{icon}</span>
+                {!collapsed && <span className="nav-text">{item.title}</span>}
+            </NavLink>
+        );
+    };
 
     const handleNavClick = (e: React.MouseEvent, itemTo: string) => {
         const isCurrentPage = itemTo === '/'
@@ -172,23 +282,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                         Loading...
                     </div>
                 ) : (
-                    visibleItems.map((item) => {
-                        const label = item.title_th || item.title;
-                        const icon = resolveIcon(item);
-                        return (
-                            <NavLink
-                                key={item.menus_id}
-                                to={item.route}
-                                end={item.route === '/'}
-                                className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                                title={collapsed ? label : undefined}
-                                onClick={(e) => handleNavClick(e, item.route)}
-                            >
-                                <span className="nav-icon">{icon}</span>
-                                {!collapsed && <span className="nav-text">{label}</span>}
-                            </NavLink>
-                        );
-                    })
+                    treeData.map((item) => renderMenuItem(item))
                 )}
             </nav>
 

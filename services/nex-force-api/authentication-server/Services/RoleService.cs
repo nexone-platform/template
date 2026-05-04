@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Middleware.Data;
 using Middleware.Models;
 using Middlewares;
@@ -78,7 +78,7 @@ namespace authentication_server.Services
                 var rolePermissions = menus.Select(menu => new RolePermission
                 {
                     RoleId = role.RoleId,
-                    MenusId = menu.MenusId,
+                    MenuId = (int)menu.MenuId,
                     CanView = true,   // ให้สิทธิ์ Read เป็นค่า Default
                     CanEdit = true, // อื่น ๆ สามารถตั้งค่าได้ตามต้องการ
                     CanAdd = true,
@@ -107,7 +107,7 @@ namespace authentication_server.Services
             foreach (var permission in model.Permissions)
             {
                 var existingPermission = await _context.RolePermissions
-                    .FirstOrDefaultAsync(rp => rp.RoleId == model.RoleId && rp.MenusId == permission.MenusId);
+                    .FirstOrDefaultAsync(rp => rp.RoleId == model.RoleId && rp.MenuId == permission.MenuId);
 
                 if (existingPermission != null)
                 {
@@ -133,7 +133,7 @@ namespace authentication_server.Services
                     _context.RolePermissions.Add(new RolePermission
                     {
                         RoleId = model.RoleId,
-                        MenusId = permission.MenusId,
+                        MenuId = (int)permission.MenuId,
                         CanView = permission.CanView,
                         CanEdit = permission.CanEdit,
                         CanAdd = permission.CanAdd,
@@ -155,8 +155,8 @@ namespace authentication_server.Services
 
         public class PermissionDto
         {
-            public int PermissionsId { get; set; }
-            public int MenusId { get; set; } // ID ของเมนู
+            public int PermissionId { get; set; }
+            public long MenuId { get; set; } // ID ของเมนู
             public decimal RoleId { get; set; } // ID ของเมนู
             public string? MenuCode { get; set; } // ID ของเมนู
             public string Title { get; set; } // ชื่อของเมนู
@@ -176,12 +176,12 @@ namespace authentication_server.Services
         {
             var menuPermissions = await (from menu in _context.Menus
                                          join rp in _context.RolePermissions
-                                         on menu.MenusId equals rp.MenusId into rolePermissionsGroup
+                                         on menu.MenuId equals rp.MenuId into rolePermissionsGroup
                                          from rp in rolePermissionsGroup.DefaultIfEmpty() // Left Join
                                          where menu.IsActive  && rp.RoleId == roleId
                                          select new PermissionDto
                                          {
-                                             MenusId = menu.MenusId,
+                                             MenuId = menu.MenuId,
                                              Title = menu.Title,
                                              ParentId = menu.ParentId,
                                              RoleId = roleId,
@@ -205,13 +205,13 @@ namespace authentication_server.Services
         {
             var menuPermissions = await (from menu in _context.Menus
                                          join rp in _context.RolePermissions
-                                         on menu.MenusId equals rp.MenusId into rolePermissionsGroup
+                                         on menu.MenuId equals rp.MenuId into rolePermissionsGroup
                                          from rp in rolePermissionsGroup.DefaultIfEmpty() // Left join
                                          where menu.IsActive && rp.RoleId == roleId
                                          select new PermissionDto
                                          {
-                                             PermissionsId = rp.PermissionsId,
-                                             MenusId = menu.MenusId,
+                                             PermissionId = rp.PermissionId,
+                                             MenuId = menu.MenuId,
                                              Title = menu.Title,
                                              ParentId = menu.ParentId,
                                              RoleId = roleId,
@@ -236,12 +236,12 @@ namespace authentication_server.Services
             foreach (var root in rootMenus)
             {
                 // First layer: Find submenus where ParentId equals the root menu's MenusId.
-                root.SubMenus = menuPermissions.Where(m => m.ParentId == root.MenusId).ToList();
+                root.SubMenus = menuPermissions.Where(m => m.ParentId == root.MenuId).ToList();
 
                 foreach (var firstLayer in root.SubMenus)
                 {
                     // Second layer: For each first-layer submenu, find its submenus.
-                    firstLayer.SubMenus = menuPermissions.Where(m => m.ParentId == firstLayer.MenusId).ToList();
+                    firstLayer.SubMenus = menuPermissions.Where(m => m.ParentId == firstLayer.MenuId).ToList();
                 }
             }
 
@@ -270,8 +270,8 @@ namespace authentication_server.Services
 
         public class PermissionDTO
         {
-            public int? PermissionsId { get; set; } // Nullable for updating
-            public int MenusId { get; set; }
+            public int? PermissionId { get; set; } // Nullable for updating
+            public long MenuId { get; set; }
             public bool CanView { get; set; }
             public bool CanEdit { get; set; }
             public bool CanAdd { get; set; }
@@ -283,12 +283,10 @@ namespace authentication_server.Services
 
         public class MenuWithPermissionsDto
         {
-            public int MenusId { get; set; }
-            public string Title { get; set; }
-            public string Icon { get; set; }
-            public string Route { get; set; }
-            public bool HasSubRoute { get; set; }
-            public bool ShowSubRoute { get; set; }
+            public long MenuId { get; set; }
+            public string? Title { get; set; }
+            public string? Icon { get; set; }
+            public string? Route { get; set; }
             public int? ParentId { get; set; }
             public bool CanRead { get; set; } = false;
             public bool CanWrite { get; set; } = false;

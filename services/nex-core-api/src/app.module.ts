@@ -23,8 +23,12 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthGuard } from './auth/auth.guard';
+import { SystemConfigsModule } from './master-data/system-configs/system-configs.module';
 import { RolesGuard } from './common/guards/roles.guard';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { EncryptionModule } from './common/services/encryption.module';
+import { UsersModule } from './master-data/users/users.module';
+import { RegistrationModule } from './registration/registration.module';
 
 @Module({
   imports: [
@@ -70,9 +74,13 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     ThemesModule,
     AuditLogsModule,
     NotificationsModule,
+    SystemConfigsModule,
     DashboardModule,
     AnnouncementsModule,
     AuthModule,
+    EncryptionModule,
+    UsersModule,
+    RegistrationModule,
   ],
   controllers: [AppController],
   providers: [

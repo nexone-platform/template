@@ -30,11 +30,11 @@ const MapController = dynamic(
             const isUserAction = React.useRef(false);
 
             // Expose map instance via ref
-            React.useEffect(() => {
+            useEffect(() => {
                 if (mapRef) mapRef.current = map;
             }, [map, mapRef]);
 
-            React.useEffect(() => {
+            useEffect(() => {
                 // Detect user drag/zoom → stop auto-following
                 const onMoveStart = () => {
                     if (!isUserAction.current) {
@@ -53,7 +53,7 @@ const MapController = dynamic(
                 };
             }, [map, onUserInteract]);
 
-            React.useEffect(() => {
+            useEffect(() => {
                 if (following && lat && lng) {
                     isUserAction.current = false;
                     map.setView([lat, lng], map.getZoom(), { animate: true });
@@ -73,7 +73,7 @@ const FitBounds = dynamic(
     () => import('react-leaflet').then(mod => {
         const Fitter = ({ bounds }: { bounds: [number, number][] }) => {
             const map = mod.useMap();
-            React.useEffect(() => {
+            useEffect(() => {
                 if (bounds.length >= 2) {
                     const L = require('leaflet');
                     map.fitBounds(L.latLngBounds(bounds), { padding: [30, 30], maxZoom: 12 });
@@ -114,7 +114,7 @@ interface DriverProfile {
     vehicleId?: string;
 }
 
-const API_BASE = typeof window !== 'undefined' ? `http://${window.location.hostname}:8081/api/v1` : 'http://localhost:8081/api/v1';
+const API_BASE = typeof window !== 'undefined' ? `http://${window.location.hostname}:8081/api/v1` : '';
 
 // ============================================
 // IMAGE COMPRESSION (≤1MB)
@@ -216,7 +216,7 @@ function SignaturePad({ onSave, onClose }: { onSave: (dataUrl: string, filename:
     };
 
     // Init white background
-    React.useEffect(() => {
+    useEffect(() => {
         clearPad();
     }, []);
 
@@ -288,7 +288,7 @@ function EpodForm({ currentTrip, driver, epodReceiver, setEpodReceiver, epodNote
     const deliveryInputRef = useRef<HTMLInputElement>(null);
 
     // Load saved data on mount
-    React.useEffect(() => {
+    useEffect(() => {
         if (savedData) {
             if (savedData.productPhotoUrl) setProductPhoto({ dataUrl: savedData.productPhotoUrl, filename: 'saved_product' });
             if (savedData.deliveryPhotoUrl) setDeliveryPhoto({ dataUrl: savedData.deliveryPhotoUrl, filename: 'saved_delivery' });

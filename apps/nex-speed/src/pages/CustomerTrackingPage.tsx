@@ -18,7 +18,7 @@ const CircleMarker = dynamic(() => import('react-leaflet').then(m => m.CircleMar
 
 const API_BASE = typeof window !== 'undefined'
     ? `http://${window.location.hostname}:8081/api/v1`
-    : 'http://localhost:8081/api/v1';
+    : '';
 
 const WS_HOST = typeof window !== 'undefined'
     ? `ws://${window.location.hostname}:8081/ws/gps`

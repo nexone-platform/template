@@ -33,9 +33,9 @@ export class SystemApp {
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'update_by' })
   update_by: string;
 
-  @CreateDateColumn({ name: 'create_date', type: 'timestamp' })
+  @CreateDateColumn({ name: 'create_date', type: 'timestamptz' })
   create_date: Date;
 
-  @UpdateDateColumn({ name: 'update_date', type: 'timestamp', nullable: true })
+  @UpdateDateColumn({ name: 'update_date', type: 'timestamptz', nullable: true })
   update_date: Date;
 }

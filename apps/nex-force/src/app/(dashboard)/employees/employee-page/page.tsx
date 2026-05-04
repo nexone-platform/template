@@ -2,7 +2,7 @@
 
 import { useDeleteEmployee } from "@/features/employees/hooks/use-employees";
 import { usePagination } from "@/hooks/use-pagination";
-import { useState, useMemo, useCallback } from "react";
+import { useEffect,  useState, useMemo, useCallback } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useMessages } from "@/hooks/use-messages";
@@ -18,6 +18,7 @@ import {
     PageHeader, TableHeaderBar, EmptyState, TableSkeleton, PaginationBar, ui, SelectAllCheckbox, RowCheckbox,
 } from "@/components/shared/ui-components";
 import { usePageTranslation } from "@/lib/language";
+import { useSystemConfig } from '@nexone/ui';
 
 // ── Angular: designationService.getAllDesignation() ──
 function useDesignations() {
@@ -98,7 +99,16 @@ export default function EmployeePage() {
 
     // ── Quick Filter in Table (Angular: searchData via MatTableDataSource.filter) ──
     const [quickSearch, setQuickSearch] = useState("");
-    const [pageSize, setPageSize] = useState(10);
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
 
     const filtered = useMemo(() => {
         if (!quickSearch) return allEmployees;
