@@ -3,9 +3,9 @@ import { useSystemConfig } from '@nexone/ui';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import StatusDropdown from '@/components/StatusDropdown';
-import { Search, Plus, Eye, Pencil, Trash2, X, FileSpreadsheet, FileText, Download, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, LayoutGrid, List, Package, MapPin, DollarSign, Truck, User, Calendar, Weight } from 'lucide-react';
+import { Search, Plus, Eye, Pencil, Trash2, X, FileSpreadsheet, Info, FileText, Download, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, LayoutGrid, List, Package, MapPin, DollarSign, Truck, User, Calendar, Weight } from 'lucide-react';
 import { api, Order, LocationItem } from '@/services/api';
-import { ExportButtons } from '@/components/CrudComponents';
+import { ExportButtons, ImportExcelButton, SearchInput } from '@/components/CrudComponents';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
 import { usePagePermission } from '@/contexts/PermissionContext';
 
@@ -374,6 +374,32 @@ export default function TemplateMaster3Page() {
         border: 'none', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s',
     };
 
+        const handleImport = async (data: any[]) => {
+        setSaving(true);
+        try {
+            for (const item of data) {
+                if (item['ลูกค้า']) {
+                    await api.createOrder({
+                        id: item['Order ID'] || `ORD-${Math.floor(Math.random() * 1000)}`,
+                        customerName: item['ลูกค้า'],
+                        origin: item['ต้นทาง'] || '',
+                        destination: item['ปลายทาง'] || '',
+                        cargoType: item['สินค้า'] || '',
+                        weight: Number(item['น้ำหนัก (ตัน)']) || 0,
+                        status: 'pending',
+                        priority: 'normal',
+                        deliveryDate: item['วันส่ง'] || new Date().toISOString().split('T')[0],
+                        estimatedCost: Number(item['ราคา (บาท)']) || 0
+                    });
+                }
+            }
+            loadOrders();
+        } catch (err) {
+            console.error('Import failed:', err);
+        }
+        setSaving(false);
+    };
+
     if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}><div className="loading-spinner" /></div>;
 
     return (
@@ -395,6 +421,13 @@ export default function TemplateMaster3Page() {
                     onExportCSV={() => exportToCSV(getExportData(), 'Template3', exportColumns)}
                     onExportPDF={() => exportToPDF(getExportData(), 'Template3', exportColumns, 'Order Report - NexSpeed')}
                 />}
+                {perm.canAdd && (
+                    <ImportExcelButton 
+                        onImport={handleImport}
+                        expectedColumns={['ลูกค้า', 'ต้นทาง', 'ปลายทาง', 'สินค้า', 'น้ำหนัก (ตัน)', 'ราคา (บาท)', 'วันส่ง']}
+                        isLoading={saving}
+                    />
+                )}
                 {selectedIds.size > 0 && (
                     <>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--accent-blue)', fontWeight: 600, padding: '5px 10px', borderRadius: '8px', background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)' }}>
@@ -408,10 +441,7 @@ export default function TemplateMaster3Page() {
 
 
 
-                <div className="topbar-search" style={{ minWidth: '180px' }}>
-                    <Search size={16} />
-                    <input placeholder="ค้นหาลูกค้า, Order..." value={search} onChange={e => { setSearch(e.target.value); setCurrentPage(1); }} />
-                </div>
+                {perm.canView && <SearchInput value={search} onChange={(val) => { setSearch(val); setCurrentPage(1); }} onClear={() => { setSearch(''); setCurrentPage(1); }} placeholder="ค้นหาลูกค้า, Order..." />}
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'var(--bg-primary)', borderRadius: '8px', padding: '2px', border: '1px solid var(--border-color)' }}>
                     <button onClick={() => setViewMode('list')} title="List"
@@ -552,6 +582,31 @@ export default function TemplateMaster3Page() {
                         <DetailRow icon={<Weight size={16} />} label="น้ำหนัก" value={`${selectedOrder.weight} ตัน`} />
                         <DetailRow icon={<Calendar size={16} />} label="วันส่ง" value={selectedOrder.deliveryDate} />
                         <DetailRow icon={<Truck size={16} />} label="สถานะ" value={statusLabels[selectedOrder.status]} />
+                        
+                        <div style={{ marginTop: '24px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
+                                <Info size={16} />
+                                <span style={{ fontSize: '13px', fontWeight: 600 }}>ข้อมูลระบบ (System Logs)</span>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
+                                <div>
+                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>สร้างโดย</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>-</span>
+                                </div>
+                                <div>
+                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>วันที่สร้าง</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedOrder.createdAt ? new Date(selectedOrder.createdAt).toLocaleString('th-TH') : '-'}</span>
+                                </div>
+                                <div>
+                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>แก้ไขล่าสุดโดย</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>-</span>
+                                </div>
+                                <div>
+                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>วันที่แก้ไขล่าสุด</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedOrder.updatedAt ? new Date(selectedOrder.updatedAt).toLocaleString('th-TH') : '-'}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
             </Modal>

@@ -139,7 +139,7 @@ export function StatusDropdown({
     );
 }
 
-export function SearchInput({ value, onChange, placeholder = "ค้นหา..." }: { value: string, onChange: (val: string) => void, placeholder?: string }) {
+export function SearchInput({ value, onChange, onClear, placeholder = "ค้นหา..." }: { value: string, onChange: (val: string) => void, onClear?: () => void, placeholder?: string }) {
     const [isFocused, setIsFocused] = useState(false);
     
     return (
@@ -174,6 +174,23 @@ export function SearchInput({ value, onChange, placeholder = "ค้นหา...
                     fontFamily: 'inherit'
                 }}
             />
+            {value && onClear && (
+                <button
+                    onClick={onClear}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--text-muted)'
+                    }}
+                >
+                    <X size={14} />
+                </button>
+            )}
         </div>
     );
 }
