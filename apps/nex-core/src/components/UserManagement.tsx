@@ -123,7 +123,12 @@ export default function UserManagement() {
 
     const loadRoles = useCallback(() => {
         coreRoleApi.getAll()
-            .then(res => { setRoles(res || []); })
+            .then(res => { 
+                const sortedRoles = (res || []).sort((a: any, b: any) => 
+                    (a.roleName || '').localeCompare(b.roleName || '')
+                );
+                setRoles(sortedRoles); 
+            })
             .catch(err => console.error('Failed to load roles', err));
     }, []);
 

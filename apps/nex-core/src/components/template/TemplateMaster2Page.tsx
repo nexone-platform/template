@@ -104,7 +104,7 @@ export default function TemplateMaster2Page() {
 
     // Derive categories from DB data + custom ones
     const dbCategories = Array.from(new Set(data.map(d => d.template_group).filter(Boolean)));
-    const categories = Array.from(new Set([...dbCategories, ...customCategories]));
+    const categories = Array.from(new Set([...dbCategories, ...customCategories])).sort((a, b) => a.localeCompare(b));
 
     // Action Handlers
     const handleAdd = () => {

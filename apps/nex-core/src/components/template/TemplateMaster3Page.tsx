@@ -112,7 +112,10 @@ export default function TemplateMaster3Page() {
     const loadOrders = useCallback(() => {
         setLoading(true);
         api.getOrders().then(o => { setOrders(o || []); setLoading(false); }).catch(() => setLoading(false));
-        api.getLocations().then(l => setLocationsList(l || [])).catch(() => {});
+        api.getLocations().then(l => {
+            const sortedLocations = (l || []).sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''));
+            setLocationsList(sortedLocations);
+        }).catch(() => {});
     }, []);
 
     useEffect(() => { loadOrders(); }, [loadOrders]);
