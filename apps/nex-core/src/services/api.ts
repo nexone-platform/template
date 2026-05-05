@@ -263,7 +263,12 @@ export const coreUserApi = {
         const res = await fetch(`${USER_API_BASE}?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`, { credentials: 'include' });
         if (!res.ok) throw new Error(`User API Error: ${res.status}`);
         const json = await res.json();
-        return json.data || [];
+        if (Array.isArray(json)) return json;
+        if (json?.data) {
+            if (Array.isArray(json.data)) return json.data;
+            if (Array.isArray(json.data.data)) return json.data.data;
+        }
+        return [];
     },
     getOne: async (id: string) => {
         const res = await fetch(`${USER_API_BASE}/${id}`, { credentials: 'include' });
@@ -276,7 +281,17 @@ export const coreUserApi = {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dto), credentials: 'include'
         });
-        if (!res.ok) throw new Error(`User API Error: ${res.status}`);
+        if (!res.ok) {
+            try {
+                const errData = await res.json();
+                throw new Error(errData.message || `User API Error: ${res.status}`);
+            } catch (e) {
+                if (e instanceof Error && e.message !== 'Unexpected end of JSON input' && !e.message.includes('JSON')) {
+                    throw e;
+                }
+                throw new Error(`User API Error: ${res.status}`);
+            }
+        }
         const json = await res.json();
         return json.data !== undefined ? json.data : json;
     },
@@ -285,7 +300,17 @@ export const coreUserApi = {
             method: 'PATCH', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dto), credentials: 'include'
         });
-        if (!res.ok) throw new Error(`User API Error: ${res.status}`);
+        if (!res.ok) {
+            try {
+                const errData = await res.json();
+                throw new Error(errData.message || `User API Error: ${res.status}`);
+            } catch (e) {
+                if (e instanceof Error && e.message !== 'Unexpected end of JSON input' && !e.message.includes('JSON')) {
+                    throw e;
+                }
+                throw new Error(`User API Error: ${res.status}`);
+            }
+        }
         const json = await res.json();
         return json.data !== undefined ? json.data : json;
     },
@@ -302,7 +327,12 @@ export const coreRoleApi = {
         const res = await fetch(`${ROLE_API_BASE}`, { credentials: 'include' });
         if (!res.ok) throw new Error(`Role API Error: ${res.status}`);
         const json = await res.json();
-        return Array.isArray(json) ? json : (json?.data || []);
+        if (Array.isArray(json)) return json;
+        if (json?.data) {
+            if (Array.isArray(json.data)) return json.data;
+            if (Array.isArray(json.data.data)) return json.data.data;
+        }
+        return [];
     }
 };
 

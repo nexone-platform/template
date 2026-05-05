@@ -96,6 +96,7 @@ export default function UserManagement() {
     const [selectedItem, setSelectedItem] = useState<any | null>(null);
     const [formData, setFormData] = useState({ displayName: '', email: '', roleId: '', password: '', isActive: true });
     const [saving, setSaving] = useState(false);
+    const [alertConfig, setAlertConfig] = useState<{isOpen: boolean, message: string, isError: boolean}>({isOpen: false, message: '', isError: false});
     const [emailError, setEmailError] = useState('');
 
     const validateEmail = (email: string) => {
@@ -156,8 +157,14 @@ export default function UserManagement() {
     };
 
     const saveForm = async () => {
-        if (!formData.displayName?.trim()) return;
-        if (formData.email && !validateEmail(formData.email)) return;
+        if (!formData.displayName?.trim()) {
+            setAlertConfig({isOpen: true, message: t['require_name'] || 'กรุณาระบุชื่อพนักงาน', isError: true});
+            return;
+        }
+        if (formData.email && !validateEmail(formData.email)) {
+            setAlertConfig({isOpen: true, message: t['require_valid_email'] || 'รูปแบบอีเมล์ไม่ถูกต้อง', isError: true});
+            return;
+        }
 
         setSaving(true);
         try {
@@ -171,14 +178,16 @@ export default function UserManagement() {
 
             if (modalMode === 'add') {
                 await coreUserApi.create(payload);
+                setAlertConfig({isOpen: true, message: t['save_success'] || 'บันทึกข้อมูลเรียบร้อยแล้ว', isError: false});
             } else if (modalMode === 'edit' && selectedItem) {
                 await coreUserApi.update(selectedItem.id, payload);
+                setAlertConfig({isOpen: true, message: t['save_success'] || 'บันทึกข้อมูลเรียบร้อยแล้ว', isError: false});
             }
             setIsModalOpen(false);
             loadData();
         } catch (err: any) { 
             console.error(err);
-            alert(err.message || 'Error saving user');
+            setAlertConfig({isOpen: true, message: err.message || t['error_saving'] || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล', isError: true});
         }
         setSaving(false);
     };
@@ -188,9 +197,13 @@ export default function UserManagement() {
         setSaving(true);
         try {
             await coreUserApi.remove(selectedItem.id);
+            setAlertConfig({isOpen: true, message: t['delete_success'] || 'ลบข้อมูลเรียบร้อยแล้ว', isError: false});
             setIsModalOpen(false);
             loadData();
-        } catch (err) { console.error(err); }
+        } catch (err: any) { 
+            console.error(err); 
+            setAlertConfig({isOpen: true, message: err.message || t['error_deleting'] || 'ลบข้อมูลไม่สำเร็จ', isError: true});
+        }
         setSaving(false);
     };
 
@@ -198,7 +211,10 @@ export default function UserManagement() {
         try {
             await coreUserApi.update(item.id, { isActive: val });
             setData(prev => prev.map(d => d.id === item.id ? { ...d, isActive: val } : d));
-        } catch (err) { console.error(err); }
+        } catch (err: any) { 
+            console.error(err); 
+            setAlertConfig({isOpen: true, message: err.message || t['error_saving'] || 'เปลี่ยนสถานะไม่สำเร็จ', isError: true});
+        }
     };
 
     const handleSort = (key: string) => {
@@ -212,7 +228,7 @@ export default function UserManagement() {
     };
 
     const searchLower = search.toLowerCase();
-    const filteredData = data.filter(item => {
+    const filteredData = Array.isArray(data) ? data.filter(item => {
         // Quick search
         const matchQuickSearch = !searchLower ||
             (item.displayName || '').toLowerCase().includes(searchLower) ||
@@ -226,7 +242,7 @@ export default function UserManagement() {
             (advSearchValues.status === 'inactive' && !item.isActive);
 
         return matchQuickSearch && matchName && matchEmail && matchStatus;
-    });
+    }) : [];
 
     let sortedData = [...filteredData];
     if (sortConfig.key && sortConfig.direction !== null) {
@@ -425,8 +441,8 @@ export default function UserManagement() {
                     modalMode !== 'view' ? (
                         <>
                             <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>{t['cancel'] || 'ยกเลิก'}</button>
-                            <button onClick={saveForm} disabled={!formData.displayName?.trim() || saving || !!emailError}
-                                style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: (formData.displayName?.trim() && !saving && !emailError) ? 1 : 0.5 }}>
+                            <button onClick={saveForm} disabled={saving}
+                                style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: saving ? 0.5 : 1 }}>
                                 {saving ? (t['saving'] || 'กำลังบันทึก...') : modalMode === 'add' ? (t['add_button'] || 'เพิ่มข้อมูล') : (t['save_button'] || 'บันทึกข้อมูล')}
                             </button>
                         </>
@@ -489,21 +505,17 @@ export default function UserManagement() {
                                 <Info size={16} />
                                 <span style={{ fontSize: '13px', fontWeight: 600 }}>{t['system_logs'] || 'ข้อมูลระบบ (System Logs)'}</span>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
-                                <div>
-                                    <span style={{ color: 'var(--text-muted)' }}>{t['create_by'] || 'สร้างโดย'} : </span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.createBy || '-'}</span>
-                                </div>
-                                <div>
-                                    <span style={{ color: 'var(--text-muted)' }}>{t['create_date'] || 'วันที่สร้าง'} : </span>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
+                                    <span style={{ color: 'var(--text-muted)' }}>{t['create_by'] || 'Created By'} :</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500, marginRight: '16px' }}>{selectedItem?.createBy || '-'}</span>
+                                    <span style={{ color: 'var(--text-muted)' }}>{t['create_date'] || 'Created Date'} :</span>
                                     <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.createDate ? format(new Date(selectedItem.createDate), configs.dateFormat || 'dd/MM/yyyy') : '-'}</span>
                                 </div>
-                                <div>
-                                    <span style={{ color: 'var(--text-muted)' }}>{t['update_by'] || 'แก้ไขล่าสุดโดย'} : </span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.updateBy || '-'}</span>
-                                </div>
-                                <div>
-                                    <span style={{ color: 'var(--text-muted)' }}>{t['update_date'] || 'วันที่แก้ไขล่าสุด'} : </span>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
+                                    <span style={{ color: 'var(--text-muted)' }}>{t['update_by'] || 'Update By'} :</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500, marginRight: '16px' }}>{selectedItem?.updateBy || '-'}</span>
+                                    <span style={{ color: 'var(--text-muted)' }}>{t['update_date'] || 'Update Date'} :</span>
                                     <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.updateDate ? format(new Date(selectedItem.updateDate), configs.dateFormat || 'dd/MM/yyyy') : '-'}</span>
                                 </div>
                             </div>
@@ -526,9 +538,28 @@ export default function UserManagement() {
                 }
             >
                 <div>
-                    <p style={{ margin: '0 0 4px 0', color: 'var(--text-secondary)' }}>{t['delete_confirm_message'] || 'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูล'}</p>
-                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-primary)' }}><strong>{selectedItem?.displayName}</strong></p>
-                    <p style={{ margin: 0, fontSize: '13px', color: '#ef4444' }}>{t['delete_warning'] || 'การกระทำนี้จะไม่สามารถย้อนกลับได้'}</p>
+                    <p style={{ margin: '0 0 16px 0', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                        {t['delete_confirm_message'] || 'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูล'}
+                        <br />
+                        <strong style={{ color: 'var(--text-primary)', fontSize: '16px', display: 'block', marginTop: '8px' }}>
+                            {selectedItem?.displayName}
+                        </strong>
+                    </p>
+                </div>
+            </BaseModal>
+
+            {/* Custom Alert Modal */}
+            <BaseModal 
+                isOpen={alertConfig.isOpen} 
+                onClose={() => setAlertConfig({...alertConfig, isOpen: false})}
+                title={alertConfig.isError ? (t['error_title'] || "แจ้งเตือนข้อผิดพลาด") : (t['success_title'] || "สำเร็จ")}
+                width="400px"
+                footer={
+                    <button onClick={() => setAlertConfig({...alertConfig, isOpen: false})} style={{ padding: '8px 16px', background: alertConfig.isError ? '#ef4444' : 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, width: '100px' }}>{t['ok_button'] || 'ตกลง'}</button>
+                }
+            >
+                <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)', fontSize: '15px' }}>{alertConfig.message}</p>
                 </div>
             </BaseModal>
 

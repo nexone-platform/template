@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { useLanguage } from '@nexone/ui';
 
 interface PaginationProps {
     currentPage: number;
@@ -11,6 +12,7 @@ interface PaginationProps {
 }
 
 export default function Pagination({ currentPage, pageSize, totalItems, setCurrentPage, setPageSize, t }: PaginationProps) {
+    const { lang } = useLanguage();
     if (totalItems <= 0) return null;
     
     const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -61,7 +63,7 @@ export default function Pagination({ currentPage, pageSize, totalItems, setCurre
             padding: '10px 16px', borderTop: '1px solid var(--border-color)', gap: '12px',
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                <span>{t?.['paging_show'] || 'แสดง'}</span>
+                <span>{t?.['paging_show'] || (lang === 'en' ? 'Show' : 'แสดง')}</span>
                 <select value={pageSize || 10} onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
                     style={{
                         padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border-color)',
@@ -69,9 +71,9 @@ export default function Pagination({ currentPage, pageSize, totalItems, setCurre
                     }}>
                     {[5, 10, 20, 50].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
-                <span>{t?.['paging_items_per_page'] || 'รายการ / หน้า'}</span>
+                <span>{t?.['paging_items_per_page'] || (lang === 'en' ? 'Items / Page' : 'รายการ / หน้า')}</span>
                 <span style={{ marginLeft: '8px', color: 'var(--text-muted)' }}>
-                    ({getRangeStart()}–{getRangeEnd()} {t?.['paging_from'] || 'จาก'} {totalItems})
+                    ({getRangeStart()}–{getRangeEnd()} {t?.['paging_from'] || (lang === 'en' ? 'of' : 'จาก')} {totalItems})
                 </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>

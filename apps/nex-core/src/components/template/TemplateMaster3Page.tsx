@@ -6,7 +6,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import StatusDropdown from '@/components/StatusDropdown';
 import { Search, Plus, Eye, Pencil, Trash2, X, FileSpreadsheet, Info, FileText, Download, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, LayoutGrid, List, Package, MapPin, DollarSign, Truck, User, Calendar, Weight } from 'lucide-react';
 import { api, Order, LocationItem } from '@/services/api';
-import { ExportButtons, SearchInput, AdvancedSearchModal, AdvancedSearchField } from '@/components/CrudComponents';
+import { ExportButtons, SearchInput, AdvancedSearchModal, AdvancedSearchField, BaseModal } from '@/components/CrudComponents';
 import ImportExcelButton from '@/components/ImportExcelButton';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
 import { usePagePermission } from '@/contexts/PermissionContext';
@@ -85,6 +85,7 @@ export default function TemplateMaster3Page() {
     const [form, setForm] = useState(emptyForm);
     const [saving, setSaving] = useState(false);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+    const [alertConfig, setAlertConfig] = useState<{ isOpen: boolean; message: string; isError: boolean }>({ isOpen: false, message: '', isError: false });
 
     // Selection for export
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -235,7 +236,10 @@ export default function TemplateMaster3Page() {
     };
 
     const handleSaveNew = async () => {
-        if (!validateForm('add')) return;
+        if (!validateForm('add')) {
+            setAlertConfig({ isOpen: true, message: 'กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', isError: true });
+            return;
+        }
         setSaving(true);
         try {
             await api.createOrder({
@@ -245,14 +249,20 @@ export default function TemplateMaster3Page() {
                 vehicleId: form.vehicleId || undefined, driverId: form.driverId || undefined,
             });
             setShowAddModal(false);
+            setAlertConfig({ isOpen: true, message: 'บันทึกข้อมูลเรียบร้อยแล้ว', isError: false });
             loadOrders();
-        } catch { /* */ }
+        } catch (err: any) {
+            setAlertConfig({ isOpen: true, message: err?.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล', isError: true });
+        }
         setSaving(false);
     };
 
     const handleSaveEdit = async () => {
         if (!selectedOrder) return;
-        if (!validateForm('edit')) return;
+        if (!validateForm('edit')) {
+            setAlertConfig({ isOpen: true, message: 'กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', isError: true });
+            return;
+        }
         setSaving(true);
         try {
             await api.updateOrder(selectedOrder.id, {
@@ -262,8 +272,11 @@ export default function TemplateMaster3Page() {
                 vehicleId: form.vehicleId || undefined, driverId: form.driverId || undefined,
             });
             setShowEditModal(false);
+            setAlertConfig({ isOpen: true, message: 'บันทึกข้อมูลเรียบร้อยแล้ว', isError: false });
             loadOrders();
-        } catch { /* */ }
+        } catch (err: any) {
+            setAlertConfig({ isOpen: true, message: err?.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล', isError: true });
+        }
         setSaving(false);
     };
 
@@ -273,8 +286,11 @@ export default function TemplateMaster3Page() {
         try {
             await api.deleteOrder(selectedOrder.id);
             setShowDeleteConfirm(false);
+            setAlertConfig({ isOpen: true, message: 'ลบข้อมูลเรียบร้อยแล้ว', isError: false });
             loadOrders();
-        } catch { /* */ }
+        } catch (err: any) {
+            setAlertConfig({ isOpen: true, message: err?.message || 'เกิดข้อผิดพลาดในการลบข้อมูล', isError: true });
+        }
         setSaving(false);
     };
 
@@ -391,22 +407,7 @@ export default function TemplateMaster3Page() {
         );
     };
 
-    // ===== Modal =====
-    const Modal = ({ show, title, onClose, children, footer }: { show: boolean; title: string; onClose: () => void; children: React.ReactNode; footer?: React.ReactNode }) => {
-        if (!show) return null;
-        return (
-            <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }} onClick={onClose}>
-                <div style={{ background: 'var(--bg-card)', borderRadius: '16px', width: '90%', maxWidth: '640px', maxHeight: '90vh', overflow: 'auto', border: '1px solid var(--border-color)', boxShadow: '0 25px 50px rgba(0,0,0,0.3)' }} onClick={e => e.stopPropagation()}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid var(--border-color)' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 700 }}>{title}</h3>
-                        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}><X size={20} /></button>
-                    </div>
-                    <div style={{ padding: '24px' }}>{children}</div>
-                    {footer && <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>{footer}</div>}
-                </div>
-            </div>
-        );
-    };
+
 
     const viewToggleStyle: React.CSSProperties = {
         width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -577,7 +578,7 @@ export default function TemplateMaster3Page() {
             )}
 
             {/* ===== VIEW MODAL ===== */}
-            <Modal show={showViewModal} title="รายละเอียดคำสั่งขนส่ง" onClose={() => setShowViewModal(false)}>
+            <BaseModal isOpen={showViewModal} title="รายละเอียดคำสั่งขนส่ง" onClose={() => setShowViewModal(false)}>
                 {selectedOrder && (
                     <div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
@@ -625,39 +626,67 @@ export default function TemplateMaster3Page() {
                         </div>
                     </div>
                 )}
-            </Modal>
+            </BaseModal>
 
-            {/* ===== ADD MODAL ===== */}
-            <Modal show={showAddModal} title="เพิ่มคำสั่งขนส่งใหม่" onClose={() => setShowAddModal(false)}
-                footer={<>
-                    <button onClick={() => setShowAddModal(false)} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>ยกเลิก</button>
-                    <button onClick={handleSaveNew} style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: saving ? 0.5 : 1 }}  disabled={saving}>{showAddModal ? 'เพิ่มข้อมูล' : 'บันทึกข้อมูล'}</button>
-                </>}>
-                {renderFormFields('add')}
-            </Modal>
-
-            {/* ===== EDIT MODAL ===== */}
-            <Modal show={showEditModal} title="แก้ไขคำสั่งขนส่ง" onClose={() => setShowEditModal(false)}
-                footer={<>
-                    <button onClick={() => setShowEditModal(false)} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>ยกเลิก</button>
-                    <button onClick={handleSaveEdit} style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: saving ? 0.5 : 1 }}  disabled={saving}>{showAddModal ? 'เพิ่มข้อมูล' : 'บันทึกข้อมูล'}</button>
-                </>}>
-                {renderFormFields('edit')}
-            </Modal>
+            {/* ===== ADD/EDIT MODAL ===== */}
+            <BaseModal isOpen={showAddModal || showEditModal} title={showAddModal ? "เพิ่มคำสั่งขนส่ง" : "แก้ไขคำสั่งขนส่ง"} onClose={() => { setShowAddModal(false); setShowEditModal(false); }}>
+                {renderFormFields(showAddModal ? 'add' : 'edit')}
+                <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                    <button onClick={() => { setShowAddModal(false); setShowEditModal(false); }} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>ยกเลิก</button>
+                    <button onClick={showAddModal ? handleSaveNew : handleSaveEdit} style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: saving ? 0.5 : 1 }}  disabled={saving}>{showAddModal ? 'เพิ่มข้อมูล' : 'บันทึกข้อมูล'}</button>
+                </div>
+            </BaseModal>
 
             {/* ===== DELETE CONFIRM ===== */}
-            <Modal show={showDeleteConfirm} title="ยืนยันการลบ" onClose={() => setShowDeleteConfirm(false)}
-                footer={<>
+            <BaseModal isOpen={showDeleteConfirm} title="ยืนยันการลบ" onClose={() => setShowDeleteConfirm(false)}>
+                <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+                    คุณต้องการลบคำสั่ง <strong style={{ color: 'var(--accent-red)' }}>{selectedOrder?.id}</strong> ของ {selectedOrder?.customerName} หรือไม่?
+                </p>
+                <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                     <button onClick={() => setShowDeleteConfirm(false)} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>ยกเลิก</button>
                     <button onClick={handleDelete} disabled={saving}
                         style={{ background: '#ef4444', color: 'white', border: 'none', padding: '8px 20px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', opacity: saving ? 0.5 : 1 }}>
                         {saving ? 'กำลังลบ...' : 'ลบ'}
                     </button>
-                </>}>
-                <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-                    คุณต้องการลบคำสั่ง <strong style={{ color: 'var(--accent-red)' }}>{selectedOrder?.id}</strong> ของ {selectedOrder?.customerName} หรือไม่?
-                </p>
-            </Modal>
+                </div>
+            </BaseModal>
+
+            {/* Custom Alert Modal */}
+            <BaseModal 
+                isOpen={alertConfig.isOpen} 
+                title={alertConfig.isError ? (t['error'] || 'ข้อผิดพลาด') : (t['success'] || 'สำเร็จ')}
+                onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+            >
+                <div style={{ padding: '20px', textAlign: 'center' }}>
+                    <div style={{ 
+                        width: '48px', height: '48px', 
+                        borderRadius: '50%', 
+                        background: alertConfig.isError ? '#fee2e2' : '#dcfce3',
+                        color: alertConfig.isError ? '#ef4444' : '#10b981',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        margin: '0 auto 16px'
+                    }}>
+                        {alertConfig.isError ? <X size={24} /> : <span style={{ fontSize: '24px' }}>✓</span>}
+                    </div>
+                    <p style={{ fontSize: '16px', color: 'var(--text-primary)', marginBottom: '24px' }}>
+                        {alertConfig.message}
+                    </p>
+                    <button 
+                        onClick={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+                        style={{
+                            background: alertConfig.isError ? '#ef4444' : '#10b981',
+                            color: 'white',
+                            border: 'none',
+                            padding: '8px 24px',
+                            borderRadius: '8px',
+                            fontWeight: 600,
+                            cursor: 'pointer'
+                        }}
+                    >
+                        ตกลง
+                    </button>
+                </div>
+            </BaseModal>
         </div>
     );
 }

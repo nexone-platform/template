@@ -65,7 +65,12 @@ export class AuthService {
     const tenantDb = await this.getTenantDataSource(schemaName);
 
     // 3. Find User in Tenant Database
-    const users = await tenantDb.query(`SELECT * FROM nex_core.users WHERE email = $1`, [dto.email]);
+    const users = await tenantDb.query(`
+      SELECT u.*, r.role_name 
+      FROM nex_core.users u 
+      LEFT JOIN nex_core.roles r ON u.role_id = r.role_id 
+      WHERE u.email = $1
+    `, [dto.email]);
     if (users.length === 0) throw new UnauthorizedException('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
 
     const user = users[0];
@@ -144,7 +149,12 @@ export class AuthService {
     let userRaw = null;
     if (session.schemaName) {
       const tenantDb = await this.getTenantDataSource(session.schemaName);
-      const users = await tenantDb.query(`SELECT * FROM nex_core.users WHERE id = $1`, [session.userId]);
+      const users = await tenantDb.query(`
+        SELECT u.*, r.role_name 
+        FROM nex_core.users u 
+        LEFT JOIN nex_core.roles r ON u.role_id = r.role_id 
+        WHERE u.id = $1
+      `, [session.userId]);
       if (users.length > 0) userRaw = users[0];
     } else {
       // Fallback for Master Database users (e.g. system admins)

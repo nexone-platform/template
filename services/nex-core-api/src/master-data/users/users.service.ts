@@ -48,6 +48,10 @@ export class UsersService {
     const existing = await this.usersRepository.findOne({ where: { email: createUserDto.email } });
     if (existing) throw new ConflictException('Email already in use');
 
+    if (createUserDto.roleId === '') {
+      createUserDto.roleId = null;
+    }
+
     const user = this.usersRepository.create({
       ...createUserDto,
       password: this.hashPassword(createUserDto.password || '123456'),
@@ -68,6 +72,10 @@ export class UsersService {
       updateUserDto.password = this.hashPassword(updateUserDto.password);
     } else {
       delete updateUserDto.password;
+    }
+
+    if (updateUserDto.roleId === '') {
+      updateUserDto.roleId = null;
     }
 
     Object.assign(user, updateUserDto);

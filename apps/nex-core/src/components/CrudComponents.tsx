@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, ChevronDown, CheckCircle2, XCircle, X, Download, Upload, FileSpreadsheet, FileText, FileDown } from 'lucide-react';
+import { useLanguage } from '@nexone/ui';
 
 // ==================================
 // Shared Styles
@@ -111,7 +112,7 @@ export function StatusDropdown({
                 }}
             >
                 {isActive ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
-                {isActive ? (t?.['active'] || 'ใช้งาน') : (t?.['inactive'] || 'ยกเลิก')}
+                {isActive ? (t?.['active'] || (lang === 'en' ? 'Active' : 'ใช้งาน')) : (t?.['inactive'] || (lang === 'en' ? 'Inactive' : 'ยกเลิก'))}
                 {!disabled && <ChevronDown size={14} style={{ opacity: 0.7 }} />}
             </button>
 
@@ -127,13 +128,13 @@ export function StatusDropdown({
                         onClick={() => { onChange(true); setOpen(false); }}
                         style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', cursor: 'pointer', fontSize: '13px', borderRadius: '6px', color: 'var(--text-primary)', fontWeight: status ? 600 : 400, background: status ? 'var(--bg-secondary)' : 'transparent' }}
                     >
-                        <CheckCircle2 size={14} color="var(--accent-green)" /> {t?.['active'] || 'ใช้งาน'}
+                        <CheckCircle2 size={14} color="var(--accent-green)" /> {t?.['active'] || (lang === 'en' ? 'Active' : 'ใช้งาน')}
                     </div>
                     <div 
                         onClick={() => { onChange(false); setOpen(false); }}
                         style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', cursor: 'pointer', fontSize: '13px', borderRadius: '6px', color: 'var(--text-primary)', fontWeight: !status ? 600 : 400, background: !status ? 'var(--bg-secondary)' : 'transparent' }}
                     >
-                        <XCircle size={14} color="var(--text-muted)" /> {t?.['inactive'] || 'ยกเลิก'}
+                        <XCircle size={14} color="var(--text-muted)" /> {t?.['inactive'] || (lang === 'en' ? 'Inactive' : 'ยกเลิก')}
                     </div>
                 </div>
             )}
@@ -154,6 +155,7 @@ export function SearchInput({ value, onChange, onClear, placeholder = "ค้น
     onAdvancedSearchClear?: () => void,
     t?: Record<string, string>
 }) {
+    const { lang } = useLanguage();
     const [isFocused, setIsFocused] = useState(false);
     const hasActiveFilters = advancedSearchValues && Object.values(advancedSearchValues).some(v => v !== '' && v !== 'all');
     
@@ -190,7 +192,7 @@ export function SearchInput({ value, onChange, onClear, placeholder = "ค้น
                         transition: 'color 0.2s',
                         position: 'relative',
                     }}
-                    title={onAdvancedSearch ? "ค้นหาขั้นสูง" : undefined}
+                    title={onAdvancedSearch ? (lang === 'en' ? "Advanced Search" : "ค้นหาขั้นสูง") : undefined}
                 >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="11" cy="11" r="8" />
@@ -242,7 +244,7 @@ export function SearchInput({ value, onChange, onClear, placeholder = "ค้น
                             color: 'var(--text-muted)',
                             transition: 'color 0.15s',
                         }}
-                        title={t?.['clear_search_tooltip'] || "ล้างคำค้น"}
+                        title={t?.['clear_search_tooltip'] || (lang === 'en' ? "Clear search" : "ล้างคำค้น")}
                     >
                         <X size={14} />
                     </button>
@@ -275,7 +277,7 @@ export function SearchInput({ value, onChange, onClear, placeholder = "ค้น
                         whiteSpace: 'nowrap',
                         boxShadow: hasActiveFilters || value ? '0 2px 8px rgba(239,68,68,0.25)' : '0 1px 3px rgba(0,0,0,0.1)',
                     }}
-                    title={t?.['clear_conditions_tooltip'] || "ล้างเงื่อนไขการค้นหาทั้งหมด"}
+                    title={t?.['clear_conditions_tooltip'] || (lang === 'en' ? "Clear all search conditions" : "ล้างเงื่อนไขการค้นหาทั้งหมด")}
                 >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
@@ -283,7 +285,7 @@ export function SearchInput({ value, onChange, onClear, placeholder = "ค้น
                         <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
                         <path d="M8 16H3v5" />
                     </svg>
-                    {t?.['clear_conditions'] || "ล้างเงื่อนไข"}
+                    {t?.['clear_conditions'] || (lang === 'en' ? "Clear conditions" : "ล้างเงื่อนไข")}
                 </button>
             )}
         </div>
@@ -304,7 +306,7 @@ export interface AdvancedSearchField {
 export function AdvancedSearchModal({
     isOpen,
     onClose,
-    title = "ค้นหาขั้นสูง",
+    title,
     fields,
     values,
     onChange,
@@ -322,6 +324,7 @@ export function AdvancedSearchModal({
     onClear: () => void;
     t?: Record<string, string>;
 }) {
+    const { lang } = useLanguage();
     if (!isOpen) return null;
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -372,7 +375,7 @@ export function AdvancedSearchModal({
                         fontSize: '18px',
                         fontWeight: 700,
                         color: 'var(--text-primary, #1e293b)',
-                    }}>{title}</h3>
+                    }}>{title || t?.['advanced_search'] || (lang === 'en' ? 'Advanced Search' : 'ค้นหาขั้นสูง')}</h3>
                     <button
                         onClick={onClose}
                         style={{
@@ -434,7 +437,7 @@ export function AdvancedSearchModal({
                             ) : (
                                 <input
                                     type={field.type === 'date' ? 'date' : 'text'}
-                                    placeholder={field.placeholder || `พิมพ์${field.label}...`}
+                                    placeholder={field.placeholder || (lang === 'en' ? `Type ${field.label}...` : `พิมพ์${field.label}...`)}
                                     value={values[field.key] || ''}
                                     onChange={e => onChange(field.key, e.target.value)}
                                     onKeyDown={handleKeyDown}
@@ -488,7 +491,7 @@ export function AdvancedSearchModal({
                             boxShadow: '0 2px 6px rgba(239,68,68,0.2)',
                         }}
                     >
-                        {t?.['clear_button'] || 'เคลียร์'}
+                        {t?.['clear_button'] || (lang === 'en' ? 'Clear' : 'เคลียร์')}
                     </button>
                     <button
                         onClick={() => {
@@ -509,7 +512,7 @@ export function AdvancedSearchModal({
                             boxShadow: '0 2px 6px rgba(59,130,246,0.25)',
                         }}
                     >
-                        {t?.['search_button'] || 'ค้นหา'}
+                        {t?.['search_button'] || (lang === 'en' ? 'Search' : 'ค้นหา')}
                     </button>
                 </div>
             </div>

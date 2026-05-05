@@ -92,6 +92,7 @@ export default function TemplateMaster1Page() {
     const [selectedItem, setSelectedItem] = useState<Template | null>(null);
     const [formData, setFormData] = useState({ template_name: '', template_desc: '', is_active: true });
     const [saving, setSaving] = useState(false);
+    const [alertConfig, setAlertConfig] = useState<{isOpen: boolean, message: string, isError: boolean}>({isOpen: false, message: '', isError: false});
 
     const loadData = useCallback(() => {
         setLoading(true);
@@ -128,17 +129,26 @@ export default function TemplateMaster1Page() {
     };
 
     const saveForm = async () => {
-        if (!formData.template_name.trim()) return;
+        if (!formData.template_name.trim()) {
+            setAlertConfig({isOpen: true, message: t['require_template_name'] || 'กรุณาระบุชื่อข้อมูล', isError: true});
+            return;
+        }
+
         setSaving(true);
         try {
             if (modalMode === 'add') {
                 await templateApi.create({ template_name: formData.template_name, template_desc: formData.template_desc, is_active: formData.is_active });
+                setAlertConfig({isOpen: true, message: t['save_success'] || 'บันทึกข้อมูลเรียบร้อยแล้ว', isError: false});
             } else if (modalMode === 'edit' && selectedItem) {
                 await templateApi.update(selectedItem.template_id, { template_name: formData.template_name, template_desc: formData.template_desc, is_active: formData.is_active });
+                setAlertConfig({isOpen: true, message: t['save_success'] || 'บันทึกข้อมูลเรียบร้อยแล้ว', isError: false});
             }
             setIsModalOpen(false);
             loadData();
-        } catch (err) { console.error(err); }
+        } catch (err: any) { 
+            console.error(err); 
+            setAlertConfig({isOpen: true, message: err.message || t['error_saving'] || 'บันทึกข้อมูลไม่สำเร็จ', isError: true});
+        }
         setSaving(false);
     };
 
@@ -147,9 +157,13 @@ export default function TemplateMaster1Page() {
         setSaving(true);
         try {
             await templateApi.remove(selectedItem.template_id);
+            setAlertConfig({isOpen: true, message: t['delete_success'] || 'ลบข้อมูลเรียบร้อยแล้ว', isError: false});
             setIsModalOpen(false);
             loadData();
-        } catch (err) { console.error(err); }
+        } catch (err: any) { 
+            console.error(err); 
+            setAlertConfig({isOpen: true, message: err.message || t['error_deleting'] || 'ลบข้อมูลไม่สำเร็จ', isError: true});
+        }
         setSaving(false);
     };
 
@@ -157,7 +171,10 @@ export default function TemplateMaster1Page() {
         try {
             await templateApi.toggleStatus(item.template_id, val);
             setData(prev => prev.map(d => d.template_id === item.template_id ? { ...d, is_active: val } : d));
-        } catch (err) { console.error(err); }
+        } catch (err: any) { 
+            console.error(err); 
+            setAlertConfig({isOpen: true, message: err.message || t['error_saving'] || 'เปลี่ยนสถานะไม่สำเร็จ', isError: true});
+        }
     };
 
     const handleSort = (key: string) => {
@@ -375,8 +392,8 @@ export default function TemplateMaster1Page() {
                     modalMode !== 'view' ? (
                         <>
                             <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>{t['cancel'] || 'ยกเลิก'}</button>
-                            <button onClick={saveForm} disabled={!formData.template_name.trim() || saving}
-                                style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: (formData.template_name.trim() && !saving) ? 1 : 0.5 }}>
+                            <button onClick={saveForm} disabled={saving}
+                                style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: saving ? 0.5 : 1 }}>
                                 {saving ? (t['saving'] || 'กำลังบันทึก...') : modalMode === 'add' ? (t['add_button'] || 'เพิ่มข้อมูล') : (t['save_button'] || 'บันทึกข้อมูล')}
                             </button>
                         </>
@@ -418,21 +435,17 @@ export default function TemplateMaster1Page() {
                                 <Info size={16} />
                                 <span style={{ fontSize: '13px', fontWeight: 600 }}>{t['system_logs'] || 'ข้อมูลระบบ (System Logs)'}</span>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
-                                <div>
-                                    <span style={{ color: 'var(--text-muted)' }}>{t['create_by'] || 'สร้างโดย'} : </span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.create_by || '-'}</span>
-                                </div>
-                                <div>
-                                    <span style={{ color: 'var(--text-muted)' }}>{t['create_date'] || 'วันที่สร้าง'} : </span>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
+                                    <span style={{ color: 'var(--text-muted)' }}>{t['create_by'] || 'Created By'} :</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500, marginRight: '16px' }}>{selectedItem?.create_by || '-'}</span>
+                                    <span style={{ color: 'var(--text-muted)' }}>{t['create_date'] || 'Created Date'} :</span>
                                     <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.create_date ? format(new Date(selectedItem.create_date), configs.dateFormat || 'dd/MM/yyyy') : '-'}</span>
                                 </div>
-                                <div>
-                                    <span style={{ color: 'var(--text-muted)' }}>{t['update_by'] || 'แก้ไขล่าสุดโดย'} : </span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.update_by || '-'}</span>
-                                </div>
-                                <div>
-                                    <span style={{ color: 'var(--text-muted)' }}>{t['update_date'] || 'วันที่แก้ไขล่าสุด'} : </span>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
+                                    <span style={{ color: 'var(--text-muted)' }}>{t['update_by'] || 'Update By'} :</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500, marginRight: '16px' }}>{selectedItem?.update_by || '-'}</span>
+                                    <span style={{ color: 'var(--text-muted)' }}>{t['update_date'] || 'Update Date'} :</span>
                                     <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.update_date ? format(new Date(selectedItem.update_date), configs.dateFormat || 'dd/MM/yyyy') : '-'}</span>
                                 </div>
                             </div>
@@ -455,9 +468,29 @@ export default function TemplateMaster1Page() {
                 }
             >
                 <div>
-                    <p style={{ margin: '0 0 4px 0', color: 'var(--text-secondary)' }}>{t['delete_confirm_message'] || 'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูล'}</p>
-                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-primary)' }}><strong>{selectedItem?.template_name}</strong></p>
+                    <p style={{ margin: '0 0 16px 0', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                        {t['delete_confirm_message'] || 'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูล'}
+                        <br />
+                        <strong style={{ color: 'var(--text-primary)', fontSize: '16px', display: 'block', marginTop: '8px' }}>
+                            {selectedItem?.template_name}
+                        </strong>
+                    </p>
                     <p style={{ margin: 0, fontSize: '13px', color: '#ef4444' }}>{t['delete_warning'] || 'การกระทำนี้จะไม่สามารถย้อนกลับได้'}</p>
+                </div>
+            </BaseModal>
+
+            {/* Custom Alert Modal */}
+            <BaseModal 
+                isOpen={alertConfig.isOpen} 
+                onClose={() => setAlertConfig({...alertConfig, isOpen: false})}
+                title={alertConfig.isError ? (t['error_title'] || "แจ้งเตือนข้อผิดพลาด") : (t['success_title'] || "สำเร็จ")}
+                width="400px"
+                footer={
+                    <button onClick={() => setAlertConfig({...alertConfig, isOpen: false})} style={{ padding: '8px 16px', background: alertConfig.isError ? '#ef4444' : 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, width: '100px' }}>{t['ok_button'] || 'ตกลง'}</button>
+                }
+            >
+                <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)', fontSize: '15px' }}>{alertConfig.message}</p>
                 </div>
             </BaseModal>
 

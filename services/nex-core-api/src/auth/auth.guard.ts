@@ -35,8 +35,8 @@ export class AuthGuard implements CanActivate {
     request.user = {
       userId: result.user.id,
       email: result.user.email,
-      roleId: result.user.roleId,
-      roleName: result.user.roleName,
+      roleId: result.user.role_id || result.user.roleId,
+      roleName: result.user.role_name || result.user.roleName,
     };
     request.sessionId = result.session.id;
 

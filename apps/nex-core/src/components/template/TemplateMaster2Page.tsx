@@ -85,6 +85,7 @@ export default function TemplateMaster2Page() {
     const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view' | 'delete'>('add');
     const [selectedItem, setSelectedItem] = useState<Template | null>(null);
     const [formData, setFormData] = useState({ template_name: '', template_group: '', template_desc: '', is_active: true });
+    const [alertConfig, setAlertConfig] = useState<{isOpen: boolean, message: string, isError: boolean}>({isOpen: false, message: '', isError: false});
 
     // Category Modal State
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -130,17 +131,25 @@ export default function TemplateMaster2Page() {
     };
 
     const saveForm = async () => {
-        if (!formData.template_name.trim()) return;
+        if (!formData.template_name.trim()) {
+            setAlertConfig({isOpen: true, message: t['require_template_name'] || 'กรุณาระบุชื่อข้อมูล', isError: true});
+            return;
+        }
         setSaving(true);
         try {
             if (modalMode === 'add') {
                 await templateApi.create({ template_name: formData.template_name, template_group: formData.template_group, template_desc: formData.template_desc, is_active: formData.is_active });
+                setAlertConfig({isOpen: true, message: t['save_success'] || 'บันทึกข้อมูลเรียบร้อยแล้ว', isError: false});
             } else if (modalMode === 'edit' && selectedItem) {
                 await templateApi.update(selectedItem.template_id, { template_name: formData.template_name, template_group: formData.template_group, template_desc: formData.template_desc, is_active: formData.is_active });
+                setAlertConfig({isOpen: true, message: t['save_success'] || 'บันทึกข้อมูลเรียบร้อยแล้ว', isError: false});
             }
             setIsModalOpen(false);
             loadData();
-        } catch (err) { console.error(err); }
+        } catch (err: any) { 
+            console.error(err); 
+            setAlertConfig({isOpen: true, message: err.message || t['error_saving'] || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล', isError: true});
+        }
         setSaving(false);
     };
 
@@ -149,9 +158,13 @@ export default function TemplateMaster2Page() {
         setSaving(true);
         try {
             await templateApi.remove(selectedItem.template_id);
+            setAlertConfig({isOpen: true, message: t['delete_success'] || 'ลบข้อมูลเรียบร้อยแล้ว', isError: false});
             setIsModalOpen(false);
             loadData();
-        } catch (err) { console.error(err); }
+        } catch (err: any) { 
+            console.error(err); 
+            setAlertConfig({isOpen: true, message: err.message || t['error_deleting'] || 'ลบข้อมูลไม่สำเร็จ', isError: true});
+        }
         setSaving(false);
     };
 
@@ -159,7 +172,10 @@ export default function TemplateMaster2Page() {
         try {
             await templateApi.toggleStatus(item.template_id, val);
             setData(prev => prev.map(d => d.template_id === item.template_id ? { ...d, is_active: val } : d));
-        } catch (err) { console.error(err); }
+        } catch (err: any) { 
+            console.error(err); 
+            setAlertConfig({isOpen: true, message: err.message || t['error_saving'] || 'เปลี่ยนสถานะไม่สำเร็จ', isError: true});
+        }
     };
 
     const handleSaveCategory = () => {
@@ -367,8 +383,8 @@ export default function TemplateMaster2Page() {
                     modalMode !== 'view' ? (
                         <>
                             <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>{t['cancel'] || 'ยกเลิก'}</button>
-                            <button onClick={saveForm} disabled={!formData.template_name.trim() || saving}
-                                style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: (formData.template_name.trim() && !saving) ? 1 : 0.5 }}>
+                            <button onClick={saveForm} disabled={saving}
+                                style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: saving ? 0.5 : 1 }}>
                                 {saving ? (t['saving'] || 'กำลังบันทึก...') : modalMode === 'add' ? (t['save_data'] || 'บันทึกข้อมูล') : (t['save_data'] || 'บันทึกข้อมูล')}
                             </button>
                         </>
@@ -493,11 +509,27 @@ export default function TemplateMaster2Page() {
                 isOpen={showAdvancedSearch}
                 onClose={() => setShowAdvancedSearch(false)}
                 fields={advancedSearchFields}
+
                 values={advSearchValues}
                 onChange={handleAdvSearchChange}
                 onSearch={handleAdvSearchSubmit}
                 onClear={handleAdvSearchClear}
             />
+
+            {/* Custom Alert Modal */}
+            <BaseModal 
+                isOpen={alertConfig.isOpen} 
+                onClose={() => setAlertConfig({...alertConfig, isOpen: false})}
+                title={alertConfig.isError ? (t['error_title'] || "แจ้งเตือนข้อผิดพลาด") : (t['success_title'] || "สำเร็จ")}
+                width="400px"
+                footer={
+                    <button onClick={() => setAlertConfig({...alertConfig, isOpen: false})} style={{ padding: '8px 16px', background: alertConfig.isError ? '#ef4444' : 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, width: '100px' }}>{t['ok_button'] || 'ตกลง'}</button>
+                }
+            >
+                <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)', fontSize: '15px' }}>{alertConfig.message}</p>
+                </div>
+            </BaseModal>
         </CrudLayout>
     );
 }
