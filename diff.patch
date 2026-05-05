@@ -1,0 +1,78 @@
+diff --git a/apps/nex-core/src/components/template/TemplateMaster1Page.tsx b/apps/nex-core/src/components/template/TemplateMaster1Page.tsx
+index f8d61cf..aca6327 100644
+--- a/apps/nex-core/src/components/template/TemplateMaster1Page.tsx
++++ b/apps/nex-core/src/components/template/TemplateMaster1Page.tsx
+@@ -305,45 +305,38 @@ export default function TemplateMaster1Page() {
+                             onChange={(e) => setFormData({ ...formData, template_desc: e.target.value })}
+                             disabled={modalMode === 'view'} />
+                     </div>
++                    <div>
++                        <label style={crudStyles.label}>??????????????????????????????????????????</label>
++                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
++                            <StatusDropdown status={formData.is_active}
++                                onChange={(val) => { if (modalMode !== 'view') setFormData({ ...formData, is_active: val }); }}
++                                disabled={modalMode === 'view'} />
++                            {modalMode === 'view' && <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>*(????????????????????????????????????)</span>}
++                        </div>
++                    </div>
+                     {modalMode === 'view' && (
+-                        <>
+-                            <div>
+-                                <label style={crudStyles.label}>??????????????????????????????????????????</label>
+-                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+-                                    <StatusDropdown status={formData.is_active}
+-                                        onChange={(val) => { if (modalMode !== 'view') setFormData({ ...formData, is_active: val }); }}
+-                                        disabled={modalMode === 'view'} />
+-                                    {modalMode === 'view' && <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>*(????????????????????????????????????)</span>}
+-                                </div>
++                        <div style={{ marginTop: '16px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
++                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
++                                <Info size={16} />
++                                <span style={{ fontSize: '13px', fontWeight: 600 }}>?????????????????????????????? (System Logs)</span>
+                             </div>
+-                            <div style={{ marginTop: '16px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
+-                                    <Info size={16} />
+-                                    <span style={{ fontSize: '13px', fontWeight: 600 }}>?????????????????????????????? (System Logs)</span>
++                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
++                                <div>
++                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>????????????????????????</span>
++                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.create_by || '-'}</span>
+                                 </div>
+-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
+-                                    <div>
+-                                        <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>????????????????????????</span>
+-                                        <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.create_by || '-'}</span>
+-                                    </div>
+-                                    <div>
+-                                        <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>?????????????????????????????????</span>
+-                                        <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.create_date ? new Date(selectedItem.create_date).toLocaleString('th-TH') : '-'}</span>
+-                                    </div>
+-                                    <div>
+-                                        <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>??????????????????????????????????????????</span>
+-                                        <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.update_by || '-'}</span>
+-                                    </div>
+-                                    <div>
+-                                        <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>???????????????????????????????????????????????????</span>
+-                                        <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.update_date ? new Date(selectedItem.update_date).toLocaleString('th-TH') : '-'}</span>
+-                                    </div>
++                                <div>
++                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>?????????????????????????????????</span>
++                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.create_date ? new Date(selectedItem.create_date).toLocaleString('th-TH') : '-'}</span>
++                                </div>
++                                <div>
++                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>??????????????????????????????????????????</span>
++                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.update_by || '-'}</span>
++                                </div>
++                                <div>
++                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>???????????????????????????????????????????????????</span>
++                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.update_date ? new Date(selectedItem.update_date).toLocaleString('th-TH') : '-'}</span>
+                                 </div>
+-                            </div>
+-                        </>
+-                    )}; }}
+-                                    disabled={modalMode === 'view'} />
+-                                {modalMode === 'view' && <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>*(????????????????????????????????????)</span>}
+                             </div>
+                         </div>
+                     )}

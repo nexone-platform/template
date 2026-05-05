@@ -1,0 +1,113 @@
+﻿commit e003a2a5b1ac8e0ea1456a21d8d95e4dfa292af8
+Author: NexOne Template <template@nexone.dev>
+Date:   Mon May 4 17:06:15 2026 +0700
+
+    feat: Global rollout of Search, Import, and Audit Logs across TemplateMasters 1-3
+
+diff --git a/apps/nex-core/src/components/template/TemplateMaster3Page.tsx b/apps/nex-core/src/components/template/TemplateMaster3Page.tsx
+index 112ebd9..2ece7cf 100644
+--- a/apps/nex-core/src/components/template/TemplateMaster3Page.tsx
++++ b/apps/nex-core/src/components/template/TemplateMaster3Page.tsx
+@@ -3,9 +3,9 @@ import { useSystemConfig } from '@nexone/ui';
+ 
+ import React, { useState, useEffect, useCallback } from 'react';
+ import StatusDropdown from '@/components/StatusDropdown';
+-import { Search, Plus, Eye, Pencil, Trash2, X, FileSpreadsheet, FileText, Download, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, LayoutGrid, List, Package, MapPin, DollarSign, Truck, User, Calendar, Weight } from 'lucide-react';
++import { Search, Plus, Eye, Pencil, Trash2, X, FileSpreadsheet, Info, FileText, Download, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, LayoutGrid, List, Package, MapPin, DollarSign, Truck, User, Calendar, Weight } from 'lucide-react';
+ import { api, Order, LocationItem } from '@/services/api';
+-import { ExportButtons } from '@/components/CrudComponents';
++import { ExportButtons, ImportExcelButton, SearchInput } from '@/components/CrudComponents';
+ import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
+ import { usePagePermission } from '@/contexts/PermissionContext';
+ 
+@@ -374,6 +374,32 @@ export default function TemplateMaster3Page() {
+         border: 'none', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s',
+     };
+ 
++        const handleImport = async (data: any[]) => {
++        setSaving(true);
++        try {
++            for (const item of data) {
++                if (item['α╕Ñα╕╣α╕üα╕äα╣ëα╕▓']) {
++                    await api.createOrder({
++                        id: item['Order ID'] || `ORD-${Math.floor(Math.random() * 1000)}`,
++                        customerName: item['α╕Ñα╕╣α╕üα╕äα╣ëα╕▓'],
++                        origin: item['α╕òα╣ëα╕Öα╕ùα╕▓α╕ç'] || '',
++                        destination: item['α╕¢α╕Ñα╕▓α╕óα╕ùα╕▓α╕ç'] || '',
++                        cargoType: item['α╕¬α╕┤α╕Öα╕äα╣ëα╕▓'] || '',
++                        weight: Number(item['α╕Öα╣ëα╕│α╕½α╕Öα╕▒α╕ü (α╕òα╕▒α╕Ö)']) || 0,
++                        status: 'pending',
++                        priority: 'normal',
++                        deliveryDate: item['α╕ºα╕▒α╕Öα╕¬α╣êα╕ç'] || new Date().toISOString().split('T')[0],
++                        estimatedCost: Number(item['α╕úα╕▓α╕äα╕▓ (α╕Üα╕▓α╕ù)']) || 0
++                    });
++                }
++            }
++            loadOrders();
++        } catch (err) {
++            console.error('Import failed:', err);
++        }
++        setSaving(false);
++    };
++
+     if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}><div className="loading-spinner" /></div>;
+ 
+     return (
+@@ -395,6 +421,13 @@ export default function TemplateMaster3Page() {
+                     onExportCSV={() => exportToCSV(getExportData(), 'Template3', exportColumns)}
+                     onExportPDF={() => exportToPDF(getExportData(), 'Template3', exportColumns, 'Order Report - NexSpeed')}
+                 />}
++                {perm.canAdd && (
++                    <ImportExcelButton 
++                        onImport={handleImport}
++                        expectedColumns={['α╕Ñα╕╣α╕üα╕äα╣ëα╕▓', 'α╕òα╣ëα╕Öα╕ùα╕▓α╕ç', 'α╕¢α╕Ñα╕▓α╕óα╕ùα╕▓α╕ç', 'α╕¬α╕┤α╕Öα╕äα╣ëα╕▓', 'α╕Öα╣ëα╕│α╕½α╕Öα╕▒α╕ü (α╕òα╕▒α╕Ö)', 'α╕úα╕▓α╕äα╕▓ (α╕Üα╕▓α╕ù)', 'α╕ºα╕▒α╕Öα╕¬α╣êα╕ç']}
++                        isLoading={saving}
++                    />
++                )}
+                 {selectedIds.size > 0 && (
+                     <>
+                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--accent-blue)', fontWeight: 600, padding: '5px 10px', borderRadius: '8px', background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)' }}>
+@@ -408,10 +441,7 @@ export default function TemplateMaster3Page() {
+ 
+ 
+ 
+-                <div className="topbar-search" style={{ minWidth: '180px' }}>
+-                    <Search size={16} />
+-                    <input placeholder="α╕äα╣ëα╕Öα╕½α╕▓α╕Ñα╕╣α╕üα╕äα╣ëα╕▓, Order..." value={search} onChange={e => { setSearch(e.target.value); setCurrentPage(1); }} />
+-                </div>
++                {perm.canView && <SearchInput value={search} onChange={(val) => { setSearch(val); setCurrentPage(1); }} onClear={() => { setSearch(''); setCurrentPage(1); }} placeholder="α╕äα╣ëα╕Öα╕½α╕▓α╕Ñα╕╣α╕üα╕äα╣ëα╕▓, Order..." />}
+ 
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'var(--bg-primary)', borderRadius: '8px', padding: '2px', border: '1px solid var(--border-color)' }}>
+                     <button onClick={() => setViewMode('list')} title="List"
+@@ -552,6 +582,31 @@ export default function TemplateMaster3Page() {
+                         <DetailRow icon={<Weight size={16} />} label="α╕Öα╣ëα╕│α╕½α╕Öα╕▒α╕ü" value={`${selectedOrder.weight} α╕òα╕▒α╕Ö`} />
+                         <DetailRow icon={<Calendar size={16} />} label="α╕ºα╕▒α╕Öα╕¬α╣êα╕ç" value={selectedOrder.deliveryDate} />
+                         <DetailRow icon={<Truck size={16} />} label="α╕¬α╕ûα╕▓α╕Öα╕░" value={statusLabels[selectedOrder.status]} />
++                        
++                        <div style={{ marginTop: '24px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
++                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
++                                <Info size={16} />
++                                <span style={{ fontSize: '13px', fontWeight: 600 }}>α╕éα╣ëα╕¡α╕íα╕╣α╕Ñα╕úα╕░α╕Üα╕Ü (System Logs)</span>
++                            </div>
++                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
++                                <div>
++                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>α╕¬α╕úα╣ëα╕▓α╕çα╣éα╕öα╕ó</span>
++                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>-</span>
++                                </div>
++                                <div>
++                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>α╕ºα╕▒α╕Öα╕ùα╕╡α╣êα╕¬α╕úα╣ëα╕▓α╕ç</span>
++                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedOrder.createdAt ? new Date(selectedOrder.createdAt).toLocaleString('th-TH') : '-'}</span>
++                                </div>
++                                <div>
++                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>α╣üα╕üα╣ëα╣äα╕éα╕Ñα╣êα╕▓α╕¬α╕╕α╕öα╣éα╕öα╕ó</span>
++                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>-</span>
++                                </div>
++                                <div>
++                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>α╕ºα╕▒α╕Öα╕ùα╕╡α╣êα╣üα╕üα╣ëα╣äα╕éα╕Ñα╣êα╕▓α╕¬α╕╕α╕ö</span>
++                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedOrder.updatedAt ? new Date(selectedOrder.updatedAt).toLocaleString('th-TH') : '-'}</span>
++                                </div>
++                            </div>
++                        </div>
+                     </div>
+                 )}
+             </Modal>

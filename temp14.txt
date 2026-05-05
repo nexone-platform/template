@@ -1,0 +1,449 @@
+﻿commit ae1b7d0ca8c837e5bcffa95c9e6740c0b56256ae
+Author: NexOne Template <template@nexone.dev>
+Date:   Mon May 4 14:50:06 2026 +0700
+
+    style: apply dynamic styling to menu headings and format AppMenus input fields
+
+diff --git a/apps/nex-core/src/components/template/TemplateMasterGraph1Page.tsx b/apps/nex-core/src/components/template/TemplateMasterGraph1Page.tsx
+index d96c384..05c64ae 100644
+--- a/apps/nex-core/src/components/template/TemplateMasterGraph1Page.tsx
++++ b/apps/nex-core/src/components/template/TemplateMasterGraph1Page.tsx
+@@ -1,3 +1,4 @@
++import { useSystemConfig } from '@nexone/ui';
+ import React, { useState, useEffect, useCallback } from 'react';
+ import CrudLayout from '@/components/CrudLayout';
+ import { SummaryCard, SearchInput, crudStyles, BaseModal } from '@/components/CrudComponents';
+@@ -33,7 +34,7 @@ const EMPTY_FORM = { invoice: '', customer: '', amount: 0, status: 'α╕úα╕¡α╕èα╕│
+ 
+ export default function TemplateMasterGraph1Page() {
+     const perm = usePagePermission('Master Graph 1');
+-    const API = process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8001/api';
++    const API = process.env.NEXT_PUBLIC_CORE_API_URL || '';
+ 
+     // ---------- State ----------
+     const [data, setData] = useState<InvoiceRecord[]>([]);
+@@ -41,7 +42,16 @@ export default function TemplateMasterGraph1Page() {
+     const [saving, setSaving] = useState(false);
+     const [searchTerm, setSearchTerm] = useState('');
+     const [currentPage, setCurrentPage] = useState(1);
+-    const [pageSize, setPageSize] = useState(10);
++    const { configs, loading: configLoading } = useSystemConfig();
++    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
++    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
++
++    useEffect(() => {
++        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
++            setPageSize(configs.pageRecordDefault);
++            setHasSetDefaultPageSize(true);
++        }
++    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+     const [currentTab, setCurrentTab] = useState('α╕ùα╕▒α╣ëα╕çα╕½α╕íα╕ö');
+ 
+     // CRUD modal state
+@@ -54,7 +64,7 @@ export default function TemplateMasterGraph1Page() {
+     const loadData = useCallback(async () => {
+         setLoading(true);
+         try {
+-            const res = await fetch(`${API}/template-master-graph`);
++            const res = await fetch(`${API}/template-master-graph`, { credentials: 'include' });
+             if (res.ok) {
+                 const json = await res.json();
+                 // map snake_case ΓåÆ camelCase
+@@ -122,9 +132,9 @@ export default function TemplateMasterGraph1Page() {
+                 order_id: formData.orderId || null,
+             };
+             if (modalMode === 'add') {
+-                await fetch(`${API}/template-master-graph`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
++                await fetch(`${API}/template-master-graph`, { credentials: 'include',  method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+             } else if (modalMode === 'edit' && selectedItem) {
+-                await fetch(`${API}/template-master-graph/${selectedItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
++                await fetch(`${API}/template-master-graph/${selectedItem.id}`, { credentials: 'include',  method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+             }
+             setIsModalOpen(false);
+             loadData();
+@@ -136,7 +146,7 @@ export default function TemplateMasterGraph1Page() {
+         if (!selectedItem) return;
+         setSaving(true);
+         try {
+-            await fetch(`${API}/template-master-graph/${selectedItem.id}`, { method: 'DELETE' });
++            await fetch(`${API}/template-master-graph/${selectedItem.id}`, { credentials: 'include',  method: 'DELETE' });
+             setIsModalOpen(false);
+             loadData();
+         } catch (e) { console.error(e); }
+
+commit 28f805c42c237595447bfcb6e866dfd15576b083
+Author: NexOne Template <template@nexone.dev>
+Date:   Thu Apr 30 07:52:46 2026 +0700
+
+    Clean: remove 80+ junk files, rename nex-core-admin to nex-core, remove credentials
+
+diff --git a/apps/nex-core/src/components/template/TemplateMasterGraph1Page.tsx b/apps/nex-core/src/components/template/TemplateMasterGraph1Page.tsx
+new file mode 100644
+index 0000000..d96c384
+--- /dev/null
++++ b/apps/nex-core/src/components/template/TemplateMasterGraph1Page.tsx
+@@ -0,0 +1,364 @@
++import React, { useState, useEffect, useCallback } from 'react';
++import CrudLayout from '@/components/CrudLayout';
++import { SummaryCard, SearchInput, crudStyles, BaseModal } from '@/components/CrudComponents';
++import { Plus, Edit2, Trash2, Eye, CheckCircle2, ChevronDown, Check, Clock, AlertTriangle, Receipt, BarChart3, LineChart as LineChartIcon } from 'lucide-react';
++import Pagination from '@/components/Pagination';
++import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
++import { usePagePermission } from '@/contexts/PermissionContext';
++
++// ---------- Types ----------
++interface InvoiceRecord {
++    id: number;
++    invoice: string;
++    customer: string;
++    amount: number;
++    status: string;
++    issueDate: string;
++    dueDate: string;
++    orderId: string | null;
++    isActive: boolean;
++}
++
++// ---------- Chart data (static ΓÇö α╣âα╕èα╣ëα╣üα╕¬α╕öα╕çα╣Çα╕¢α╣çα╕Ö template) ----------
++const chartData = [
++    { name: 'α╕í.α╕ä.', revenue: 2500000, cost: 1800000, profit: 700000 },
++    { name: 'α╕ü.α╕₧.', revenue: 2600000, cost: 1900000, profit: 700000 },
++    { name: 'α╕íα╕╡.α╕ä.', revenue: 3100000, cost: 2000000, profit: 1100000 },
++    { name: 'α╣Çα╕í.α╕ó.', revenue: 2300000, cost: 1700000, profit: 600000 },
++    { name: 'α╕₧.α╕ä.', revenue: 2700000, cost: 1900000, profit: 800000 },
++    { name: 'α╕íα╕┤.α╕ó.', revenue: 3200000, cost: 2100000, profit: 1100000 },
++];
++
++const EMPTY_FORM = { invoice: '', customer: '', amount: 0, status: 'α╕úα╕¡α╕èα╕│α╕úα╕░', issueDate: '', dueDate: '', orderId: '' };
++
++export default function TemplateMasterGraph1Page() {
++    const perm = usePagePermission('Master Graph 1');
++    const API = process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8001/api';
++
++    // ---------- State ----------
++    const [data, setData] = useState<InvoiceRecord[]>([]);
++    const [loading, setLoading] = useState(true);
++    const [saving, setSaving] = useState(false);
++    const [searchTerm, setSearchTerm] = useState('');
++    const [currentPage, setCurrentPage] = useState(1);
++    const [pageSize, setPageSize] = useState(10);
++    const [currentTab, setCurrentTab] = useState('α╕ùα╕▒α╣ëα╕çα╕½α╕íα╕ö');
++
++    // CRUD modal state
++    const [isModalOpen, setIsModalOpen] = useState(false);
++    const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view' | 'delete'>('add');
++    const [selectedItem, setSelectedItem] = useState<InvoiceRecord | null>(null);
++    const [formData, setFormData] = useState(EMPTY_FORM);
++
++    // ---------- API helpers ----------
++    const loadData = useCallback(async () => {
++        setLoading(true);
++        try {
++            const res = await fetch(`${API}/template-master-graph`);
++            if (res.ok) {
++                const json = await res.json();
++                // map snake_case ΓåÆ camelCase
++                const mapped: InvoiceRecord[] = (Array.isArray(json) ? json : []).map((r: any) => ({
++                    id: r.id,
++                    invoice: r.invoice,
++                    customer: r.customer,
++                    amount: parseFloat(r.amount),
++                    status: r.status,
++                    issueDate: r.issue_date ?? r.issueDate ?? '',
++                    dueDate: r.due_date ?? r.dueDate ?? '',
++                    orderId: r.order_id ?? r.orderId ?? null,
++                    isActive: r.is_active ?? r.isActive ?? true,
++                }));
++                setData(mapped);
++            }
++        } catch (e) {
++            console.error('[TemplateMasterGraph] fetch failed', e);
++        } finally {
++            setLoading(false);
++        }
++    }, [API]);
++
++    useEffect(() => { loadData(); }, [loadData]);
++
++    // ---------- Action Handlers ----------
++    const handleAdd = () => {
++        const nextNum = data.length > 0 ? Math.max(...data.map(d => d.id)) + 1 : 1;
++        setFormData({ ...EMPTY_FORM, invoice: `INV-2026-${String(nextNum).padStart(3, '0')}`, issueDate: new Date().toISOString().split('T')[0] });
++        setModalMode('add');
++        setIsModalOpen(true);
++    };
++
++    const handleEdit = (item: InvoiceRecord) => {
++        setFormData({ invoice: item.invoice, customer: item.customer, amount: item.amount, status: item.status, issueDate: item.issueDate, dueDate: item.dueDate, orderId: item.orderId || '' });
++        setSelectedItem(item);
++        setModalMode('edit');
++        setIsModalOpen(true);
++    };
++
++    const handleView = (item: InvoiceRecord) => {
++        setFormData({ invoice: item.invoice, customer: item.customer, amount: item.amount, status: item.status, issueDate: item.issueDate, dueDate: item.dueDate, orderId: item.orderId || '' });
++        setSelectedItem(item);
++        setModalMode('view');
++        setIsModalOpen(true);
++    };
++
++    const handleDelete = (item: InvoiceRecord) => {
++        setSelectedItem(item);
++        setModalMode('delete');
++        setIsModalOpen(true);
++    };
++
++    const handleSave = async () => {
++        if (!formData.customer.trim()) return;
++        setSaving(true);
++        try {
++            const body = {
++                invoice: formData.invoice,
++                customer: formData.customer,
++                amount: formData.amount,
++                status: formData.status,
++                issue_date: formData.issueDate,
++                due_date: formData.dueDate,
++                order_id: formData.orderId || null,
++            };
++            if (modalMode === 'add') {
++                await fetch(`${API}/template-master-graph`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
++            } else if (modalMode === 'edit' && selectedItem) {
++                await fetch(`${API}/template-master-graph/${selectedItem.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
++            }
++            setIsModalOpen(false);
++            loadData();
++        } catch (e) { console.error(e); }
++        setSaving(false);
++    };
++
++    const handleConfirmDelete = async () => {
++        if (!selectedItem) return;
++        setSaving(true);
++        try {
++            await fetch(`${API}/template-master-graph/${selectedItem.id}`, { method: 'DELETE' });
++            setIsModalOpen(false);
++            loadData();
++        } catch (e) { console.error(e); }
++        setSaving(false);
++    };
++
++    // ---------- Filter & Pagination ----------
++    const searchLower = searchTerm.toLowerCase();
++    const searchedData = data.filter(item =>
++        item.invoice.toLowerCase().includes(searchLower) ||
++        item.customer.toLowerCase().includes(searchLower)
++    );
++    const filteredData = searchedData.filter(item => currentTab === 'α╕ùα╕▒α╣ëα╕çα╕½α╕íα╕ö' || item.status === currentTab);
++    const paginatedData = filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
++
++    const summaryData = {
++        paidCount: searchedData.filter(d => d.status === 'α╕èα╕│α╕úα╕░α╣üα╕Ñα╣ëα╕º').length,
++        pendingCount: searchedData.filter(d => d.status === 'α╕úα╕¡α╕èα╕│α╕úα╕░').length,
++        overdueCount: searchedData.filter(d => d.status === 'α╣Çα╕üα╕┤α╕Öα╕üα╕│α╕½α╕Öα╕ö').length,
++        totalCount: searchedData.length,
++    };
++
++    const hasActions = perm.canView || perm.canEdit || perm.canDelete;
++
++    // ---------- Helpers ----------
++    const renderStatusDropdown = (item: InvoiceRecord) => {
++        let color, bg, icon;
++        if (item.status === 'α╕èα╕│α╕úα╕░α╣üα╕Ñα╣ëα╕º')     { color = 'var(--accent-green)';  bg = 'rgba(16, 185, 129, 0.12)'; icon = <Check size={14} />; }
++        else if (item.status === 'α╕úα╕¡α╕èα╕│α╕úα╕░')   { color = 'var(--accent-amber)';  bg = 'rgba(245, 158, 11, 0.12)'; icon = <Clock size={14} />; }
++        else                                  { color = 'var(--accent-red)';    bg = 'rgba(239, 68, 68, 0.12)';  icon = <AlertTriangle size={14} />; }
++        return (
++            <div style={{ position: 'relative', display: 'inline-block' }}>
++                <button style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '100px', border: 'none', background: bg, color, fontSize: '13px', fontWeight: 600, cursor: 'default' }}>
++                    {icon}{item.status}
++                </button>
++            </div>
++        );
++    };
++
++    const getTabStyle = (tabName: string) => {
++        const isActive = currentTab === tabName;
++        return { padding: '8px 16px', borderRadius: '100px', border: 'none', fontSize: '13px', fontWeight: isActive ? 600 : 500, background: isActive ? 'var(--accent-blue)' : 'var(--bg-card)', color: isActive ? '#fff' : 'var(--text-muted)', cursor: 'pointer', boxShadow: isActive ? 'var(--shadow-sm)' : 'none', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px' } as React.CSSProperties;
++    };
++
++    if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}><div className="loading-spinner" /></div>;
++
++    return (
++        <CrudLayout
++            summaryCards={
++                <>
++                    <SummaryCard title="α╕èα╕│α╕úα╕░α╣üα╕Ñα╣ëα╕º"   count={summaryData.paidCount}    icon={<CheckCircle2 size={24} color="#10b981" />} color="#10b981" isActive={currentTab === 'α╕èα╕│α╕úα╕░α╣üα╕Ñα╣ëα╕º'}   onClick={() => { setCurrentTab('α╕èα╕│α╕úα╕░α╣üα╕Ñα╣ëα╕º');   setCurrentPage(1); }} />
++                    <SummaryCard title="α╕úα╕¡α╕èα╕│α╕úα╕░"      count={summaryData.pendingCount}  icon={<Clock       size={24} color="#f59e0b" />} color="#f59e0b" isActive={currentTab === 'α╕úα╕¡α╕èα╕│α╕úα╕░'}     onClick={() => { setCurrentTab('α╕úα╕¡α╕èα╕│α╕úα╕░');     setCurrentPage(1); }} />
++                    <SummaryCard title="α╣Çα╕üα╕┤α╕Öα╕üα╕│α╕½α╕Öα╕ö"   count={summaryData.overdueCount}  icon={<AlertTriangle size={24} color="#ef4444" />} color="#ef4444" isActive={currentTab === 'α╣Çα╕üα╕┤α╕Öα╕üα╕│α╕½α╕Öα╕ö'} onClick={() => { setCurrentTab('α╣Çα╕üα╕┤α╕Öα╕üα╕│α╕½α╕Öα╕ö'); setCurrentPage(1); }} />
++                    <SummaryCard title="Invoice α╕ùα╕▒α╣ëα╕çα╕½α╕íα╕ö" count={summaryData.totalCount} icon={<Receipt size={24} color="#3b82f6" />} color="#3b82f6" isActive={currentTab === 'α╕ùα╕▒α╣ëα╕çα╕½α╕íα╕ö'}     onClick={() => { setCurrentTab('α╕ùα╕▒α╣ëα╕çα╕½α╕íα╕ö');   setCurrentPage(1); }} />
++                </>
++            }
++            customHeaderContent={
++                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '16px' }}>
++                    <div className="card h-full">
++                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontWeight: 600 }}>
++                            <BarChart3 size={18} color="var(--accent-blue)" /> α╕úα╕▓α╕óα╣äα╕öα╣ë vs α╕òα╣ëα╕Öα╕ùα╕╕α╕Ö
++                        </div>
++                        <div style={{ height: '260px' }}>
++                            <ResponsiveContainer width="100%" height="100%">
++                                <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
++                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
++                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
++                                    <Tooltip formatter={(v: any) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(v)} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: 'var(--shadow-card)' }} />
++                                    <Bar dataKey="revenue" name="α╕úα╕▓α╕óα╣äα╕öα╣ë" fill="var(--accent-blue)"  radius={[4, 4, 0, 0]} />
++                                    <Bar dataKey="cost"    name="α╕òα╣ëα╕Öα╕ùα╕╕α╕Ö" fill="var(--accent-amber)" radius={[4, 4, 0, 0]} />
++                                </BarChart>
++                            </ResponsiveContainer>
++                        </div>
++                    </div>
++                    <div className="card h-full">
++                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontWeight: 600 }}>
++                            <LineChartIcon size={18} color="var(--accent-green)" /> α╕üα╕│α╣äα╕úα╕úα╕▓α╕óα╣Çα╕öα╕╖α╕¡α╕Ö
++                        </div>
++                        <div style={{ height: '260px' }}>
++                            <ResponsiveContainer width="100%" height="100%">
++                                <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
++                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
++                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
++                                    <Tooltip formatter={(v: any) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(v)} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: 'var(--shadow-card)' }} />
++                                    <Bar dataKey="profit" name="α╕üα╕│α╣äα╕ú" fill="var(--accent-green)" radius={[4, 4, 0, 0]} />
++                                </BarChart>
++                            </ResponsiveContainer>
++                        </div>
++                    </div>
++                </div>
++            }
++            toolbarLeft={
++                <div style={{ display: 'flex', gap: '8px', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '100px' }}>
++                    <button style={getTabStyle('α╕ùα╕▒α╣ëα╕çα╕½α╕íα╕ö')}   onClick={() => { setCurrentTab('α╕ùα╕▒α╣ëα╕çα╕½α╕íα╕ö');   setCurrentPage(1); }}>α╕ùα╕▒α╣ëα╕çα╕½α╕íα╕ö</button>
++                    <button style={getTabStyle('α╕èα╕│α╕úα╕░α╣üα╕Ñα╣ëα╕º')}  onClick={() => { setCurrentTab('α╕èα╕│α╕úα╕░α╣üα╕Ñα╣ëα╕º');  setCurrentPage(1); }}><Check        size={14} color={currentTab === 'α╕èα╕│α╕úα╕░α╣üα╕Ñα╣ëα╕º'  ? '#fff' : 'var(--accent-green)'} /> α╕èα╕│α╕úα╕░α╣üα╕Ñα╣ëα╕º</button>
++                    <button style={getTabStyle('α╕úα╕¡α╕èα╕│α╕úα╕░')}    onClick={() => { setCurrentTab('α╕úα╕¡α╕èα╕│α╕úα╕░');    setCurrentPage(1); }}><Clock        size={14} color={currentTab === 'α╕úα╕¡α╕èα╕│α╕úα╕░'    ? '#fff' : 'var(--accent-amber)'} /> α╕úα╕¡α╕èα╕│α╕úα╕░</button>
++                    <button style={getTabStyle('α╣Çα╕üα╕┤α╕Öα╕üα╕│α╕½α╕Öα╕ö')} onClick={() => { setCurrentTab('α╣Çα╕üα╕┤α╕Öα╕üα╕│α╕½α╕Öα╕ö'); setCurrentPage(1); }}><AlertTriangle size={14} color={currentTab === 'α╣Çα╕üα╕┤α╕Öα╕üα╕│α╕½α╕Öα╕ö' ? '#fff' : 'var(--accent-red)'}   /> α╣Çα╕üα╕┤α╕Öα╕üα╕│α╕½α╕Öα╕ö</button>
++                </div>
++            }
++            toolbarRight={
++                <>
++                    {perm.canView && <SearchInput value={searchTerm} onChange={e => { setSearchTerm(e); setCurrentPage(1); }} placeholder="α╕äα╣ëα╕Öα╕½α╕▓ Invoice, α╕Ñα╕╣α╕üα╕äα╣ëα╕▓..." />}
++                    {perm.canAdd  && <button onClick={handleAdd} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 500, cursor: 'pointer' }}><Plus size={16} /><span>α╣Çα╕₧α╕┤α╣êα╕íα╕éα╣ëα╕¡α╕íα╕╣α╕Ñ</span></button>}
++                </>
++            }
++        >
++            <table className="data-table">
++                    <thead>
++                        <tr>
++                            <th style={{ width: '14%' }}>INVOICE</th>
++                            <th style={{ width: '24%' }}>α╕Ñα╕╣α╕üα╕äα╣ëα╕▓</th>
++                            <th style={{ width: '10%' }}>α╕êα╕│α╕Öα╕ºα╕Ö</th>
++                            <th style={{ width: '13%' }}>α╕¬α╕ûα╕▓α╕Öα╕░</th>
++                            <th style={{ width: '12%' }}>α╕ºα╕▒α╕Öα╕¡α╕¡α╕ü</th>
++                            <th style={{ width: '12%' }}>α╕äα╕úα╕Üα╕üα╕│α╕½α╕Öα╕ö</th>
++                            <th style={{ width: '12%' }}>ORDER</th>
++                            {hasActions && <th style={{ width: '13%', textAlign: 'center' }}>α╕êα╕▒α╕öα╕üα╕▓α╕ú</th>}
++                        </tr>
++                    </thead>
++                    <tbody>
++                        {paginatedData.map(item => (
++                            <tr key={item.id} className="hover-highlight">
++                                <td style={{ color: 'var(--accent-blue)', fontWeight: 500 }}>{item.invoice}</td>
++                                <td className="font-medium">{item.customer}</td>
++                                <td className="font-medium">α╕┐{Number(item.amount).toLocaleString()}</td>
++                                <td>{renderStatusDropdown(item)}</td>
++                                <td className="text-muted">{item.issueDate}</td>
++                                <td className="text-muted">{item.dueDate}</td>
++                                <td className="text-muted">{item.orderId || '-'}</td>
++                                {hasActions && (
++                                    <td className="text-center" style={{ paddingRight: '24px' }}>
++                                        <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
++                                            {perm.canView   && <button onClick={() => handleView(item)}   style={{ ...crudStyles.actionBtn, color: 'var(--accent-blue)', background: 'rgba(59,130,246,0.1)' }} title="α╣Çα╕úα╕╡α╕óα╕üα╕öα╕╣"><Eye    size={14} /></button>}
++                                            {perm.canEdit   && <button onClick={() => handleEdit(item)}   style={{ ...crudStyles.actionBtn, color: '#f59e0b', background: '#fef3c7' }} title="α╣üα╕üα╣ëα╣äα╕é"><Edit2  size={14} /></button>}
++                                            {perm.canDelete && <button onClick={() => handleDelete(item)} style={{ ...crudStyles.actionBtn, color: '#ef4444', background: '#fee2e2' }} title="α╕Ñα╕Ü"><Trash2 size={14} /></button>}
++                                        </div>
++                                    </td>
++                                )}
++                            </tr>
++                        ))}
++                        {paginatedData.length === 0 && (
++                            <tr><td colSpan={hasActions ? 8 : 7} style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>α╣äα╕íα╣êα╕₧α╕Üα╕éα╣ëα╕¡α╕íα╕╣α╕Ñ</td></tr>
++                        )}
++                    </tbody>
++                </table>
++
++            {filteredData.length > 0 && (
++                <Pagination currentPage={currentPage} pageSize={pageSize} totalItems={filteredData.length} setCurrentPage={setCurrentPage} setPageSize={setPageSize} />
++            )}
++
++            {/* ===== Add / Edit / View Modal ===== */}
++            <BaseModal
++                isOpen={isModalOpen && modalMode !== 'delete'}
++                onClose={() => setIsModalOpen(false)}
++                title={modalMode === 'add' ? 'α╕¬α╕úα╣ëα╕▓α╕çα╕úα╕▓α╕óα╕üα╕▓α╕ú Invoice α╣âα╕½α╕íα╣ê' : modalMode === 'edit' ? 'α╣üα╕üα╣ëα╣äα╕éα╕úα╕▓α╕óα╕üα╕▓α╕ú Invoice' : 'α╕úα╕▓α╕óα╕Ñα╕░α╣Çα╕¡α╕╡α╕óα╕ö Invoice'}
++                footer={
++                    modalMode !== 'view' ? (
++                        <>
++                            <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>α╕óα╕üα╣Çα╕Ñα╕┤α╕ü</button>
++                            <button onClick={handleSave} disabled={!formData.customer.trim() || saving} style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: (!formData.customer.trim() || saving) ? 0.5 : 1 }}>
++                                {saving ? 'α╕üα╕│α╕Ñα╕▒α╕çα╕Üα╕▒α╕Öα╕ùα╕╢α╕ü...' : modalMode === 'add' ? 'α╣Çα╕₧α╕┤α╣êα╕íα╕éα╣ëα╕¡α╕íα╕╣α╕Ñ' : 'α╕Üα╕▒α╕Öα╕ùα╕╢α╕üα╕éα╣ëα╕¡α╕íα╕╣α╕Ñ'}
++                            </button>
++                        </>
++                    ) : (
++                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>α╕¢α╕┤α╕ö</button>
++                    )
++                }
++            >
++                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
++                    <div style={{ gridColumn: '1 / -1' }}>
++                        <label style={crudStyles.label}>α╕úα╕½α╕▒α╕¬ Invoice <span style={{ color: '#ef4444' }}>*</span></label>
++                        <input type="text" style={crudStyles.input} value={formData.invoice} disabled />
++                    </div>
++                    <div style={{ gridColumn: '1 / -1' }}>
++                        <label style={crudStyles.label}>α╕Ñα╕╣α╕üα╕äα╣ëα╕▓ <span style={{ color: '#ef4444' }}>*</span></label>
++                        <input type="text" style={crudStyles.input} placeholder="α╕úα╕░α╕Üα╕╕α╕èα╕╖α╣êα╕¡α╕Ñα╕╣α╕üα╕äα╣ëα╕▓α╣üα╕Ñα╕░α╕Üα╕úα╕┤α╕⌐α╕▒α╕ù" value={formData.customer} onChange={e => setFormData({ ...formData, customer: e.target.value })} disabled={modalMode === 'view'} />
++                    </div>
++                    <div>
++                        <label style={crudStyles.label}>α╕êα╕│α╕Öα╕ºα╕Öα╣Çα╕çα╕┤α╕Ö</label>
++                        <input type="number" style={crudStyles.input} placeholder="α╕úα╕░α╕Üα╕╕α╕êα╕│α╕Öα╕ºα╕Öα╣Çα╕çα╕┤α╕Ö" value={formData.amount} onChange={e => setFormData({ ...formData, amount: Number(e.target.value) })} disabled={modalMode === 'view'} />
++                    </div>
++                    <div>
++                        <label style={crudStyles.label}>α╕¬α╕ûα╕▓α╕Öα╕░ <span style={{ color: '#ef4444' }}>*</span></label>
++                        <select style={crudStyles.input} value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} disabled={modalMode === 'view'}>
++                            <option value="α╕úα╕¡α╕èα╕│α╕úα╕░">α╕úα╕¡α╕èα╕│α╕úα╕░</option>
++                            <option value="α╕èα╕│α╕úα╕░α╣üα╕Ñα╣ëα╕º">α╕èα╕│α╕úα╕░α╣üα╕Ñα╣ëα╕º</option>
++                            <option value="α╣Çα╕üα╕┤α╕Öα╕üα╕│α╕½α╕Öα╕ö">α╣Çα╕üα╕┤α╕Öα╕üα╕│α╕½α╕Öα╕ö</option>
++                        </select>
++                    </div>
++                    <div>
++                        <label style={crudStyles.label}>α╕ºα╕▒α╕Öα╕¡α╕¡α╕üα╣Çα╕¡α╕üα╕¬α╕▓α╕ú</label>
++                        <input type="date" style={crudStyles.input} value={formData.issueDate} onChange={e => setFormData({ ...formData, issueDate: e.target.value })} disabled={modalMode === 'view'} />
++                    </div>
++                    <div>
++                        <label style={crudStyles.label}>α╕ºα╕▒α╕Öα╕äα╕úα╕Üα╕üα╕│α╕½α╕Öα╕ö</label>
++                        <input type="date" style={crudStyles.input} value={formData.dueDate} onChange={e => setFormData({ ...formData, dueDate: e.target.value })} disabled={modalMode === 'view'} />
++                    </div>
++                    <div style={{ gridColumn: '1 / -1' }}>
++                        <label style={crudStyles.label}>Order ID (α╕¡α╣ëα╕▓α╕çα╕¡α╕┤α╕ç)</label>
++                        <input type="text" style={crudStyles.input} placeholder="α╣Çα╕èα╣êα╕Ö ORD-2026-0001" value={formData.orderId} onChange={e => setFormData({ ...formData, orderId: e.target.value })} disabled={modalMode === 'view'} />
++                    </div>
++                </div>
++            </BaseModal>
++
++            {/* ===== Delete Confirm Modal ===== */}
++            <BaseModal
++                isOpen={isModalOpen && modalMode === 'delete'}
++                onClose={() => setIsModalOpen(false)}
++                title="α╕óα╕╖α╕Öα╕óα╕▒α╕Öα╕üα╕▓α╕úα╕Ñα╕Üα╕éα╣ëα╕¡α╕íα╕╣α╕Ñ"
++                width="400px"
++                footer={
++                    <>
++                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>α╕óα╕üα╣Çα╕Ñα╕┤α╕ü</button>
++                        <button onClick={handleConfirmDelete} disabled={saving} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: saving ? 0.5 : 1 }}>{saving ? 'α╕üα╕│α╕Ñα╕▒α╕çα╕Ñα╕Ü...' : 'α╕Ñα╕Üα╕éα╣ëα╕¡α╕íα╕╣α╕Ñ'}</button>
++                    </>
++                }
++            >
++                <div>
++                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)' }}>α╕äα╕╕α╕ôα╣üα╕Öα╣êα╣âα╕êα╕½α╕úα╕╖α╕¡α╣äα╕íα╣êα╕ºα╣êα╕▓α╕òα╣ëα╕¡α╕çα╕üα╕▓α╕úα╕Ñα╕Ü Invoice <strong style={{ color: 'var(--text-primary)' }}>{selectedItem?.invoice}</strong> ?</p>
++                    <p style={{ margin: 0, fontSize: '13px', color: '#ef4444' }}>α╕üα╕▓α╕úα╕üα╕úα╕░α╕ùα╕│α╕Öα╕╡α╣ëα╕êα╕░α╣äα╕íα╣êα╕¬α╕▓α╕íα╕▓α╕úα╕ûα╕óα╣ëα╕¡α╕Öα╕üα╕Ñα╕▒α╕Üα╣äα╕öα╣ë</p>
++                </div>
++            </BaseModal>
++        </CrudLayout>
++    );
++}

@@ -1,0 +1,314 @@
+﻿import React, { useState, useEffect, useCallback } from 'react';
+import CrudLayout from '@/components/CrudLayout';
+import { SearchInput, crudStyles, StatusDropdown, BaseModal, ExportButtons } from '@/components/CrudComponents';
+import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
+import { Plus, Edit2, Trash2, Eye, ArrowUp, ArrowDown, ChevronsUpDown } from 'lucide-react';
+import Pagination from '@/components/Pagination';
+import { templateApi, Template } from '@/services/api';
+import { usePagePermission } from '@/contexts/PermissionContext';
+import { useSystemConfig } from '@nexone/ui';
+
+export default function TemplateMaster1Page() {
+    const perm = usePagePermission('Master Type 1');
+    const [data, setData] = useState<Template[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' | null }>({ key: '', direction: null });
+    const { configs, loading: configLoading } = useSystemConfig();
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
+
+    useEffect(() => {
+        if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
+            setPageSize(configs.pageRecordDefault);
+            setHasSetDefaultPageSize(true);
+        }
+    }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+
+    // CRUD State
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view' | 'delete'>('add');
+    const [selectedItem, setSelectedItem] = useState<Template | null>(null);
+    const [formData, setFormData] = useState({ template_name: '', template_desc: '', is_active: true });
+    const [saving, setSaving] = useState(false);
+
+    const loadData = useCallback(() => {
+        setLoading(true);
+        templateApi.getAll()
+            .then(res => { setData(res || []); })
+            .catch(err => { console.error('Failed to load templates:', err); setData([]); })
+            .finally(() => setLoading(false));
+    }, []);
+
+    useEffect(() => { loadData(); }, [loadData]);
+
+    // Action Handlers
+    const handleAdd = () => {
+        setFormData({ template_name: '', template_desc: '', is_active: true });
+        setModalMode('add');
+        setIsModalOpen(true);
+    };
+    const handleEdit = (item: Template) => {
+        setFormData({ template_name: item.template_name, template_desc: item.template_desc || '', is_active: item.is_active });
+        setSelectedItem(item);
+        setModalMode('edit');
+        setIsModalOpen(true);
+    };
+    const handleView = (item: Template) => {
+        setFormData({ template_name: item.template_name, template_desc: item.template_desc || '', is_active: item.is_active });
+        setSelectedItem(item);
+        setModalMode('view');
+        setIsModalOpen(true);
+    };
+    const handleDelete = (item: Template) => {
+        setSelectedItem(item);
+        setModalMode('delete');
+        setIsModalOpen(true);
+    };
+
+    const saveForm = async () => {
+        if (!formData.template_name.trim()) return;
+        setSaving(true);
+        try {
+            if (modalMode === 'add') {
+                await templateApi.create({ template_name: formData.template_name, template_desc: formData.template_desc, is_active: formData.is_active });
+            } else if (modalMode === 'edit' && selectedItem) {
+                await templateApi.update(selectedItem.template_id, { template_name: formData.template_name, template_desc: formData.template_desc, is_active: formData.is_active });
+            }
+            setIsModalOpen(false);
+            loadData();
+        } catch (err) { console.error(err); }
+        setSaving(false);
+    };
+
+    const confirmDelete = async () => {
+        if (!selectedItem) return;
+        setSaving(true);
+        try {
+            await templateApi.remove(selectedItem.template_id);
+            setIsModalOpen(false);
+            loadData();
+        } catch (err) { console.error(err); }
+        setSaving(false);
+    };
+
+    const handleToggleStatus = async (item: Template, val: boolean) => {
+        try {
+            await templateApi.toggleStatus(item.template_id, val);
+            setData(prev => prev.map(d => d.template_id === item.template_id ? { ...d, is_active: val } : d));
+        } catch (err) { console.error(err); }
+    };
+
+    const handleSort = (key: string) => {
+        let direction: 'asc' | 'desc' | null = 'asc';
+        if (sortConfig.key === key) {
+            if (sortConfig.direction === 'asc') direction = 'desc';
+            else if (sortConfig.direction === 'desc') direction = null;
+            else direction = 'asc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const searchLower = search.toLowerCase();
+    const filteredData = data.filter(item =>
+        !searchLower ||
+        item.template_name.toLowerCase().includes(searchLower) ||
+        (item.template_desc || '').toLowerCase().includes(searchLower)
+    );
+
+    let sortedData = [...filteredData];
+    if (sortConfig.key && sortConfig.direction !== null) {
+        sortedData.sort((a, b) => {
+            const aVal = (a as any)[sortConfig.key];
+            const bVal = (b as any)[sortConfig.key];
+            
+            if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
+    const paginatedData = sortedData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+    const renderSortIcon = (columnKey: string) => {
+        if (sortConfig.key !== columnKey || sortConfig.direction === null) {
+            return <ChevronsUpDown size={14} style={{ opacity: 0.3 }} />;
+        }
+        if (sortConfig.direction === 'asc') {
+            return <ArrowDown size={14} />;
+        }
+        return <ArrowUp size={14} />;
+    };
+
+    const renderTh = (label: string, columnKey: string, width?: string) => (
+        <th 
+            style={{ width, cursor: 'pointer', whiteSpace: 'nowrap', userSelect: 'none' }} 
+            onClick={() => handleSort(columnKey)}
+        >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
+                <span>{label}</span>
+                {renderSortIcon(columnKey)}
+            </div>
+        </th>
+    );
+
+    if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}><div className="loading-spinner" /></div>;
+
+    return (
+        <CrudLayout
+            toolbarLeft={
+                perm.canExport ? (
+                <ExportButtons
+                    onExportXLSX={() => exportToXLSX(filteredData, 'Template1', [
+                        { key: 'template_id', label: 'ID' },
+                        { key: 'template_name', label: 'α╕èα╕╖α╣êα╕¡α╕éα╣ëα╕¡α╕íα╕╣α╕Ñ' },
+                        { key: 'template_desc', label: 'α╕äα╕│α╕¡α╕ÿα╕┤α╕Üα╕▓α╕ó' },
+                        { key: 'is_active', label: 'α╕¬α╕ûα╕▓α╕Öα╕░', format: (v: any) => v.is_active ? 'α╣âα╕èα╣ëα╕çα╕▓α╕Ö' : 'α╕óα╕üα╣Çα╕Ñα╕┤α╕ü' }
+                    ])}
+                    onExportCSV={() => exportToCSV(filteredData, 'Template1', [
+                        { key: 'template_id', label: 'ID' },
+                        { key: 'template_name', label: 'α╕èα╕╖α╣êα╕¡α╕éα╣ëα╕¡α╕íα╕╣α╕Ñ' },
+                        { key: 'template_desc', label: 'α╕äα╕│α╕¡α╕ÿα╕┤α╕Üα╕▓α╕ó' },
+                        { key: 'is_active', label: 'α╕¬α╕ûα╕▓α╕Öα╕░', format: (v: any) => v.is_active ? 'α╣âα╕èα╣ëα╕çα╕▓α╕Ö' : 'α╕óα╕üα╣Çα╕Ñα╕┤α╕ü' }
+                    ])}
+                    onExportPDF={() => exportToPDF(filteredData, 'Template1', [
+                        { key: 'template_id', label: 'ID' },
+                        { key: 'template_name', label: 'α╕èα╕╖α╣êα╕¡α╕éα╣ëα╕¡α╕íα╕╣α╕Ñ' },
+                        { key: 'template_desc', label: 'α╕äα╕│α╕¡α╕ÿα╕┤α╕Üα╕▓α╕ó' },
+                        { key: 'is_active', label: 'α╕¬α╕ûα╕▓α╕Öα╕░', format: (v: any) => v.is_active ? 'α╣âα╕èα╣ëα╕çα╕▓α╕Ö' : 'α╕óα╕üα╣Çα╕Ñα╕┤α╕ü' }
+                    ], 'Template 1 Report')}
+                />
+                ) : undefined
+            }
+            toolbarRight={
+                <>
+                    {perm.canView && <SearchInput value={search} onChange={setSearch} placeholder="α╕äα╣ëα╕Öα╕½α╕▓α╕òα╕▒α╕ºα╕¡α╕óα╣êα╕▓α╕ç..." />}
+                    {perm.canAdd  && <button onClick={handleAdd} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 500, cursor: 'pointer' }}><Plus size={16} /> <span>α╣Çα╕₧α╕┤α╣êα╕íα╕éα╣ëα╕¡α╕íα╕╣α╕Ñ</span></button>}
+                </>
+            }
+        >
+            {/* hasActions: α╕ûα╣ëα╕▓α╣äα╕íα╣êα╕íα╕╡α╕¬α╕┤α╕ùα╕ÿα╕┤α╣îα╣âα╕öα╣Çα╕Ñα╕ó α╕ïα╣êα╕¡α╕Ö column α╕êα╕▒α╕öα╕üα╕▓α╕ú */}
+            {(() => {
+            const hasActions = perm.canView || perm.canEdit || perm.canDelete;
+            return (
+            <div style={{ height: '720px', overflowY: 'auto' }}>
+                <table className="data-table">
+                    <thead>
+                        <tr>
+                            {renderTh('ID', 'template_id', '60px')}
+                            {renderTh('α╕èα╕╖α╣êα╕¡α╕éα╣ëα╕¡α╕íα╕╣α╕Ñ', 'template_name')}
+                            {renderTh('α╕äα╕│α╕¡α╕ÿα╕┤α╕Üα╕▓α╕ó', 'template_desc')}
+                            {renderTh('α╕¬α╕ûα╕▓α╕Öα╕░', 'is_active', '100px')}
+                            {hasActions && <th className="text-center" style={{ width: '100px', paddingRight: '24px', whiteSpace: 'nowrap' }}>α╕êα╕▒α╕öα╕üα╕▓α╕ú</th>}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {paginatedData.map((item) => (
+                            <tr key={item.template_id}>
+                                <td className="text-medium font-medium" style={{ color: 'var(--accent-blue)' }}># {item.template_id}</td>
+                                <td><span className="font-medium" style={{ color: 'var(--accent-blue)' }}>{item.template_name}</span></td>
+                                <td className="text-muted">{item.template_desc}</td>
+                                <td className="text-center">
+                                    <StatusDropdown status={item.is_active} onChange={(val) => handleToggleStatus(item, val)} disabled={!perm.canEdit} />
+                                </td>
+                                {hasActions && (
+                                <td className="text-center" style={{ paddingRight: '24px' }}>
+                                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                                        {perm.canView   && <button onClick={() => handleView(item)}   style={{ ...crudStyles.actionBtn, color: 'var(--accent-blue)', background: 'rgba(59,130,246,0.1)' }} title="α╣Çα╕úα╕╡α╕óα╕üα╕öα╕╣"><Eye    size={14} /></button>}
+                                        {perm.canEdit   && <button onClick={() => handleEdit(item)}   style={{ ...crudStyles.actionBtn, color: '#f59e0b', background: '#fef3c7' }} title="α╣üα╕üα╣ëα╣äα╕é"><Edit2  size={14} /></button>}
+                                        {perm.canDelete && <button onClick={() => handleDelete(item)} style={{ ...crudStyles.actionBtn, color: '#ef4444', background: '#fee2e2' }} title="α╕Ñα╕Ü"><Trash2 size={14} /></button>}
+                                    </div>
+                                </td>
+                                )}
+                            </tr>
+                        ))}
+                        {filteredData.length === 0 && (
+                            <tr><td colSpan={hasActions ? 5 : 4} className="text-center" style={{ padding: '40px 0', color: 'var(--text-muted)' }}>α╣äα╕íα╣êα╕₧α╕Üα╕éα╣ëα╕¡α╕íα╕╣α╕Ñ</td></tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+            );
+            })()}
+
+            {filteredData.length > 0 && (
+                <Pagination
+                    currentPage={currentPage}
+                    pageSize={pageSize}
+                    totalItems={filteredData.length}
+                    setCurrentPage={setCurrentPage}
+                    setPageSize={setPageSize}
+                />
+            )}
+
+            {/* Modal Add/Edit/View */}
+            <BaseModal
+                isOpen={isModalOpen && modalMode !== 'delete'}
+                onClose={() => setIsModalOpen(false)}
+                title={modalMode === 'add' ? 'α╣Çα╕₧α╕┤α╣êα╕íα╕éα╣ëα╕¡α╕íα╕╣α╕Ñα╣âα╕½α╕íα╣ê' : modalMode === 'edit' ? 'α╣üα╕üα╣ëα╣äα╕éα╕éα╣ëα╕¡α╕íα╕╣α╕Ñ' : 'α╕úα╕▓α╕óα╕Ñα╕░α╣Çα╕¡α╕╡α╕óα╕öα╕éα╣ëα╕¡α╕íα╕╣α╕Ñ'}
+                footer={
+                    modalMode !== 'view' ? (
+                        <>
+                            <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>α╕óα╕üα╣Çα╕Ñα╕┤α╕ü</button>
+                            <button onClick={saveForm} disabled={!formData.template_name.trim() || saving}
+                                style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: (formData.template_name.trim() && !saving) ? 1 : 0.5 }}>
+                                {saving ? 'α╕üα╕│α╕Ñα╕▒α╕çα╕Üα╕▒α╕Öα╕ùα╕╢α╕ü...' : modalMode === 'add' ? 'α╣Çα╕₧α╕┤α╣êα╕íα╕éα╣ëα╕¡α╕íα╕╣α╕Ñ' : 'α╕Üα╕▒α╕Öα╕ùα╕╢α╕üα╕éα╣ëα╕¡α╕íα╕╣α╕Ñ'}
+                            </button>
+                        </>
+                    ) : (
+                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>α╕¢α╕┤α╕ö</button>
+                    )
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div>
+                        <label style={crudStyles.label}>α╕èα╕╖α╣êα╕¡α╕éα╣ëα╕¡α╕íα╕╣α╕Ñ <span style={{ color: '#ef4444' }}>*</span></label>
+                        <input type="text" style={crudStyles.input} placeholder="α╕úα╕░α╕Üα╕╕α╕èα╕╖α╣êα╕¡α╕éα╣ëα╕¡α╕íα╕╣α╕Ñ"
+                            value={formData.template_name}
+                            onChange={(e) => setFormData({ ...formData, template_name: e.target.value })}
+                            disabled={modalMode === 'view'} />
+                    </div>
+                    <div>
+                        <label style={crudStyles.label}>α╕äα╕│α╕¡α╕ÿα╕┤α╕Üα╕▓α╕ó</label>
+                        <textarea style={{ ...crudStyles.input, minHeight: '100px', resize: 'vertical' }}
+                            placeholder="α╕úα╕░α╕Üα╕╕α╕äα╕│α╕¡α╕ÿα╕┤α╕Üα╕▓α╕ó α╕½α╕úα╕╖α╕¡α╕½α╕íα╕▓α╕óα╣Çα╕½α╕òα╕╕"
+                            value={formData.template_desc}
+                            onChange={(e) => setFormData({ ...formData, template_desc: e.target.value })}
+                            disabled={modalMode === 'view'} />
+                    </div>
+                    {modalMode === 'view' && (
+                        <div>
+                            <label style={crudStyles.label}>α╕¬α╕ûα╕▓α╕Öα╕░α╕üα╕▓α╕úα╣âα╕èα╣ëα╕çα╕▓α╕Ö</label>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                <StatusDropdown status={formData.is_active}
+                                    onChange={(val) => { if (modalMode !== 'view') setFormData({ ...formData, is_active: val }); }}
+                                    disabled={modalMode === 'view'} />
+                                {modalMode === 'view' && <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>*(α╕öα╕╣α╕¡α╕óα╣êα╕▓α╕çα╣Çα╕öα╕╡α╕óα╕º)</span>}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </BaseModal>
+
+            {/* Delete Confirm Modal */}
+            <BaseModal
+                isOpen={isModalOpen && modalMode === 'delete'}
+                onClose={() => setIsModalOpen(false)}
+                title="α╕óα╕╖α╕Öα╕óα╕▒α╕Öα╕üα╕▓α╕úα╕Ñα╕Üα╕éα╣ëα╕¡α╕íα╕╣α╕Ñ"
+                width="400px"
+                footer={
+                    <>
+                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>α╕óα╕üα╣Çα╕Ñα╕┤α╕ü</button>
+                        <button onClick={confirmDelete} disabled={saving} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: saving ? 0.5 : 1 }}>{saving ? 'α╕üα╕│α╕Ñα╕▒α╕çα╕Ñα╕Ü...' : 'α╕Ñα╕Üα╕éα╣ëα╕¡α╕íα╕╣α╕Ñ'}</button>
+                    </>
+                }
+            >
+                <div>
+                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)' }}>α╕äα╕╕α╕ôα╣üα╕Öα╣êα╣âα╕êα╕½α╕úα╕╖α╕¡α╣äα╕íα╣êα╕ºα╣êα╕▓α╕òα╣ëα╕¡α╕çα╕üα╕▓α╕úα╕Ñα╕Üα╕éα╣ëα╕¡α╕íα╕╣α╕Ñ <strong style={{ color: 'var(--text-primary)' }}>{selectedItem?.template_name}</strong> ?</p>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#ef4444' }}>α╕üα╕▓α╕úα╕üα╕úα╕░α╕ùα╕│α╕Öα╕╡α╣ëα╕êα╕░α╣äα╕íα╣êα╕¬α╕▓α╕íα╕▓α╕úα╕ûα╕óα╣ëα╕¡α╕Öα╕üα╕Ñα╕▒α╕Üα╣äα╕öα╣ë</p>
+                </div>
+            </BaseModal>
+        </CrudLayout>
+    );
+}

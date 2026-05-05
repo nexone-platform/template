@@ -1,0 +1,311 @@
+﻿commit e003a2a5b1ac8e0ea1456a21d8d95e4dfa292af8
+Author: NexOne Template <template@nexone.dev>
+Date:   Mon May 4 17:06:15 2026 +0700
+
+    feat: Global rollout of Search, Import, and Audit Logs across TemplateMasters 1-3
+
+diff --git a/apps/nex-core/src/components/CrudComponents.tsx b/apps/nex-core/src/components/CrudComponents.tsx
+index b164d5f..7c67ffa 100644
+--- a/apps/nex-core/src/components/CrudComponents.tsx
++++ b/apps/nex-core/src/components/CrudComponents.tsx
+@@ -139,7 +139,7 @@ export function StatusDropdown({
+     );
+ }
+ 
+-export function SearchInput({ value, onChange, placeholder = "α╕äα╣ëα╕Öα╕½α╕▓..." }: { value: string, onChange: (val: string) => void, placeholder?: string }) {
++export function SearchInput({ value, onChange, onClear, placeholder = "α╕äα╣ëα╕Öα╕½α╕▓..." }: { value: string, onChange: (val: string) => void, onClear?: () => void, placeholder?: string }) {
+     const [isFocused, setIsFocused] = useState(false);
+     
+     return (
+@@ -174,6 +174,23 @@ export function SearchInput({ value, onChange, placeholder = "α╕äα╣ëα╕Öα╕½α╕▓...
+                     fontFamily: 'inherit'
+                 }}
+             />
++            {value && onClear && (
++                <button
++                    onClick={onClear}
++                    style={{
++                        background: 'none',
++                        border: 'none',
++                        padding: 0,
++                        cursor: 'pointer',
++                        display: 'flex',
++                        alignItems: 'center',
++                        justifyContent: 'center',
++                        color: 'var(--text-muted)'
++                    }}
++                >
++                    <X size={14} />
++                </button>
++            )}
+         </div>
+     );
+ }
+
+commit 28f805c42c237595447bfcb6e866dfd15576b083
+Author: NexOne Template <template@nexone.dev>
+Date:   Thu Apr 30 07:52:46 2026 +0700
+
+    Clean: remove 80+ junk files, rename nex-core-admin to nex-core, remove credentials
+
+diff --git a/apps/nex-core/src/components/CrudComponents.tsx b/apps/nex-core/src/components/CrudComponents.tsx
+new file mode 100644
+index 0000000..b164d5f
+--- /dev/null
++++ b/apps/nex-core/src/components/CrudComponents.tsx
+@@ -0,0 +1,255 @@
++import React, { useState, useRef, useEffect } from 'react';
++import { Search, ChevronDown, CheckCircle2, XCircle, X, Download } from 'lucide-react';
++
++// ==================================
++// Shared Styles
++// ==================================
++
++export const crudStyles = {
++    actionBtn: { width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.15s' } as React.CSSProperties,
++    viewBtn: { width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.15s', color: '#3b82f6', background: 'rgba(59,130,246,0.12)' } as React.CSSProperties,
++    editBtn: { width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.15s', color: '#f59e0b', background: 'rgba(245,158,11,0.12)' } as React.CSSProperties,
++    deleteBtn: { width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.15s', color: '#ef4444', background: 'rgba(239,68,68,0.12)' } as React.CSSProperties,
++    primaryBtn: { padding: '8px 16px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, fontSize: '14px', transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(59,130,246,0.2)' } as React.CSSProperties,
++    closeBtn: { background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px', borderRadius: '8px', display: 'flex' } as React.CSSProperties,
++    label: { display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' } as React.CSSProperties,
++    input: { width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '14px', fontFamily: 'inherit', outline: 'none' } as React.CSSProperties,
++    exportBtn: (color: string): React.CSSProperties => ({ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 10px', background: 'transparent', border: `1.5px solid ${color}30`, borderRadius: '8px', color, fontSize: '12px', fontWeight: 600, cursor: 'pointer' }),
++};
++
++// ==================================
++// Summary Card Component
++// ==================================
++
++interface SummaryCardProps {
++    title: string;
++    count?: number | string;
++    value?: string | number;
++    subtitle?: string;
++    icon: React.ReactNode;
++    color?: string;
++    iconBg?: string; // For backward compatibility with older pages
++    isActive?: boolean;
++    onClick?: () => void;
++}
++
++export function SummaryCard({ title, count, value, subtitle, icon, color, iconBg, isActive = false, onClick }: SummaryCardProps) {
++    const cardColor = color || (iconBg ? iconBg.substring(0, 7) : 'var(--accent-blue)'); // Fallback
++    const hasClick = !!onClick;
++    
++    return (
++        <div 
++            onClick={onClick}
++            style={{ 
++                display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 18px', borderRadius: '14px', 
++                background: isActive ? `${cardColor}1A` : `${cardColor}0A`, 
++                border: isActive ? `2px solid ${cardColor}` : `1px solid ${cardColor}30`, 
++                cursor: hasClick ? 'pointer' : 'default', 
++                transition: 'all 0.2s', 
++                opacity: (isActive || !hasClick) ? 1 : 0.8 
++            }}
++        >
++            <div style={{ 
++                width: '44px', height: '44px', borderRadius: '12px', background: `${cardColor}1A`, 
++                display: 'flex', alignItems: 'center', justifyContent: 'center', color: cardColor, fontSize: '20px' 
++            }}>
++                {icon}
++            </div>
++            <div>
++                <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>{title}</div>
++                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
++                    <span style={{ fontSize: '22px', fontWeight: 700, color: cardColor }}>{value !== undefined ? value : count}</span>
++                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{subtitle || 'α╕úα╕▓α╕óα╕üα╕▓α╕ú'}</span>
++                </div>
++            </div>
++        </div>
++    );
++}
++
++// ==================================
++// Common UI Elements
++// ==================================
++
++export function StatusDropdown({ 
++    status, 
++    onChange,
++    disabled = false
++}: { 
++    status: boolean, 
++    onChange: (val: boolean) => void,
++    disabled?: boolean
++}) {
++    const [open, setOpen] = useState(false);
++    const ref = useRef<HTMLDivElement>(null);
++
++    useEffect(() => {
++        function handleClickOutside(e: MouseEvent) {
++            if (ref.current && !ref.current.contains(e.target as Node)) {
++                setOpen(false);
++            }
++        }
++        document.addEventListener('mousedown', handleClickOutside);
++        return () => document.removeEventListener('mousedown', handleClickOutside);
++    }, []);
++
++    const isActive = status === true;
++    const color = isActive ? 'var(--accent-green)' : 'var(--text-muted)';
++    const bg = isActive ? 'rgba(16, 185, 129, 0.12)' : 'rgba(100, 116, 139, 0.12)';
++
++    return (
++        <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
++            <button 
++                onClick={() => { if (!disabled) setOpen(!open); }}
++                style={{
++                    display: 'flex', alignItems: 'center', gap: '6px',
++                    padding: '4px 10px', borderRadius: '100px', border: 'none',
++                    background: bg, color: color, fontSize: '13px', fontWeight: 600,
++                    cursor: disabled ? 'default' : 'pointer', transition: 'all 0.2s',
++                    opacity: disabled ? 0.85 : 1
++                }}
++            >
++                {isActive ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
++                {isActive ? 'α╣âα╕èα╣ëα╕çα╕▓α╕Ö' : 'α╕óα╕üα╣Çα╕Ñα╕┤α╕ü'}
++                {!disabled && <ChevronDown size={14} style={{ opacity: 0.7 }} />}
++            </button>
++
++            {open && (
++                <div style={{
++                    position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
++                    marginTop: '4px', background: 'var(--bg-card)', 
++                    border: '1px solid var(--border-color)', borderRadius: '10px',
++                    boxShadow: 'var(--shadow-card)', minWidth: '110px', zIndex: 10,
++                    overflow: 'hidden', padding: '4px'
++                }}>
++                    <div 
++                        onClick={() => { onChange(true); setOpen(false); }}
++                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', cursor: 'pointer', fontSize: '13px', borderRadius: '6px', color: 'var(--text-primary)', fontWeight: status ? 600 : 400, background: status ? 'var(--bg-secondary)' : 'transparent' }}
++                    >
++                        <CheckCircle2 size={14} color="var(--accent-green)" /> α╣âα╕èα╣ëα╕çα╕▓α╕Ö
++                    </div>
++                    <div 
++                        onClick={() => { onChange(false); setOpen(false); }}
++                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', cursor: 'pointer', fontSize: '13px', borderRadius: '6px', color: 'var(--text-primary)', fontWeight: !status ? 600 : 400, background: !status ? 'var(--bg-secondary)' : 'transparent' }}
++                    >
++                        <XCircle size={14} color="var(--text-muted)" /> α╕óα╕üα╣Çα╕Ñα╕┤α╕ü
++                    </div>
++                </div>
++            )}
++        </div>
++    );
++}
++
++export function SearchInput({ value, onChange, placeholder = "α╕äα╣ëα╕Öα╕½α╕▓..." }: { value: string, onChange: (val: string) => void, placeholder?: string }) {
++    const [isFocused, setIsFocused] = useState(false);
++    
++    return (
++        <div 
++            style={{ 
++                minWidth: '240px', 
++                display: 'flex', 
++                alignItems: 'center', 
++                gap: '8px',
++                padding: '8px 12px',
++                background: 'var(--bg-primary)',
++                border: isFocused ? '1.5px solid #3b82f6' : '1.5px solid var(--border-color)',
++                borderRadius: '8px',
++                transition: 'all 0.2s',
++                boxShadow: isFocused ? '0 0 0 3px rgba(59, 130, 246, 0.1)' : 'none'
++            }}
++        >
++            <Search size={16} color={isFocused ? '#3b82f6' : 'var(--text-muted)'} />
++            <input 
++                placeholder={placeholder} 
++                value={value} 
++                onChange={e => onChange(e.target.value)} 
++                onFocus={() => setIsFocused(true)}
++                onBlur={() => setIsFocused(false)}
++                style={{ 
++                    border: 'none', 
++                    background: 'transparent', 
++                    outline: 'none', 
++                    color: 'var(--text-primary)',
++                    width: '100%',
++                    fontSize: '14px',
++                    fontFamily: 'inherit'
++                }}
++            />
++        </div>
++    );
++}
++
++// ==================================
++// Shared Components: Export Buttons
++// ==================================
++interface ExportButtonsProps {
++    onExportXLSX?: () => void;
++    onExportCSV?: () => void;
++    onExportPDF?: () => void;
++}
++
++export function ExportButtons({ onExportXLSX, onExportCSV, onExportPDF }: ExportButtonsProps) {
++    return (
++        <div style={{ display: 'flex', gap: '8px' }}>
++            <button 
++                onClick={onExportXLSX}
++                style={crudStyles.exportBtn('#10b981')}
++                title="α╕¡α╕¡α╕üα╕úα╕▓α╕óα╕çα╕▓α╕Ö Excel"
++            >
++                <Download size={14} /> XLSX
++            </button>
++            <button 
++                onClick={onExportCSV}
++                style={crudStyles.exportBtn('#f59e0b')}
++                title="α╕¡α╕¡α╕üα╕úα╕▓α╕óα╕çα╕▓α╕Ö CSV"
++            >
++                <Download size={14} /> CSV
++            </button>
++            <button 
++                onClick={onExportPDF}
++                style={crudStyles.exportBtn('#ef4444')}
++                title="α╕¡α╕¡α╕üα╕úα╕▓α╕óα╕çα╕▓α╕Ö PDF"
++            >
++                <Download size={14} /> PDF
++            </button>
++        </div>
++    );
++}
++
++// ==================================
++// Base Modal Component
++// ==================================
++export function BaseModal({ 
++    isOpen, 
++    onClose, 
++    title, 
++    children, 
++    footer,
++    width = '500px'
++}: { 
++    isOpen: boolean; 
++    onClose: () => void; 
++    title: string; 
++    children: React.ReactNode; 
++    footer?: React.ReactNode;
++    width?: string;
++}) {
++    if (!isOpen) return null;
++    return (
++        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(2px)' }}>
++            <div style={{ background: 'var(--bg-primary)', borderRadius: '16px', width, maxWidth: '100%', boxShadow: 'var(--shadow-card)', display: 'flex', flexDirection: 'column', maxHeight: '90vh', animation: 'scaleIn 0.2s ease-out' }}>
++                <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
++                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)' }}>{title}</h3>
++                    <button onClick={onClose} style={crudStyles.closeBtn}><X size={20} /></button>
++                </div>
++                <div style={{ padding: '24px', flex: 1, overflowY: 'auto' }}>
++                    {children}
++                </div>
++                {footer && (
++                    <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: '12px', background: 'var(--bg-secondary)', borderBottomLeftRadius: '16px', borderBottomRightRadius: '16px' }}>
++                        {footer}
++                    </div>
++                )}
++            </div>
++        </div>
++    );
++}
