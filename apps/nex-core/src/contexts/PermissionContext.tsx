@@ -98,7 +98,7 @@ export function PermissionProvider({ children, initialRoleId = '', initialApp = 
 
   useEffect(() => {
     if (user?.roleId || (user as any)?.role_id) {
-      setRoleId(user.roleId || (user as any)?.role_id);
+      setRoleId(user?.roleId || (user as any)?.role_id);
     }
   }, [user]);
 

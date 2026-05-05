@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, ChevronDown, CheckCircle2, XCircle, X, Download } from 'lucide-react';
+import { Search, ChevronDown, CheckCircle2, XCircle, X, Download, Upload, FileSpreadsheet, FileText, FileDown } from 'lucide-react';
 
 // ==================================
 // Shared Styles
@@ -73,11 +73,13 @@ export function SummaryCard({ title, count, value, subtitle, icon, color, iconBg
 export function StatusDropdown({ 
     status, 
     onChange,
-    disabled = false
+    disabled = false,
+    t
 }: { 
     status: boolean, 
     onChange: (val: boolean) => void,
-    disabled?: boolean
+    disabled?: boolean,
+    t?: Record<string, string>
 }) {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
@@ -109,7 +111,7 @@ export function StatusDropdown({
                 }}
             >
                 {isActive ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
-                {isActive ? 'ใช้งาน' : 'ยกเลิก'}
+                {isActive ? (t?.['active'] || 'ใช้งาน') : (t?.['inactive'] || 'ยกเลิก')}
                 {!disabled && <ChevronDown size={14} style={{ opacity: 0.7 }} />}
             </button>
 
@@ -125,13 +127,13 @@ export function StatusDropdown({
                         onClick={() => { onChange(true); setOpen(false); }}
                         style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', cursor: 'pointer', fontSize: '13px', borderRadius: '6px', color: 'var(--text-primary)', fontWeight: status ? 600 : 400, background: status ? 'var(--bg-secondary)' : 'transparent' }}
                     >
-                        <CheckCircle2 size={14} color="var(--accent-green)" /> ใช้งาน
+                        <CheckCircle2 size={14} color="var(--accent-green)" /> {t?.['active'] || 'ใช้งาน'}
                     </div>
                     <div 
                         onClick={() => { onChange(false); setOpen(false); }}
                         style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', cursor: 'pointer', fontSize: '13px', borderRadius: '6px', color: 'var(--text-primary)', fontWeight: !status ? 600 : 400, background: !status ? 'var(--bg-secondary)' : 'transparent' }}
                     >
-                        <XCircle size={14} color="var(--text-muted)" /> ยกเลิก
+                        <XCircle size={14} color="var(--text-muted)" /> {t?.['inactive'] || 'ยกเลิก'}
                     </div>
                 </div>
             )}
@@ -139,58 +141,386 @@ export function StatusDropdown({
     );
 }
 
-export function SearchInput({ value, onChange, onClear, placeholder = "ค้นหา..." }: { value: string, onChange: (val: string) => void, onClear?: () => void, placeholder?: string }) {
+export function SearchInput({ value, onChange, onClear, placeholder = "ค้นหา...", onAdvancedSearch, advancedSearchFields, advancedSearchValues, onAdvancedSearchChange, onAdvancedSearchSubmit, onAdvancedSearchClear, t }: { 
+    value: string, 
+    onChange: (val: string) => void, 
+    onClear?: () => void, 
+    placeholder?: string,
+    onAdvancedSearch?: () => void,
+    advancedSearchFields?: AdvancedSearchField[],
+    advancedSearchValues?: Record<string, string>,
+    onAdvancedSearchChange?: (key: string, value: string) => void,
+    onAdvancedSearchSubmit?: () => void,
+    onAdvancedSearchClear?: () => void,
+    t?: Record<string, string>
+}) {
     const [isFocused, setIsFocused] = useState(false);
+    const hasActiveFilters = advancedSearchValues && Object.values(advancedSearchValues).some(v => v !== '' && v !== 'all');
     
     return (
-        <div 
-            style={{ 
-                minWidth: '240px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '8px',
-                padding: '8px 12px',
-                background: 'var(--bg-primary)',
-                border: isFocused ? '1.5px solid #3b82f6' : '1.5px solid var(--border-color)',
-                borderRadius: '8px',
-                transition: 'all 0.2s',
-                boxShadow: isFocused ? '0 0 0 3px rgba(59, 130, 246, 0.1)' : 'none'
-            }}
-        >
-            <Search size={16} color={isFocused ? '#3b82f6' : 'var(--text-muted)'} />
-            <input 
-                placeholder={placeholder} 
-                value={value} 
-                onChange={e => onChange(e.target.value)} 
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* Search Bar */}
+            <div 
                 style={{ 
-                    border: 'none', 
-                    background: 'transparent', 
-                    outline: 'none', 
-                    color: 'var(--text-primary)',
-                    width: '100%',
-                    fontSize: '14px',
-                    fontFamily: 'inherit'
+                    width: '538.97px', 
+                    height: '38.39px',
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px',
+                    padding: '0 12px',
+                    background: 'var(--bg-primary)',
+                    border: isFocused ? '1.5px solid #3b82f6' : '1.5px solid var(--border-color)',
+                    borderRadius: '10px',
+                    transition: 'all 0.2s',
+                    boxShadow: isFocused ? '0 0 0 3px rgba(59, 130, 246, 0.08)' : 'none'
                 }}
-            />
-            {value && onClear && (
+            >
+                {/* Search Icon / Advanced Search Button */}
                 <button
-                    onClick={onClear}
+                    onClick={onAdvancedSearch}
                     style={{
                         background: 'none',
                         border: 'none',
-                        padding: 0,
-                        cursor: 'pointer',
+                        padding: '2px',
+                        cursor: onAdvancedSearch ? 'pointer' : 'default',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: 'var(--text-muted)'
+                        color: '#3b82f6',
+                        transition: 'color 0.2s',
+                        position: 'relative',
                     }}
+                    title={onAdvancedSearch ? "ค้นหาขั้นสูง" : undefined}
                 >
-                    <X size={14} />
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        <line x1="8" y1="11" x2="14" y2="11" />
+                        <line x1="11" y1="8" x2="11" y2="14" />
+                    </svg>
+                    {hasActiveFilters && (
+                        <span style={{
+                            position: 'absolute',
+                            top: '-2px',
+                            right: '-2px',
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: '#ef4444',
+                            border: '1.5px solid var(--bg-primary)',
+                        }} />
+                    )}
+                </button>
+                <input 
+                    placeholder={placeholder} 
+                    value={value} 
+                    onChange={e => onChange(e.target.value)} 
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    onKeyDown={e => { if (e.key === 'Enter' && onAdvancedSearchSubmit) onAdvancedSearchSubmit(); }}
+                    style={{ 
+                        border: 'none', 
+                        background: 'transparent', 
+                        outline: 'none', 
+                        color: 'var(--text-primary)',
+                        width: '100%',
+                        fontSize: '14px',
+                        fontFamily: 'inherit'
+                    }}
+                />
+                {value && (
+                    <button
+                        onClick={() => { onChange(''); onClear?.(); }}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: '2px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'var(--text-muted)',
+                            transition: 'color 0.15s',
+                        }}
+                        title={t?.['clear_search_tooltip'] || "ล้างคำค้น"}
+                    >
+                        <X size={14} />
+                    </button>
+                )}
+            </div>
+
+            {/* Clear Conditions Button */}
+            {onClear && (
+                <button
+                    onClick={() => {
+                        onChange('');
+                        onClear?.();
+                        onAdvancedSearchClear?.();
+                    }}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '0 16px',
+                        height: '38.39px',
+                        background: hasActiveFilters || value ? '#ef4444' : '#64748b',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '10px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        fontFamily: 'inherit',
+                        transition: 'all 0.2s',
+                        whiteSpace: 'nowrap',
+                        boxShadow: hasActiveFilters || value ? '0 2px 8px rgba(239,68,68,0.25)' : '0 1px 3px rgba(0,0,0,0.1)',
+                    }}
+                    title={t?.['clear_conditions_tooltip'] || "ล้างเงื่อนไขการค้นหาทั้งหมด"}
+                >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                        <path d="M21 3v5h-5" />
+                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                        <path d="M8 16H3v5" />
+                    </svg>
+                    {t?.['clear_conditions'] || "ล้างเงื่อนไข"}
                 </button>
             )}
+        </div>
+    );
+}
+
+// ==================================
+// Advanced Search Modal
+// ==================================
+export interface AdvancedSearchField {
+    key: string;
+    label: string;
+    type: 'text' | 'select' | 'date';
+    placeholder?: string;
+    options?: { value: string; label: string }[];
+}
+
+export function AdvancedSearchModal({
+    isOpen,
+    onClose,
+    title = "ค้นหาขั้นสูง",
+    fields,
+    values,
+    onChange,
+    onSearch,
+    onClear,
+    t,
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    title?: string;
+    fields: AdvancedSearchField[];
+    values: Record<string, string>;
+    onChange: (key: string, value: string) => void;
+    onSearch: () => void;
+    onClear: () => void;
+    t?: Record<string, string>;
+}) {
+    if (!isOpen) return null;
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            onSearch();
+        }
+    };
+
+    return (
+        <div
+            style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 10000,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'rgba(0,0,0,0.45)',
+                backdropFilter: 'blur(4px)',
+                padding: '20px',
+            }}
+            onClick={onClose}
+        >
+            <div
+                style={{
+                    background: 'var(--bg-card, #fff)',
+                    borderRadius: '16px',
+                    width: '480px',
+                    maxWidth: '100%',
+                    maxHeight: '90vh',
+                    overflow: 'auto',
+                    border: '1px solid var(--border-color, #e2e8f0)',
+                    boxShadow: '0 25px 60px rgba(0,0,0,0.25), 0 8px 24px rgba(0,0,0,0.1)',
+                    animation: 'advSearchSlideIn 0.25s ease-out',
+                }}
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '20px 24px',
+                    borderBottom: '1px solid var(--border-color, #e2e8f0)',
+                }}>
+                    <h3 style={{
+                        margin: 0,
+                        fontSize: '18px',
+                        fontWeight: 700,
+                        color: 'var(--text-primary, #1e293b)',
+                    }}>{title}</h3>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--text-muted, #94a3b8)',
+                            cursor: 'pointer',
+                            padding: '4px',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            transition: 'color 0.15s',
+                        }}
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
+
+                {/* Form Fields */}
+                <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    {fields.map(field => (
+                        <div key={field.key}>
+                            <label style={{
+                                display: 'block',
+                                fontSize: '14px',
+                                fontWeight: 600,
+                                color: 'var(--text-primary, #334155)',
+                                marginBottom: '8px',
+                            }}>
+                                {field.label}
+                            </label>
+                            {field.type === 'select' ? (
+                                <select
+                                    value={values[field.key] || ''}
+                                    onChange={e => onChange(field.key, e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    style={{
+                                        width: '100%',
+                                        padding: '11px 14px',
+                                        borderRadius: '10px',
+                                        border: '1.5px solid var(--border-color, #e2e8f0)',
+                                        background: 'var(--bg-primary, #f8fafc)',
+                                        color: 'var(--text-primary, #334155)',
+                                        fontSize: '14px',
+                                        fontFamily: 'inherit',
+                                        outline: 'none',
+                                        transition: 'border-color 0.2s',
+                                        cursor: 'pointer',
+                                        appearance: 'none',
+                                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'right 12px center',
+                                        paddingRight: '36px',
+                                    }}
+                                >
+                                    {field.options?.map(opt => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <input
+                                    type={field.type === 'date' ? 'date' : 'text'}
+                                    placeholder={field.placeholder || `พิมพ์${field.label}...`}
+                                    value={values[field.key] || ''}
+                                    onChange={e => onChange(field.key, e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    style={{
+                                        width: '100%',
+                                        padding: '11px 14px',
+                                        borderRadius: '10px',
+                                        border: '1.5px solid var(--border-color, #e2e8f0)',
+                                        background: 'var(--bg-primary, #f8fafc)',
+                                        color: 'var(--text-primary, #334155)',
+                                        fontSize: '14px',
+                                        fontFamily: 'inherit',
+                                        outline: 'none',
+                                        transition: 'border-color 0.2s',
+                                        boxSizing: 'border-box',
+                                    }}
+                                    onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; }}
+                                    onBlur={e => { e.currentTarget.style.borderColor = 'var(--border-color, #e2e8f0)'; }}
+                                />
+                            )}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Footer Buttons */}
+                <div style={{
+                    padding: '16px 24px',
+                    borderTop: '1px solid var(--border-color, #e2e8f0)',
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    gap: '10px',
+                    background: 'var(--bg-secondary, #f8fafc)',
+                    borderBottomLeftRadius: '16px',
+                    borderBottomRightRadius: '16px',
+                }}>
+                    <button
+                        onClick={() => {
+                            onClear();
+                        }}
+                        style={{
+                            padding: '10px 24px',
+                            background: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '10px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            fontFamily: 'inherit',
+                            transition: 'all 0.2s',
+                            boxShadow: '0 2px 6px rgba(239,68,68,0.2)',
+                        }}
+                    >
+                        {t?.['clear_button'] || 'เคลียร์'}
+                    </button>
+                    <button
+                        onClick={() => {
+                            onSearch();
+                            onClose();
+                        }}
+                        style={{
+                            padding: '10px 24px',
+                            background: '#3b82f6',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '10px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            fontFamily: 'inherit',
+                            transition: 'all 0.2s',
+                            boxShadow: '0 2px 6px rgba(59,130,246,0.25)',
+                        }}
+                    >
+                        {t?.['search_button'] || 'ค้นหา'}
+                    </button>
+                </div>
+            </div>
+
+            {/* Animation Keyframes */}
+            <style>{`
+                @keyframes advSearchSlideIn {
+                    from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+                    to { opacity: 1; transform: translateY(0) scale(1); }
+                }
+            `}</style>
         </div>
     );
 }
@@ -201,33 +531,94 @@ export function SearchInput({ value, onChange, onClear, placeholder = "ค้น
 interface ExportButtonsProps {
     onExportXLSX?: () => void;
     onExportCSV?: () => void;
-    onExportPDF?: () => void;
+    onExportPDF?: (orientation?: 'landscape' | 'portrait') => void;
+    t?: Record<string, string>;
 }
 
-export function ExportButtons({ onExportXLSX, onExportCSV, onExportPDF }: ExportButtonsProps) {
+export function ExportButtons({ onExportXLSX, onExportCSV, onExportPDF, t }: ExportButtonsProps) {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (ref.current && !ref.current.contains(e.target as Node)) {
+                setOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     return (
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
             <button 
-                onClick={onExportXLSX}
-                style={crudStyles.exportBtn('#10b981')}
-                title="ออกรายงาน Excel"
+                onClick={() => setOpen(!open)}
+                style={{
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    padding: '8px 16px', background: '#2563eb', color: 'white', border: 'none',
+                    borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 500,
+                    transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                }}
             >
-                <Download size={14} /> XLSX
+                <Download size={16} /> {t?.['export_button'] || "ส่งออก"} <ChevronDown size={14} />
             </button>
-            <button 
-                onClick={onExportCSV}
-                style={crudStyles.exportBtn('#f59e0b')}
-                title="ออกรายงาน CSV"
-            >
-                <Download size={14} /> CSV
-            </button>
-            <button 
-                onClick={onExportPDF}
-                style={crudStyles.exportBtn('#ef4444')}
-                title="ออกรายงาน PDF"
-            >
-                <Download size={14} /> PDF
-            </button>
+            {open && (
+                <div style={{
+                    position: 'absolute', top: '100%', left: 0, marginTop: '4px',
+                    background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                    borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 9999,
+                    minWidth: '150px', padding: '4px', display: 'flex', flexDirection: 'column'
+                }}>
+                    {onExportXLSX && (
+                        <button 
+                            onClick={() => { onExportXLSX(); setOpen(false); }} 
+                            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', border: 'none', background: 'transparent', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', color: 'var(--text-primary)', fontSize: '14px', whiteSpace: 'nowrap' }}
+                            onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                            onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                        >
+                            <FileSpreadsheet size={14} color="#10b981" /> {t?.['export_excel'] || "Excel (XLSX)"}
+                        </button>
+                    )}
+                    {onExportCSV && (
+                        <button 
+                            onClick={() => { onExportCSV(); setOpen(false); }} 
+                            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', border: 'none', background: 'transparent', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', color: 'var(--text-primary)', fontSize: '14px', whiteSpace: 'nowrap' }}
+                            onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                            onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                        >
+                            <FileText size={14} color="#f59e0b" /> {t?.['export_csv'] || "CSV"}
+                        </button>
+                    )}
+                    {onExportPDF && (
+                        <>
+                            <button 
+                                onClick={() => { onExportPDF('landscape'); setOpen(false); }} 
+                                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', border: 'none', background: 'transparent', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', color: 'var(--text-primary)', fontSize: '14px', whiteSpace: 'nowrap' }}
+                                onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                                onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                            >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                                    <line x1="6" y1="9" x2="18" y2="9" />
+                                    <line x1="6" y1="13" x2="14" y2="13" />
+                                </svg> {t?.['export_pdf_landscape'] || "PDF แนวนอน"}
+                            </button>
+                            <button 
+                                onClick={() => { onExportPDF('portrait'); setOpen(false); }} 
+                                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', border: 'none', background: 'transparent', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', color: 'var(--text-primary)', fontSize: '14px', whiteSpace: 'nowrap' }}
+                                onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                                onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                            >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <rect x="5" y="2" width="14" height="20" rx="2" />
+                                    <line x1="9" y1="6" x2="15" y2="6" />
+                                    <line x1="9" y1="10" x2="15" y2="10" />
+                                </svg> {t?.['export_pdf_portrait'] || "PDF แนวตั้ง"}
+                            </button>
+                        </>
+                    )} 
+                </div>
+            )}
         </div>
     );
 }

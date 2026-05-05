@@ -220,13 +220,13 @@ export default function UserManagement() {
                         { key: 'email', label: 'อีเมล์' },
                         { key: 'status', label: 'สถานะ', format: (v: any) => v.status ? 'ใช้งาน' : 'ยกเลิก' }
                     ])}
-                    onExportPDF={() => exportToPDF(filteredData, 'Users', [
+                    onExportPDF={(orientation) => exportToPDF(filteredData, 'Users', [
                         { key: 'id', label: 'ID' },
                         { key: 'name', label: 'พนักงาน' },
                         { key: 'email', label: 'อีเมล์' },
                         { key: 'role', label: 'สิทธิ์' },
                         { key: 'status', label: 'สถานะ', format: (v: any) => v.status ? 'ใช้งาน' : 'ยกเลิก' }
-                    ], 'User Account Report')}
+                    ], 'User Account Report', orientation)}
                 />
             }
             toolbarRight={

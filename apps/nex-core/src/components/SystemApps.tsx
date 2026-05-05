@@ -282,13 +282,13 @@ export default function SystemApps() {
                         { key: 'desc_th', label: 'Description' },
                         { key: 'status', label: 'Status' }
                     ])}
-                    onExportPDF={() => exportToPDF(filteredData, 'SystemApps', [
+                    onExportPDF={(orientation) => exportToPDF(filteredData, 'SystemApps', [
                         { key: 'id', label: 'ID' },
                         { key: 'app_name', label: 'App Name' },
                         { key: 'app_group', label: 'Group' },
                         { key: 'desc_th', label: 'Description' },
                         { key: 'status', label: 'Status' }
-                    ], 'System Apps Report')}
+                    ], 'System Apps Report', orientation)}
                 />
             }
 

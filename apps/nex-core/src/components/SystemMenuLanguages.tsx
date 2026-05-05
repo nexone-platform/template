@@ -228,14 +228,14 @@ export default function SystemMenuLanguages() {
                         { key: "languageCode", label: "ภาษา (LANG)" },
                         { key: "is_active", label: "สถานะ", format: (item: any) => (item.is_active ? "ใช้งาน" : "ไม่ใช้งาน") }
                     ])}
-                    onExportPDF={() => exportToPDF(filteredData, 'MenusLanguages', [
+                    onExportPDF={(orientation) => exportToPDF(filteredData, 'MenusLanguages', [
                         { key: "id", label: "ID" },
                         { key: "pageKey", label: "คีย์หน้า (PAGE KEY)" },
                         { key: "labelKey", label: "คีย์ป้ายกำกับ (LABEL KEY)" },
                         { key: "labelValue", label: "ค่าหน้าจอ (TRANSLATION)" },
                         { key: "languageCode", label: "ภาษา (LANG)" },
                         { key: "is_active", label: "สถานะ", format: (item: any) => (item.is_active ? "ใช้งาน" : "ไม่ใช้งาน") }
-                    ], 'Menus Languages Report')}
+                    ], 'Menus Languages Report', orientation)}
                 />
             }
             toolbarRight={

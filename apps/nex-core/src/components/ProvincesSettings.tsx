@@ -167,7 +167,7 @@ export default function ProvincesSettings() {
                 <ExportButtons
                     onExportXLSX={() => exportToXLSX(filteredData, 'Provinces', exportColumns)}
                     onExportCSV={() => exportToCSV(filteredData, 'Provinces', exportColumns)}
-                    onExportPDF={() => exportToPDF(filteredData, 'Provinces', exportColumns, 'Provinces Report - NexCore')}
+                    onExportPDF={(orientation) => exportToPDF(filteredData, 'Provinces', exportColumns, 'Provinces Report - NexCore', orientation)}
                 />
                 ) : undefined
             }

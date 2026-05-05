@@ -117,13 +117,13 @@ export default function BranchSettings() {
                         { key: 'phone', label: 'เบอร์ติดต่อ' },
                         { key: 'status', label: 'สถานะ', format: (v: any) => v.status ? 'เปิดใช้งาน' : 'ปิดใช้งาน' }
                     ])}
-                    onExportPDF={() => exportToPDF(filteredData, 'Branches', [
+                    onExportPDF={(orientation) => exportToPDF(filteredData, 'Branches', [
                         { key: 'code', label: 'รหัสสาขา' },
                         { key: 'name', label: 'ชื่อสาขา' },
                         { key: 'manager', label: 'ผู้จัดการสาขา' },
                         { key: 'phone', label: 'เบอร์ติดต่อ' },
                         { key: 'status', label: 'สถานะ', format: (v: any) => v.status ? 'เปิดใช้งาน' : 'ปิดใช้งาน' }
-                    ], 'Branch List Report')}
+                    ], 'Branch List Report', orientation)}
                 />
             }
             toolbarRight={

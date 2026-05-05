@@ -197,13 +197,13 @@ export default function SystemLanguages() {
             { key: "description", label: "รายละเอียด (DESCRIPTION)" },
             { key: "isActive", label: "สถานะ", format: (item: any) => (item.isActive ? "ใช้งาน" : "ไม่ใช้งาน") }
           ])}
-          onExportPDF={() => exportToPDF(filteredData, "SystemLanguages", [
+          onExportPDF={(orientation) => exportToPDF(filteredData, "SystemLanguages", [
             { key: "id", label: "ID" },
             { key: "languageCode", label: "รหัส (CODE)" },
             { key: "languageName", label: "ชื่อภาษา (NAME)" },
             { key: "description", label: "รายละเอียด (DESCRIPTION)" },
             { key: "isActive", label: "สถานะ", format: (item: any) => (item.isActive ? "ใช้งาน" : "ไม่ใช้งาน") }
-          ], "System Languages Report")}
+          ], "System Languages Report", orientation)}
         />
       }
       toolbarRight={

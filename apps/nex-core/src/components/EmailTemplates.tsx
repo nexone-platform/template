@@ -300,13 +300,13 @@ export default function EmailTemplates() {
                         { key: 'app_name', label: 'แอป' },
                         { key: 'is_active', label: 'สถานะ', format: (v: any) => v.is_active ? 'ใช้งาน' : 'ยกเลิก' },
                     ])}
-                    onExportPDF={() => exportToPDF(filteredData, 'EmailTemplates', [
+                    onExportPDF={(orientation) => exportToPDF(filteredData, 'EmailTemplates', [
                         { key: 'template_code', label: 'รหัส (Code)' },
                         { key: 'title', label: 'ชื่อแม่แบบ' },
                         { key: 'language_code', label: 'ภาษา' },
                         { key: 'app_name', label: 'แอป' },
                         { key: 'is_active', label: 'สถานะ', format: (v: any) => v.is_active ? 'ใช้งาน' : 'ยกเลิก' },
-                    ], 'Email Templates Report')}
+                    ], 'Email Templates Report', orientation)}
                 />
             }
             toolbarRight={

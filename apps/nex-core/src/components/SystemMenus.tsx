@@ -344,14 +344,14 @@ export default function SystemMenus() {
             { key: "app_name", label: "เชื่อมโยงแอป" },
             { key: "is_active", label: "สถานะ", format: (item: any) => (item.is_active ? "ใช้งาน" : "ไม่ใช้งาน") }
           ])}
-          onExportPDF={() => exportToPDF(filteredData, "SystemMenus", [
+          onExportPDF={(orientation) => exportToPDF(filteredData, "SystemMenus", [
             { key: "menu_id", label: "ID" },
             { key: "menu_code", label: "รหัส (CODE)" },
             { key: "title", label: "เมนู (TITLE)" },
             { key: "route", label: "เส้นทาง (PATH)" },
             { key: "app_name", label: "เชื่อมโยงแอป" },
             { key: "is_active", label: "สถานะ", format: (item: any) => (item.is_active ? "ใช้งาน" : "ไม่ใช้งาน") }
-          ], "System Menus Report")}
+          ], "System Menus Report", orientation)}
         />
       }
       toolbarRight={

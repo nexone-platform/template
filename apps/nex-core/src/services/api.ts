@@ -149,7 +149,7 @@ export interface Template {
 }
 
 async function coreGet<T>(path: string): Promise<T> {
-    const res = await fetch(`${CORE_API_BASE}${path}`);
+    const res = await fetch(`${CORE_API_BASE}${path}`, { credentials: 'include' });
     if (!res.ok) throw new Error(`Core API Error: ${res.status}`);
     return res.json() as Promise<T>;
 }
@@ -158,6 +158,7 @@ async function corePost<T>(path: string, body: unknown): Promise<T> {
     const res = await fetch(`${CORE_API_BASE}${path}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+        credentials: 'include'
     });
     if (!res.ok) throw new Error(`Core API Error: ${res.status}`);
     return res.json() as Promise<T>;
@@ -167,13 +168,14 @@ async function corePut<T>(path: string, body: unknown): Promise<T> {
     const res = await fetch(`${CORE_API_BASE}${path}`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+        credentials: 'include'
     });
     if (!res.ok) throw new Error(`Core API Error: ${res.status}`);
     return res.json() as Promise<T>;
 }
 
 async function coreDelete<T>(path: string): Promise<T> {
-    const res = await fetch(`${CORE_API_BASE}${path}`, { method: 'DELETE' });
+    const res = await fetch(`${CORE_API_BASE}${path}`, { method: 'DELETE', credentials: 'include' });
     if (!res.ok) throw new Error(`Core API Error: ${res.status}`);
     return res.json() as Promise<T>;
 }
@@ -195,7 +197,7 @@ const CORE_V1_API_BASE = process.env.NEXT_PUBLIC_CORE_API_URL
     : 'http://localhost:8101/api/v1';
 
 async function coreV1Get<T>(path: string): Promise<T> {
-    const res = await fetch(`${CORE_V1_API_BASE}${path}`);
+    const res = await fetch(`${CORE_V1_API_BASE}${path}`, { credentials: 'include' });
     if (!res.ok) throw new Error(`Core API Error: ${res.status}`);
     const json = await res.json();
     return (json && json.data !== undefined) ? json.data as T : json as T;
@@ -205,6 +207,7 @@ async function coreV1Post<T>(path: string, body: unknown): Promise<T> {
     const res = await fetch(`${CORE_V1_API_BASE}${path}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+        credentials: 'include'
     });
     if (!res.ok) throw new Error(`Core API Error: ${res.status}`);
     const json = await res.json();
@@ -215,6 +218,7 @@ async function coreV1Put<T>(path: string, body: unknown): Promise<T> {
     const res = await fetch(`${CORE_V1_API_BASE}${path}`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+        credentials: 'include'
     });
     if (!res.ok) throw new Error(`Core API Error: ${res.status}`);
     const json = await res.json();
@@ -222,7 +226,7 @@ async function coreV1Put<T>(path: string, body: unknown): Promise<T> {
 }
 
 async function coreV1Delete<T>(path: string): Promise<T> {
-    const res = await fetch(`${CORE_V1_API_BASE}${path}`, { method: 'DELETE' });
+    const res = await fetch(`${CORE_V1_API_BASE}${path}`, { method: 'DELETE', credentials: 'include' });
     if (!res.ok) throw new Error(`Core API Error: ${res.status}`);
     const json = await res.json();
     return (json && json.data !== undefined) ? json.data as T : json as T;

@@ -1,8 +1,10 @@
 import { useSystemConfig } from '@nexone/ui';
 import React, { useState, useEffect, useCallback } from 'react';
 import CrudLayout from '@/components/CrudLayout';
-import { SummaryCard, SearchInput, crudStyles, BaseModal } from '@/components/CrudComponents';
-import { Plus, Edit2, Trash2, Eye, CheckCircle2, ChevronDown, Check, Clock, AlertTriangle, Receipt, BarChart3, LineChart as LineChartIcon } from 'lucide-react';
+import { SummaryCard, SearchInput, crudStyles, BaseModal, ExportButtons } from '@/components/CrudComponents';
+import ImportExcelButton from '@/components/ImportExcelButton';
+import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
+import { Plus, Edit2, Trash2, Eye, CheckCircle2, ChevronDown, Check, Clock, AlertTriangle, Receipt, BarChart3, LineChart as LineChartIcon, Info } from 'lucide-react';
 import Pagination from '@/components/Pagination';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { usePagePermission } from '@/contexts/PermissionContext';
@@ -153,6 +155,39 @@ export default function TemplateMasterGraph1Page() {
         setSaving(false);
     };
 
+    const importColumns = [
+        { key: 'invoice', header: 'รหัส Invoice', required: true, type: 'string' as const },
+        { key: 'customer', header: 'ลูกค้า', required: true, type: 'string' as const },
+        { key: 'amount', header: 'จำนวนเงิน', required: true, type: 'number' as const },
+        { key: 'status', header: 'สถานะ', required: true, type: 'string' as const },
+        { key: 'issueDate', header: 'วันออกเอกสาร', type: 'string' as const },
+        { key: 'dueDate', header: 'วันครบกำหนด', type: 'string' as const },
+        { key: 'orderId', header: 'Order ID (อ้างอิง)', type: 'string' as const }
+    ];
+
+    const handleImport = async (data: any[]) => {
+        let success = 0;
+        let failed = 0;
+        for (const item of data) {
+            try {
+                const body = {
+                    invoice: item.invoice || `INV-2026-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
+                    customer: item.customer,
+                    amount: Number(item.amount) || 0,
+                    status: item.status || 'รอชำระ',
+                    issue_date: item.issueDate || new Date().toISOString().split('T')[0],
+                    due_date: item.dueDate || new Date().toISOString().split('T')[0],
+                    order_id: item.orderId || null,
+                };
+                await fetch(`${API}/template-master-graph`, { credentials: 'include', method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                success++;
+            } catch {
+                failed++;
+            }
+        }
+        return { success, failed };
+    };
+
     // ---------- Filter & Pagination ----------
     const searchLower = searchTerm.toLowerCase();
     const searchedData = data.filter(item =>
@@ -239,16 +274,59 @@ export default function TemplateMasterGraph1Page() {
                 </div>
             }
             toolbarLeft={
-                <div style={{ display: 'flex', gap: '8px', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '100px' }}>
-                    <button style={getTabStyle('ทั้งหมด')}   onClick={() => { setCurrentTab('ทั้งหมด');   setCurrentPage(1); }}>ทั้งหมด</button>
-                    <button style={getTabStyle('ชำระแล้ว')}  onClick={() => { setCurrentTab('ชำระแล้ว');  setCurrentPage(1); }}><Check        size={14} color={currentTab === 'ชำระแล้ว'  ? '#fff' : 'var(--accent-green)'} /> ชำระแล้ว</button>
-                    <button style={getTabStyle('รอชำระ')}    onClick={() => { setCurrentTab('รอชำระ');    setCurrentPage(1); }}><Clock        size={14} color={currentTab === 'รอชำระ'    ? '#fff' : 'var(--accent-amber)'} /> รอชำระ</button>
-                    <button style={getTabStyle('เกินกำหนด')} onClick={() => { setCurrentTab('เกินกำหนด'); setCurrentPage(1); }}><AlertTriangle size={14} color={currentTab === 'เกินกำหนด' ? '#fff' : 'var(--accent-red)'}   /> เกินกำหนด</button>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '8px', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '100px' }}>
+                        <button style={getTabStyle('ทั้งหมด')}   onClick={() => { setCurrentTab('ทั้งหมด');   setCurrentPage(1); }}>ทั้งหมด</button>
+                        <button style={getTabStyle('ชำระแล้ว')}  onClick={() => { setCurrentTab('ชำระแล้ว');  setCurrentPage(1); }}><Check        size={14} color={currentTab === 'ชำระแล้ว'  ? '#fff' : 'var(--accent-green)'} /> ชำระแล้ว</button>
+                        <button style={getTabStyle('รอชำระ')}    onClick={() => { setCurrentTab('รอชำระ');    setCurrentPage(1); }}><Clock        size={14} color={currentTab === 'รอชำระ'    ? '#fff' : 'var(--accent-amber)'} /> รอชำระ</button>
+                        <button style={getTabStyle('เกินกำหนด')} onClick={() => { setCurrentTab('เกินกำหนด'); setCurrentPage(1); }}><AlertTriangle size={14} color={currentTab === 'เกินกำหนด' ? '#fff' : 'var(--accent-red)'}   /> เกินกำหนด</button>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        {perm.canExport && (
+                        <ExportButtons
+                            onExportXLSX={() => exportToXLSX(filteredData, 'TemplateGraph1', [
+                                { key: 'invoice', label: 'INVOICE' },
+                                { key: 'customer', label: 'ลูกค้า' },
+                                { key: 'amount', label: 'จำนวน' },
+                                { key: 'status', label: 'สถานะ' },
+                                { key: 'issueDate', label: 'วันออก' },
+                                { key: 'dueDate', label: 'ครบกำหนด' },
+                                { key: 'orderId', label: 'ORDER' },
+                            ])}
+                            onExportCSV={() => exportToCSV(filteredData, 'TemplateGraph1', [
+                                { key: 'invoice', label: 'INVOICE' },
+                                { key: 'customer', label: 'ลูกค้า' },
+                                { key: 'amount', label: 'จำนวน' },
+                                { key: 'status', label: 'สถานะ' },
+                                { key: 'issueDate', label: 'วันออก' },
+                                { key: 'dueDate', label: 'ครบกำหนด' },
+                                { key: 'orderId', label: 'ORDER' },
+                            ])}
+                            onExportPDF={(orientation) => exportToPDF(filteredData, 'TemplateGraph1', [
+                                { key: 'invoice', label: 'INVOICE' },
+                                { key: 'customer', label: 'ลูกค้า' },
+                                { key: 'amount', label: 'จำนวน' },
+                                { key: 'status', label: 'สถานะ' },
+                                { key: 'issueDate', label: 'วันออก' },
+                                { key: 'dueDate', label: 'ครบกำหนด' },
+                                { key: 'orderId', label: 'ORDER' },
+                            ], 'Template Graph 1 Report', orientation)}
+                        />
+                        )}
+                        {perm.canAdd && (
+                        <ImportExcelButton 
+                            columns={importColumns as any}
+                            filenamePrefix="TemplateGraph1"
+                            onImport={handleImport}
+                            onImportComplete={() => loadData()}
+                        />
+                        )}
+                    </div>
                 </div>
             }
             toolbarRight={
                 <>
-                    {perm.canView && <SearchInput value={searchTerm} onChange={e => { setSearchTerm(e); setCurrentPage(1); }} placeholder="ค้นหา Invoice, ลูกค้า..." />}
+                    {perm.canView && <SearchInput value={searchTerm} onChange={e => { setSearchTerm(e); setCurrentPage(1); }} onClear={() => { setSearchTerm(''); setCurrentPage(1); }} placeholder="ค้นหา Invoice, ลูกค้า..." />}
                     {perm.canAdd  && <button onClick={handleAdd} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 500, cursor: 'pointer' }}><Plus size={16} /><span>เพิ่มข้อมูล</span></button>}
                 </>
             }
@@ -328,14 +406,16 @@ export default function TemplateMasterGraph1Page() {
                         <label style={crudStyles.label}>จำนวนเงิน</label>
                         <input type="number" style={crudStyles.input} placeholder="ระบุจำนวนเงิน" value={formData.amount} onChange={e => setFormData({ ...formData, amount: Number(e.target.value) })} disabled={modalMode === 'view'} />
                     </div>
-                    <div>
-                        <label style={crudStyles.label}>สถานะ <span style={{ color: '#ef4444' }}>*</span></label>
-                        <select style={crudStyles.input} value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} disabled={modalMode === 'view'}>
-                            <option value="รอชำระ">รอชำระ</option>
-                            <option value="ชำระแล้ว">ชำระแล้ว</option>
-                            <option value="เกินกำหนด">เกินกำหนด</option>
-                        </select>
-                    </div>
+                    {modalMode === 'view' && (
+                        <div>
+                            <label style={crudStyles.label}>สถานะ <span style={{ color: '#ef4444' }}>*</span></label>
+                            <select style={crudStyles.input} value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} disabled={modalMode === 'view'}>
+                                <option value="รอชำระ">รอชำระ</option>
+                                <option value="ชำระแล้ว">ชำระแล้ว</option>
+                                <option value="เกินกำหนด">เกินกำหนด</option>
+                            </select>
+                        </div>
+                    )}
                     <div>
                         <label style={crudStyles.label}>วันออกเอกสาร</label>
                         <input type="date" style={crudStyles.input} value={formData.issueDate} onChange={e => setFormData({ ...formData, issueDate: e.target.value })} disabled={modalMode === 'view'} />
@@ -348,6 +428,32 @@ export default function TemplateMasterGraph1Page() {
                         <label style={crudStyles.label}>Order ID (อ้างอิง)</label>
                         <input type="text" style={crudStyles.input} placeholder="เช่น ORD-2026-0001" value={formData.orderId} onChange={e => setFormData({ ...formData, orderId: e.target.value })} disabled={modalMode === 'view'} />
                     </div>
+                    {modalMode === 'view' && (
+                        <div style={{ gridColumn: '1 / -1', marginTop: '16px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
+                                <Info size={16} />
+                                <span style={{ fontSize: '13px', fontWeight: 600 }}>ข้อมูลระบบ (System Logs)</span>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
+                                <div>
+                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>สร้างโดย</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>-</span>
+                                </div>
+                                <div>
+                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>วันที่สร้าง</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>-</span>
+                                </div>
+                                <div>
+                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>แก้ไขล่าสุดโดย</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>-</span>
+                                </div>
+                                <div>
+                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>วันที่แก้ไขล่าสุด</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>-</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </BaseModal>
 

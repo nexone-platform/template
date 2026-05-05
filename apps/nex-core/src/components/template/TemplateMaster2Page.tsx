@@ -1,17 +1,41 @@
-import { useSystemConfig } from '@nexone/ui';
+import { useSystemConfig, useLanguage } from '@nexone/ui';
 import React, { useState, useEffect, useCallback } from 'react';
 import CrudLayout from '@/components/CrudLayout';
-import { SummaryCard, SearchInput, crudStyles, StatusDropdown, BaseModal, ExportButtons } from '@/components/CrudComponents';
+import { SummaryCard, SearchInput, AdvancedSearchModal, AdvancedSearchField, crudStyles, StatusDropdown, BaseModal, ExportButtons } from '@/components/CrudComponents';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
 import ImportExcelButton from '@/components/ImportExcelButton';
 import { Plus, Edit2, Trash2, Tags, Box, Eye, Info } from 'lucide-react';
 import Pagination from '@/components/Pagination';
 import { templateApi, Template } from '@/services/api';
 import { usePagePermission } from '@/contexts/PermissionContext';
+import { useApiConfig } from '@/contexts/ApiConfigContext';
+import { format } from 'date-fns';
 
 export default function TemplateMaster2Page() {
     // ---- Permission: ใช้ menuCode ที่ตรงกับ DB (menus.menu_code หรือ title) ----
     const perm = usePagePermission('Master Type 2');
+    const { lang } = useLanguage();
+    const { getEndpoint } = useApiConfig();
+    const { configs, loading: configLoading } = useSystemConfig();
+    const coreApi = getEndpoint('NexCore', '');
+    const [t, setT] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        const fetchTranslations = async () => {
+            try {
+                const res = await fetch(`${coreApi}/translations/map?lang=${lang}`, { credentials: 'include' });
+                const data = await res.json();
+                if (data && typeof data === 'object') {
+                    setT(data);
+                }
+            } catch (err) {
+                console.error('Failed to load translations:', err);
+            }
+        };
+        if (coreApi && lang) {
+            fetchTranslations();
+        }
+    }, [coreApi, lang]);
 
     const [data, setData] = useState<Template[]>([]);
     const [loading, setLoading] = useState(true);
@@ -19,7 +43,32 @@ export default function TemplateMaster2Page() {
     const [search, setSearch] = useState('');
     const [filterType, setFilterType] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
-    const { configs, loading: configLoading } = useSystemConfig();
+
+    // Advanced Search State
+    const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+    const [advSearchValues, setAdvSearchValues] = useState<Record<string, string>>({ title: '', category: '', description: '', status: 'all' });
+
+    const advancedSearchFields: AdvancedSearchField[] = [
+        { key: 'title', label: t['title'] || 'หัวข้อ', type: 'text', placeholder: t['search_title'] || 'พิมพ์หัวข้อ...' },
+        { key: 'category', label: t['category'] || 'หมวดหมู่', type: 'text', placeholder: t['search_category'] || 'พิมพ์หมวดหมู่...' },
+        { key: 'description', label: t['description'] || 'คำอธิบาย', type: 'text', placeholder: t['search_desc'] || 'พิมพ์คำอธิบาย...' },
+        { key: 'status', label: t['status'] || 'สถานะ', type: 'select', options: [
+            { value: 'all', label: t['all'] || 'ทั้งหมด' },
+            { value: 'active', label: t['active'] || 'ใช้งาน' },
+            { value: 'inactive', label: t['inactive'] || 'ยกเลิก' },
+        ]},
+    ];
+
+    const handleAdvSearchChange = (key: string, value: string) => {
+        setAdvSearchValues(prev => ({ ...prev, [key]: value }));
+    };
+    const handleAdvSearchClear = () => {
+        setAdvSearchValues({ title: '', category: '', description: '', status: 'all' });
+    };
+    const handleAdvSearchSubmit = () => {
+        setCurrentPage(1);
+        setShowAdvancedSearch(false);
+    };
     const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
     const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
 
@@ -124,11 +173,22 @@ export default function TemplateMaster2Page() {
     };
 
     const searchLower = search.toLowerCase();
-    const baseData = data.filter(item =>
-        !searchLower ||
-        item.template_name.toLowerCase().includes(searchLower) ||
-        (item.template_desc || '').toLowerCase().includes(searchLower)
-    );
+    const baseData = data.filter(item => {
+        // Quick search
+        const matchQuickSearch = !searchLower ||
+            item.template_name.toLowerCase().includes(searchLower) ||
+            (item.template_desc || '').toLowerCase().includes(searchLower);
+
+        // Advanced search filters
+        const matchTitle = !advSearchValues.title || item.template_name.toLowerCase().includes(advSearchValues.title.toLowerCase());
+        const matchCategory = !advSearchValues.category || (item.template_group || '').toLowerCase().includes(advSearchValues.category.toLowerCase());
+        const matchDesc = !advSearchValues.description || (item.template_desc || '').toLowerCase().includes(advSearchValues.description.toLowerCase());
+        const matchStatus = advSearchValues.status === 'all' || advSearchValues.status === '' ||
+            (advSearchValues.status === 'active' && item.is_active) ||
+            (advSearchValues.status === 'inactive' && !item.is_active);
+
+        return matchQuickSearch && matchTitle && matchCategory && matchDesc && matchStatus;
+    });
 
     const uniqueCategories = Array.from(new Set(data.map(item => item.template_group).filter(Boolean)));
 
@@ -140,9 +200,9 @@ export default function TemplateMaster2Page() {
     const paginatedData = filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
     const importColumns = [
-        { key: 'template_name', header: 'หัวข้อ', required: true, type: 'string' as const },
-        { key: 'template_group', header: 'หมวดหมู่', required: true, type: 'string' as const },
-        { key: 'template_desc', header: 'คำอธิบาย', type: 'string' as const }
+        { key: 'template_name', header: t['template_name'] || 'หัวข้อ', required: true, type: 'string' as const },
+        { key: 'template_group', header: t['template_group'] || 'หมวดหมู่', required: true, type: 'string' as const },
+        { key: 'template_desc', header: t['template_desc'] || 'คำอธิบาย', type: 'string' as const }
     ];
 
     const handleImport = async (rows: any[]) => {
@@ -171,7 +231,7 @@ export default function TemplateMaster2Page() {
             summaryCards={
                 <>
                     <SummaryCard
-                        title="รายการทั้งหมด"
+                        title={t['total_items'] || "รายการทั้งหมด"}
                         count={baseData.length}
                         icon={<Tags size={22} />}
                         color="#3b82f6"
@@ -199,37 +259,46 @@ export default function TemplateMaster2Page() {
                 perm.canExport ? (
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                     <ExportButtons
+                    t={t}
                     onExportXLSX={() => exportToXLSX(filteredData, 'Template2', [
-                        { key: 'template_id', label: 'ID' },
-                        { key: 'template_name', label: 'หัวข้อ' },
-                        { key: 'template_group', label: 'หมวดหมู่' },
-                        { key: 'template_desc', label: 'คำอธิบาย' },
-                        { key: 'is_active', label: 'สถานะ', format: (v: any) => v.is_active ? 'ใช้งาน' : 'ยกเลิก' }
+                        { key: 'template_id', label: t['template_id'] || 'ID' },
+                        { key: 'template_name', label: t['template_name'] || 'หัวข้อ' },
+                        { key: 'template_group', label: t['template_group'] || 'หมวดหมู่' },
+                        { key: 'template_desc', label: t['template_desc'] || 'คำอธิบาย' },
+                        { key: 'is_active', label: t['is_active'] || 'สถานะ', format: (v: any) => v.is_active ? (t['active'] || 'ใช้งาน') : (t['inactive'] || 'ยกเลิก') }
                     ])}
                     onExportCSV={() => exportToCSV(filteredData, 'Template2', [
-                        { key: 'template_id', label: 'ID' },
-                        { key: 'template_name', label: 'หัวข้อ' },
-                        { key: 'template_group', label: 'หมวดหมู่' },
-                        { key: 'template_desc', label: 'คำอธิบาย' },
-                        { key: 'is_active', label: 'สถานะ', format: (v: any) => v.is_active ? 'ใช้งาน' : 'ยกเลิก' }
+                        { key: 'template_id', label: t['template_id'] || 'ID' },
+                        { key: 'template_name', label: t['template_name'] || 'หัวข้อ' },
+                        { key: 'template_group', label: t['template_group'] || 'หมวดหมู่' },
+                        { key: 'template_desc', label: t['template_desc'] || 'คำอธิบาย' },
+                        { key: 'is_active', label: t['is_active'] || 'สถานะ', format: (v: any) => v.is_active ? (t['active'] || 'ใช้งาน') : (t['inactive'] || 'ยกเลิก') }
                     ])}
-                    onExportPDF={() => exportToPDF(filteredData, 'Template2', [
-                        { key: 'template_id', label: 'ID' },
-                        { key: 'template_name', label: 'หัวข้อ' },
-                        { key: 'template_group', label: 'หมวดหมู่' },
-                        { key: 'template_desc', label: 'คำอธิบาย' },
-                        { key: 'is_active', label: 'สถานะ', format: (v: any) => v.is_active ? 'ใช้งาน' : 'ยกเลิก' }
-                    ], 'Template 2 Report')}
+                    onExportPDF={(orientation) => exportToPDF(filteredData, 'Template2', [
+                        { key: 'template_id', label: t['template_id'] || 'ID' },
+                        { key: 'template_name', label: t['template_name'] || 'หัวข้อ' },
+                        { key: 'template_group', label: t['template_group'] || 'หมวดหมู่' },
+                        { key: 'template_desc', label: t['template_desc'] || 'คำอธิบาย' },
+                        { key: 'is_active', label: t['is_active'] || 'สถานะ', format: (v: any) => v.is_active ? (t['active'] || 'ใช้งาน') : (t['inactive'] || 'ยกเลิก') }
+                    ], 'Template 2 Report', orientation)}
                 />
                 <div style={{ width: '1px', height: '24px', background: 'var(--border-color)', margin: '0 8px' }} />
-                <ImportExcelButton columns={importColumns as any} filenamePrefix="Template2" onImport={handleImport} onImportComplete={loadData} />
+                <ImportExcelButton translations={t} columns={importColumns as any} filenamePrefix="Template2" onImport={handleImport} onImportComplete={loadData} />
                 </div>
                 ) : undefined
             }
             toolbarRight={
                 <>
-                    {perm.canView && <SearchInput value={search} onChange={setSearch} onClear={() => setSearch("")} placeholder="ค้นหาตัวอย่าง..." />}
-                    {perm.canAdd && <button onClick={handleAdd} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 500, cursor: 'pointer' }}><Plus size={16} /> <span>เพิ่มข้อมูล</span></button>}
+                    {perm.canView && <SearchInput 
+                        value={search} 
+                        onChange={(val) => { setSearch(val); setCurrentPage(1); }} 
+                        onClear={() => { setSearch(''); setCurrentPage(1); handleAdvSearchClear(); }} 
+                        placeholder={t['search_placeholder'] || "ค้นหาตัวอย่าง..."} 
+                        onAdvancedSearch={() => setShowAdvancedSearch(true)}
+                        advancedSearchValues={advSearchValues}
+                        onAdvancedSearchClear={handleAdvSearchClear}
+                    />}
+                    {perm.canAdd && <button onClick={handleAdd} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 500, cursor: 'pointer' }}><Plus size={16} /> <span>{t['add_data'] || 'เพิ่มข้อมูล'}</span></button>}
                 </>
             }
         >
@@ -240,12 +309,12 @@ export default function TemplateMaster2Page() {
                 <table className="data-table">
                     <thead>
                         <tr>
-                            <th style={{ width: '60px' }}>ID</th>
-                            <th>หัวข้อ</th>
-                            <th>หมวดหมู่</th>
-                            <th>อธิบายการใช้งาน</th>
-                            <th className="text-center" style={{ width: '100px' }}>สถานะ</th>
-                            {hasActions && <th className="text-center" style={{ width: '100px', paddingRight: '24px' }}>จัดการ</th>}
+                            <th style={{ width: '60px' }}>{t['template_id'] || 'ID'}</th>
+                            <th>{t['template_name'] || 'หัวข้อ'}</th>
+                            <th>{t['template_group'] || 'หมวดหมู่'}</th>
+                            <th>{t['template_desc'] || 'อธิบายการใช้งาน'}</th>
+                            <th className="text-center" style={{ width: '100px' }}>{t['is_active'] || 'สถานะ'}</th>
+                            {hasActions && <th className="text-center" style={{ width: '100px', paddingRight: '24px' }}>{t['manage'] || 'จัดการ'}</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -261,16 +330,16 @@ export default function TemplateMaster2Page() {
                                 {hasActions && (
                                 <td className="text-center" style={{ paddingRight: '24px' }}>
                                     <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-                                        {perm.canView   && <button onClick={() => handleView(item)}   style={{ ...crudStyles.actionBtn, color: 'var(--accent-blue)', background: 'rgba(59,130,246,0.1)' }} title="เรียกดู"><Eye    size={14} /></button>}
-                                        {perm.canEdit   && <button onClick={() => handleEdit(item)}   style={{ ...crudStyles.actionBtn, color: '#f59e0b', background: '#fef3c7' }} title="แก้ไข"><Edit2  size={14} /></button>}
-                                        {perm.canDelete && <button onClick={() => handleDelete(item)} style={{ ...crudStyles.actionBtn, color: '#ef4444', background: '#fee2e2' }} title="ลบ"><Trash2 size={14} /></button>}
+                                        {perm.canView   && <button onClick={() => handleView(item)}   style={{ ...crudStyles.actionBtn, color: 'var(--accent-blue)', background: 'rgba(59,130,246,0.1)' }} title={t['view'] || 'เรียกดู'}><Eye    size={14} /></button>}
+                                        {perm.canEdit   && <button onClick={() => handleEdit(item)}   style={{ ...crudStyles.actionBtn, color: '#f59e0b', background: '#fef3c7' }} title={t['edit'] || 'แก้ไข'}><Edit2  size={14} /></button>}
+                                        {perm.canDelete && <button onClick={() => handleDelete(item)} style={{ ...crudStyles.actionBtn, color: '#ef4444', background: '#fee2e2' }} title={t['delete'] || 'ลบ'}><Trash2 size={14} /></button>}
                                     </div>
                                 </td>
                                 )}
                             </tr>
                         ))}
                         {filteredData.length === 0 && (
-                            <tr><td colSpan={hasActions ? 6 : 5} className="text-center" style={{ padding: '40px 0', color: 'var(--text-muted)' }}>ไม่พบข้อมูล</td></tr>
+                            <tr><td colSpan={hasActions ? 6 : 5} className="text-center" style={{ padding: '40px 0', color: 'var(--text-muted)' }}>{t['no_data_found'] || 'ไม่พบข้อมูล'}</td></tr>
                         )}
                     </tbody>
                 </table>
@@ -285,6 +354,7 @@ export default function TemplateMaster2Page() {
                     totalItems={filteredData.length}
                     setCurrentPage={setCurrentPage}
                     setPageSize={setPageSize}
+                    translations={t}
                 />
             )}
 
@@ -292,35 +362,35 @@ export default function TemplateMaster2Page() {
             <BaseModal
                 isOpen={isModalOpen && modalMode !== 'delete'}
                 onClose={() => setIsModalOpen(false)}
-                title={modalMode === 'add' ? 'เพิ่มข้อมูลใหม่' : modalMode === 'edit' ? 'แก้ไขข้อมูล' : 'รายละเอียดข้อมูล'}
+                title={modalMode === 'add' ? (t['add_new_data'] || 'เพิ่มข้อมูลใหม่') : modalMode === 'edit' ? (t['edit_data'] || 'แก้ไขข้อมูล') : (t['view_data'] || 'รายละเอียดข้อมูล')}
                 footer={
                     modalMode !== 'view' ? (
                         <>
-                            <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>ยกเลิก</button>
+                            <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>{t['cancel'] || 'ยกเลิก'}</button>
                             <button onClick={saveForm} disabled={!formData.template_name.trim() || saving}
                                 style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: (formData.template_name.trim() && !saving) ? 1 : 0.5 }}>
-                                {saving ? 'กำลังบันทึก...' : modalMode === 'add' ? 'เพิ่มข้อมูล' : 'บันทึกข้อมูล'}
+                                {saving ? (t['saving'] || 'กำลังบันทึก...') : modalMode === 'add' ? (t['save_data'] || 'บันทึกข้อมูล') : (t['save_data'] || 'บันทึกข้อมูล')}
                             </button>
                         </>
                     ) : (
-                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>ปิด</button>
+                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>{t['close'] || 'ปิด'}</button>
                     )
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div>
-                        <label style={crudStyles.label}>หัวข้อ <span style={{ color: '#ef4444' }}>*</span></label>
-                        <input type="text" style={crudStyles.input} placeholder="ระบุชื่อหัวข้อ"
+                        <label style={crudStyles.label}>{t['template_name'] || 'หัวข้อ'} <span style={{ color: '#ef4444' }}>*</span></label>
+                        <input type="text" style={crudStyles.input} placeholder={t['enter_title'] || 'ระบุชื่อหัวข้อ'}
                             value={formData.template_name}
                             onChange={(e) => setFormData({ ...formData, template_name: e.target.value })}
                             disabled={modalMode === 'view'} />
                     </div>
                     <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                            <label style={{ ...crudStyles.label, marginBottom: 0 }}>หมวดหมู่ <span style={{ color: '#ef4444' }}>*</span></label>
+                            <label style={{ ...crudStyles.label, marginBottom: 0 }}>{t['template_group'] || 'หมวดหมู่'} <span style={{ color: '#ef4444' }}>*</span></label>
                             {modalMode !== 'view' && (
                                 <button type="button" onClick={() => setIsCategoryModalOpen(true)} style={{ color: 'var(--accent-blue)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px', padding: 0 }}>
-                                    <Plus size={14} /> <span>เพิ่มหมวดหมู่</span>
+                                    <Plus size={14} /> <span>{t['add_category'] || 'เพิ่มหมวดหมู่'}</span>
                                 </button>
                             )}
                         </div>
@@ -332,52 +402,47 @@ export default function TemplateMaster2Page() {
                         </select>
                     </div>
                     <div>
-                        <label style={crudStyles.label}>อธิบายการใช้งาน</label>
+                        <label style={crudStyles.label}>{t['template_desc'] || 'อธิบายการใช้งาน'}</label>
                         <textarea style={{ ...crudStyles.input, minHeight: '100px', resize: 'vertical' }}
-                            placeholder="ระบุคำอธิบาย หรือหมายเหตุ"
+                            placeholder={t['enter_desc'] || 'ระบุคำอธิบาย หรือหมายเหตุ'}
                             value={formData.template_desc}
                             onChange={(e) => setFormData({ ...formData, template_desc: e.target.value })}
                             disabled={modalMode === 'view'} />
                     </div>
                     {modalMode === 'view' && (
-                        <>
-                            <div>
-                                <label style={crudStyles.label}>สถานะการใช้งาน</label>
-                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                    <StatusDropdown status={formData.is_active}
-                                        onChange={(val) => { if (modalMode !== 'view') setFormData({ ...formData, is_active: val }); }}
-                                        disabled={modalMode === 'view'} />
-                                    {modalMode === 'view' && <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>*(ดูอย่างเดียว)</span>}
-                                </div>
-                            </div>
-                            <div style={{ marginTop: '16px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
-                                    <Info size={16} />
-                                    <span style={{ fontSize: '13px', fontWeight: 600 }}>ข้อมูลระบบ (System Logs)</span>
-                                </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
-                                    <div>
-                                        <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>สร้างโดย</span>
-                                        <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.create_by || '-'}</span>
-                                    </div>
-                                    <div>
-                                        <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>วันที่สร้าง</span>
-                                        <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.create_date ? new Date(selectedItem.create_date).toLocaleString('th-TH') : '-'}</span>
-                                    </div>
-                                    <div>
-                                        <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>แก้ไขล่าสุดโดย</span>
-                                        <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.update_by || '-'}</span>
-                                    </div>
-                                    <div>
-                                        <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>วันที่แก้ไขล่าสุด</span>
-                                        <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.update_date ? new Date(selectedItem.update_date).toLocaleString('th-TH') : '-'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </>
-                    )}; }}
+                        <div>
+                            <label style={crudStyles.label}>{t['usage_status'] || 'สถานะการใช้งาน'}</label>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                <StatusDropdown status={formData.is_active}
+                                    onChange={(val) => { if (modalMode !== 'view') setFormData({ ...formData, is_active: val }); }}
                                     disabled={modalMode === 'view'} />
-                                {modalMode === 'view' && <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>*(ดูอย่างเดียว)</span>}
+                                {modalMode === 'view' && <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{t['read_only'] || '*(ดูอย่างเดียว)'}</span>}
+                            </div>
+                        </div>
+                    )}
+                    {modalMode === 'view' && (
+                        <div style={{ marginTop: '16px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
+                                <Info size={16} />
+                                <span style={{ fontSize: '13px', fontWeight: 600 }}>{t['system_logs'] || 'ข้อมูลระบบ (System Logs)'}</span>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
+                                <div>
+                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t['created_by'] || 'สร้างโดย'}</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.create_by || '-'}</span>
+                                </div>
+                                <div>
+                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t['create_date'] || 'วันที่สร้าง'}</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.create_date ? format(new Date(selectedItem.create_date), configs?.dateFormat || 'dd/MM/yyyy') : '-'}</span>
+                                </div>
+                                <div>
+                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t['updated_by'] || 'แก้ไขล่าสุดโดย'}</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.update_by || '-'}</span>
+                                </div>
+                                <div>
+                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t['update_date'] || 'วันที่แก้ไขล่าสุด'}</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.update_date ? format(new Date(selectedItem.update_date), configs?.dateFormat || 'dd/MM/yyyy') : '-'}</span>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -388,18 +453,18 @@ export default function TemplateMaster2Page() {
             <BaseModal
                 isOpen={isModalOpen && modalMode === 'delete'}
                 onClose={() => setIsModalOpen(false)}
-                title="ยืนยันการลบข้อมูล"
+                title={t['confirm_delete_title'] || 'ยืนยันการลบข้อมูล'}
                 width="400px"
                 footer={
                     <>
-                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>ยกเลิก</button>
-                        <button onClick={confirmDelete} disabled={saving} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: saving ? 0.5 : 1 }}>{saving ? 'กำลังลบ...' : 'ลบข้อมูล'}</button>
+                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>{t['cancel'] || 'ยกเลิก'}</button>
+                        <button onClick={confirmDelete} disabled={saving} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: saving ? 0.5 : 1 }}>{saving ? (t['deleting'] || 'กำลังลบ...') : (t['delete_data'] || 'ลบข้อมูล')}</button>
                     </>
                 }
             >
                 <div>
-                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)' }}>คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูล <strong style={{ color: 'var(--text-primary)' }}>{selectedItem?.template_name}</strong> ?</p>
-                    <p style={{ margin: 0, fontSize: '13px', color: '#ef4444' }}>การกระทำนี้จะไม่สามารถย้อนกลับได้</p>
+                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)' }}>{t['delete_confirm_msg'] || 'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูล'} <br /><strong style={{ color: 'var(--text-primary)' }}>{selectedItem?.template_name}</strong> ?</p>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#ef4444' }}>{t['cannot_undo'] || 'การกระทำนี้จะไม่สามารถย้อนกลับได้'}</p>
                 </div>
             </BaseModal>
 
@@ -407,22 +472,32 @@ export default function TemplateMaster2Page() {
             <BaseModal
                 isOpen={isCategoryModalOpen}
                 onClose={() => setIsCategoryModalOpen(false)}
-                title="เพิ่มหมวดหมู่ใหม่"
+                title={t['add_new_category'] || 'เพิ่มหมวดหมู่ใหม่'}
                 width="400px"
                 footer={
                     <>
-                        <button onClick={() => setIsCategoryModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>ยกเลิก</button>
-                        <button onClick={handleSaveCategory} style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>เพิ่มหมวดหมู่</button>
+                        <button onClick={() => setIsCategoryModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>{t['cancel'] || 'ยกเลิก'}</button>
+                        <button onClick={handleSaveCategory} style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>{t['add_category'] || 'เพิ่มหมวดหมู่'}</button>
                     </>
                 }
             >
                 <div>
-                    <label style={crudStyles.label}>ชื่อหมวดหมู่</label>
-                    <input type="text" style={crudStyles.input} placeholder="ระบุชื่อหมวดหมู่"
+                    <label style={crudStyles.label}>{t['category_name'] || 'ชื่อหมวดหมู่'}</label>
+                    <input type="text" style={crudStyles.input} placeholder={t['enter_category_name'] || 'ระบุชื่อหมวดหมู่'}
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)} />
                 </div>
             </BaseModal>
+            {/* Advanced Search Modal */}
+            <AdvancedSearchModal
+                isOpen={showAdvancedSearch}
+                onClose={() => setShowAdvancedSearch(false)}
+                fields={advancedSearchFields}
+                values={advSearchValues}
+                onChange={handleAdvSearchChange}
+                onSearch={handleAdvSearchSubmit}
+                onClear={handleAdvSearchClear}
+            />
         </CrudLayout>
     );
 }

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
     Upload,
+    Download,
     FileDown,
     FileSpreadsheet,
     ChevronDown,
@@ -29,6 +30,8 @@ interface ImportExcelButtonProps {
     onImport: (rows: Record<string, any>[]) => Promise<{ success: number; failed: number }>;
     /** Called after a successful import (e.g. to invalidate queries) */
     onImportComplete?: () => void;
+    /** Translation dictionary */
+    translations?: Record<string, string>;
 }
 
 /* ─────────────────────── Component ─────────────────────── */
@@ -40,8 +43,9 @@ export default function ImportExcelButton({
     masterData,
     onImport,
     onImportComplete,
+    translations
 }: ImportExcelButtonProps) {
-    const t = (en: string, th?: string) => th || en;
+    const tLoc = (en: string, th?: string) => th || en;
     const currentLang = 'th';
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -155,30 +159,46 @@ export default function ImportExcelButton({
             <div className="relative" ref={dropdownRef}>
                 <button
                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 border border-nv-border rounded-lg text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:border-emerald-300 transition-all duration-150"
+                    style={{
+                        display: 'flex', alignItems: 'center', gap: '6px',
+                        padding: '8px 16px', background: '#059669', color: 'white', border: 'none',
+                        borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 500,
+                        transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                    }}
                 >
-                    <Upload className="w-4 h-4" />
-                    <span>{t("Import", currentLang === 'th' ? "นำเข้า" : "Import")}</span>
+                    <Upload size={16} />
+                    <span>{translations?.['import_button'] || tLoc("Import", currentLang === 'th' ? "นำเข้า" : "Import")}</span>
                     <ChevronDown
-                        className={`w-3.5 h-3.5 text-emerald-500 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                        size={14}
+                        style={{
+                            transition: 'transform 0.2s',
+                            transform: dropdownOpen ? 'rotate(180deg)' : 'none'
+                        }}
                     />
                 </button>
 
                 {dropdownOpen && (
-                    <div className="absolute left-0 top-full mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                    <div style={{
+                        position: 'absolute', top: '100%', left: 0, marginTop: '4px',
+                        background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                        borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 9999,
+                        minWidth: '200px', padding: '4px', display: 'flex', flexDirection: 'column'
+                    }}>
                         <button
                             onClick={handleDownloadTemplate}
-                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', border: 'none', background: 'transparent', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', color: 'var(--text-primary)', fontSize: '14px', whiteSpace: 'nowrap' }}
+                            onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                            onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                         >
-                            <FileDown className="w-4 h-4" />
-                            {t("Download Template", currentLang === 'th' ? "ดาวน์โหลดเทมเพลต" : "Download Template")}
+                            <Download size={14} color="#10b981" /> {translations?.['download_template'] || "Download Template"}
                         </button>
                         <button
                             onClick={() => fileInputRef.current?.click()}
-                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', border: 'none', background: 'transparent', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', color: 'var(--text-primary)', fontSize: '14px', whiteSpace: 'nowrap' }}
+                            onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                            onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                         >
-                            <FileSpreadsheet className="w-4 h-4" />
-                            {t("Upload Excel File", currentLang === 'th' ? "อัปโหลดไฟล์ Excel" : "Upload Excel File")}
+                            <Upload size={14} color="#10b981" /> {translations?.['upload_excel_file'] || "Upload Excel File"}
                         </button>
                     </div>
                 )}
@@ -188,63 +208,63 @@ export default function ImportExcelButton({
             <BaseModal
                 isOpen={modalOpen}
                 onClose={handleClose}
-                title={t("Import Preview", currentLang === 'th' ? "ตรวจสอบข้อมูลก่อนนำเข้า" : "Import Preview")}
+                title={translations?.['import_preview'] || tLoc("Import Preview", currentLang === 'th' ? "ตรวจสอบข้อมูลก่อนนำเข้า" : "Import Preview")}
                 width="768px"
                 footer={
                     importDone ? (
-                        <button onClick={handleClose} className="px-5 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
-                            {t("Close", currentLang === 'th' ? "ปิด" : "Close")}
+                        <button onClick={handleClose} style={{ padding: '8px 16px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, fontSize: '14px' }}>
+                            {translations?.['close'] || tLoc("Close", currentLang === 'th' ? "ปิด" : "Close")}
                         </button>
                     ) : (
-                        <div className="flex gap-3">
+                        <div style={{ display: 'flex', gap: '12px' }}>
                             <button
                                 onClick={handleClose}
-                                className="px-5 py-2.5 border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                                style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, fontSize: '14px' }}
                             >
-                                {t("Cancel", currentLang === 'th' ? "ยกเลิก" : "Cancel")}
+                                {translations?.['cancel'] || tLoc("Cancel", currentLang === 'th' ? "ยกเลิก" : "Cancel")}
                             </button>
                             <button
                                 onClick={handleConfirmImport}
                                 disabled={importing || validCount === 0}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-all duration-150"
+                                style={{ padding: '8px 16px', background: '#059669', color: 'white', border: 'none', borderRadius: '8px', cursor: (importing || validCount === 0) ? 'not-allowed' : 'pointer', fontWeight: 500, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', opacity: (importing || validCount === 0) ? 0.6 : 1 }}
                             >
                                 {importing && <Loader2 className="w-4 h-4 animate-spin" />}
                                 {importing
-                                    ? t("Importing...", currentLang === 'th' ? "กำลังนำเข้า..." : "Importing...")
-                                    : `${t("Import", currentLang === 'th' ? "นำเข้า" : "Import")} ${validCount} ${t("records", currentLang === 'th' ? "รายการ" : "records")}`}
+                                    ? translations?.['importing'] || tLoc("Importing...", currentLang === 'th' ? "กำลังนำเข้า..." : "Importing...")
+                                    : `${translations?.['import_button'] || tLoc("Import", currentLang === 'th' ? "นำเข้า" : "Import")} ${validCount} ${translations?.['records'] || tLoc("records", currentLang === 'th' ? "รายการ" : "records")}`}
                             </button>
                         </div>
                     )
                 }
             >
                 {importResult && (
-                    <div className="space-y-4">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         {/* File info */}
-                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                            <FileSpreadsheet className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                            <div className="min-w-0 flex-1">
-                                <p className="text-sm font-medium text-gray-900 truncate">{fileName}</p>
-                                <p className="text-xs text-gray-500">
-                                    {totalCount} {t("rows found", currentLang === 'th' ? "แถวที่พบ" : "rows found")}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                            <FileSpreadsheet size={20} color="#059669" style={{ flexShrink: 0 }} />
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                                <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{fileName}</p>
+                                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
+                                    {totalCount} {translations?.['rows_found'] || tLoc("rows found", currentLang === 'th' ? "แถวที่พบ" : "rows found")}
                                 </p>
                             </div>
                         </div>
 
                         {/* Summary cards */}
                         {!importDone && (
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-                                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(16, 185, 129, 0.05)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                                    <CheckCircle2 size={20} color="#059669" />
                                     <div>
-                                        <p className="text-lg font-bold text-emerald-700">{validCount}</p>
-                                        <p className="text-xs text-emerald-600">{t("Valid rows", currentLang === 'th' ? "แถวที่ถูกต้อง" : "Valid rows")}</p>
+                                        <p style={{ fontSize: '18px', fontWeight: 700, color: '#059669', margin: 0 }}>{validCount}</p>
+                                        <p style={{ fontSize: '12px', color: '#059669', margin: 0 }}>{translations?.['valid_rows'] || tLoc("Valid rows", currentLang === 'th' ? "แถวที่ถูกต้อง" : "Valid rows")}</p>
                                     </div>
                                 </div>
-                                <div className={`flex items-center gap-3 p-3 rounded-lg border ${errorCount > 0 ? "bg-red-50 border-red-100" : "bg-gray-50 border-gray-100"}`}>
-                                    <AlertTriangle className={`w-5 h-5 ${errorCount > 0 ? "text-red-500" : "text-gray-400"}`} />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '8px', border: `1px solid ${errorCount > 0 ? 'rgba(239, 68, 68, 0.2)' : 'var(--border-color)'}`, background: errorCount > 0 ? 'rgba(239, 68, 68, 0.05)' : 'var(--bg-secondary)' }}>
+                                    <AlertTriangle size={20} color={errorCount > 0 ? "#ef4444" : "var(--text-muted)"} />
                                     <div>
-                                        <p className={`text-lg font-bold ${errorCount > 0 ? "text-red-600" : "text-gray-400"}`}>{errorCount}</p>
-                                        <p className={`text-xs ${errorCount > 0 ? "text-red-500" : "text-gray-400"}`}>{t("Error rows", currentLang === 'th' ? "แถวที่มีข้อผิดพลาด" : "Error rows")}</p>
+                                        <p style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: errorCount > 0 ? "#ef4444" : "var(--text-muted)" }}>{errorCount}</p>
+                                        <p style={{ fontSize: '12px', margin: 0, color: errorCount > 0 ? "#ef4444" : "var(--text-muted)" }}>{translations?.['error_rows'] || tLoc("Error rows", currentLang === 'th' ? "แถวที่มีข้อผิดพลาด" : "Error rows")}</p>
                                     </div>
                                 </div>
                             </div>
@@ -252,35 +272,35 @@ export default function ImportExcelButton({
 
                         {/* Import result */}
                         {importDone && importSummary && (
-                            <div className="space-y-3">
-                                <div className={`p-4 rounded-lg border ${importSummary.success > 0 ? "bg-emerald-50 border-emerald-200" : "bg-red-50 border-red-200"}`}>
-                                    <div className="flex items-center gap-2 mb-2">
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <div style={{ padding: '16px', borderRadius: '8px', border: `1px solid ${importSummary.success > 0 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`, background: importSummary.success > 0 ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                                         {importSummary.success > 0 ? (
-                                            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                                            <CheckCircle2 size={20} color="#059669" />
                                         ) : (
-                                            <AlertTriangle className="w-5 h-5 text-red-500" />
+                                            <AlertTriangle size={20} color="#ef4444" />
                                         )}
-                                        <span className={`text-sm font-semibold ${importSummary.success > 0 ? "text-emerald-700" : "text-red-700"}`}>
-                                            {t("Import Complete", currentLang === 'th' ? "นำเข้าเสร็จสิ้น" : "Import Complete")}
+                                        <span style={{ fontSize: '14px', fontWeight: 600, color: importSummary.success > 0 ? '#059669' : '#ef4444' }}>
+                                            {translations?.['import_complete'] || tLoc("Import Complete", currentLang === 'th' ? "นำเข้าเสร็จสิ้น" : "Import Complete")}
                                         </span>
                                     </div>
-                                    <p className="text-sm text-gray-600">
-                                        {t("Success", currentLang === 'th' ? "สำเร็จ" : "Success")}: <span className="font-bold text-emerald-700">{importSummary.success}</span>
+                                    <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0 }}>
+                                        {translations?.['success'] || tLoc("Success", currentLang === 'th' ? "สำเร็จ" : "Success")}: <span style={{ fontWeight: 700, color: '#059669' }}>{importSummary.success}</span>
                                         {importSummary.failed > 0 && (
-                                            <> · {t("Failed", currentLang === 'th' ? "ล้มเหลว" : "Failed")}: <span className="font-bold text-red-600">{importSummary.failed}</span></>
+                                            <> &middot; {translations?.['failed'] || tLoc("Failed", currentLang === 'th' ? "ล้มเหลว" : "Failed")}: <span style={{ fontWeight: 700, color: '#ef4444' }}>{importSummary.failed}</span></>
                                         )}
                                     </p>
                                 </div>
                                 
                                 {importSummary.failed > 0 && (importSummary as any).errorDetails?.length > 0 && (
-                                    <div className="space-y-2">
-                                        <p className="text-xs font-semibold text-red-600">
-                                            {t("Failure Details", currentLang === 'th' ? "รายละเอียดข้อผิดพลาด" : "Failure Details")}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <p style={{ fontSize: '12px', fontWeight: 600, color: '#ef4444', margin: 0 }}>
+                                            {translations?.['failure_details'] || tLoc("Failure Details", currentLang === 'th' ? "รายละเอียดข้อผิดพลาด" : "Failure Details")}
                                         </p>
-                                        <div className="max-h-32 overflow-y-auto space-y-1 bg-red-50/50 p-2 rounded-md">
+                                        <div style={{ maxHeight: '128px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px', background: 'rgba(239, 68, 68, 0.05)', padding: '8px', borderRadius: '6px' }}>
                                             {(importSummary as any).errorDetails.map((err: string, i: number) => (
-                                                <div key={i} className="text-xs text-red-600 flex items-start gap-1.5">
-                                                    <span className="mt-0.5">•</span>
+                                                <div key={i} style={{ fontSize: '12px', color: '#ef4444', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                                                    <span style={{ marginTop: '2px' }}>&bull;</span>
                                                     <span>{err}</span>
                                                 </div>
                                             ))}
@@ -292,21 +312,21 @@ export default function ImportExcelButton({
 
                         {/* Error list */}
                         {importResult.errors.length > 0 && !importDone && (
-                            <div className="space-y-2">
-                                <p className="text-sm font-semibold text-red-600 flex items-center gap-1.5">
-                                    <AlertTriangle className="w-4 h-4" />
-                                    {t("Validation Errors", currentLang === 'th' ? "ข้อผิดพลาดในการตรวจสอบ" : "Validation Errors")}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <p style={{ fontSize: '14px', fontWeight: 600, color: '#ef4444', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <AlertTriangle size={16} />
+                                    {translations?.['validation_errors'] || tLoc("Validation Errors", currentLang === 'th' ? "ข้อผิดพลาดในการตรวจสอบ" : "Validation Errors")}
                                 </p>
-                                <div className="max-h-40 overflow-y-auto space-y-1 pr-1">
+                                <div style={{ maxHeight: '160px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px', paddingRight: '4px' }}>
                                     {importResult.errors.slice(0, 20).map((err, i) => (
-                                        <div key={i} className="flex items-start gap-2 text-xs text-red-600 bg-red-50 px-3 py-2 rounded-md">
-                                            <X className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                                        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', color: '#ef4444', background: 'rgba(239, 68, 68, 0.05)', padding: '8px 12px', borderRadius: '6px' }}>
+                                            <X size={12} style={{ marginTop: '2px', flexShrink: 0 }} />
                                             <span>{err.message}</span>
                                         </div>
                                     ))}
                                     {importResult.errors.length > 20 && (
-                                        <p className="text-xs text-red-400 text-center py-1">
-                                            ... {t("and", currentLang === 'th' ? "และ" : "and")} {importResult.errors.length - 20} {t("more errors", currentLang === 'th' ? "ข้อผิดพลาดอื่นอีก" : "more errors")}
+                                        <p style={{ fontSize: '12px', color: 'rgba(239, 68, 68, 0.8)', textAlign: 'center', padding: '4px 0', margin: 0 }}>
+                                            ... {translations?.['and'] || tLoc("and", currentLang === 'th' ? "และ" : "and")} {importResult.errors.length - 20} {translations?.['more_errors'] || tLoc("more errors", currentLang === 'th' ? "ข้อผิดพลาดอื่นอีก" : "more errors")}
                                         </p>
                                     )}
                                 </div>
@@ -315,31 +335,31 @@ export default function ImportExcelButton({
 
                         {/* Data preview table */}
                         {!importDone && validCount > 0 && (
-                            <div className="space-y-2">
-                                <p className="text-sm font-semibold text-gray-700">
-                                    {t("Data Preview", currentLang === 'th' ? "ตัวอย่างข้อมูล" : "Data Preview")} ({Math.min(validCount, 10)} / {validCount})
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+                                    {translations?.['data_preview'] || tLoc("Data Preview", currentLang === 'th' ? "ตัวอย่างข้อมูล" : "Data Preview")} ({Math.min(validCount, 10)} / {validCount})
                                 </p>
-                                <div className="overflow-x-auto rounded-lg border border-gray-200">
-                                    <table className="w-full text-xs">
-                                        <thead className="bg-gray-50 border-b border-gray-200">
+                                <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)' }}>
+                                    <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
+                                        <thead style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
                                             <tr>
-                                                <th className="px-3 py-2 text-left font-semibold text-gray-500 uppercase tracking-wider">#</th>
+                                                <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>#</th>
                                                 {columns.map((col) => (
-                                                    <th key={col.key} className="px-3 py-2 text-left font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                                                    <th key={col.key} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
                                                         {col.header}
                                                     </th>
                                                 ))}
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-gray-100">
+                                        <tbody style={{ borderTop: '1px solid var(--border-color)' }}>
                                             {importResult.data
                                                 .filter((r) => !errorRowNums.has(r._rowNum))
                                                 .slice(0, 10)
                                                 .map((row, i) => (
-                                                    <tr key={i} className="hover:bg-gray-50/50">
-                                                        <td className="px-3 py-2 text-gray-400">{i + 1}</td>
+                                                    <tr key={i} style={{ borderBottom: i < 9 ? '1px solid var(--border-color)' : 'none' }}>
+                                                        <td style={{ padding: '8px 12px', color: 'var(--text-muted)' }}>{i + 1}</td>
                                                         {columns.map((col) => (
-                                                            <td key={col.key} className="px-3 py-2 text-gray-700 whitespace-nowrap">
+                                                            <td key={col.key} style={{ padding: '8px 12px', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
                                                                 {row[col.key] ?? ""}
                                                             </td>
                                                         ))}

@@ -193,7 +193,7 @@ export default function AdminPage() {
       case 'template-master-graph':
         return <TemplateMasterGraph1Page />;
       case 'provinces':
-        return <ProvincesSettings />;
+        return <div className="p-6 bg-white rounded-lg shadow"><h3>Provinces Settings</h3></div>;
       case 'unit-type':
         return <UnitTypeSettings />;
       default:

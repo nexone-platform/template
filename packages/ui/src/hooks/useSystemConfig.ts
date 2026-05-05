@@ -6,6 +6,9 @@ export interface SystemConfigValues {
   tenantNameDisplayPosition: string; // 'SIDEBAR_TOP' | 'TOP_HEADER_RIGHT' | 'BREADCRUMB'
   tenantName: string;
   pageRecordDefault: number;
+  dateFormat: string;
+  timeFormat: string;
+  dateTimeFormat: string;
 }
 
 export function useSystemConfig() {
@@ -14,16 +17,22 @@ export function useSystemConfig() {
     tenantNameDisplayPosition: 'TOP_HEADER_RIGHT',
     tenantName: '',
     pageRecordDefault: 10, // Default fallback
+    dateFormat: 'dd/MM/yyyy',
+    timeFormat: 'HH:mm:ss',
+    dateTimeFormat: 'dd/MM/yyyy HH:mm:ss',
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchConfigs = async () => {
       try {
-        const [showTenantNameStr, displayPositionStr, pageRecordStr] = await Promise.all([
+        const [showTenantNameStr, displayPositionStr, pageRecordStr, dateFormatStr, timeFormatStr, dateTimeFormatStr] = await Promise.all([
           systemConfigService.getByKey('SHOW_TENANT_NAME'),
           systemConfigService.getByKey('TENANT_NAME_DISPLAY_POSITION'),
-          systemConfigService.getByKey('PAGE_RECORD_DEFAULT')
+          systemConfigService.getByKey('PAGE_RECORD_DEFAULT'),
+          systemConfigService.getByKey('DATE_FORMAT'),
+          systemConfigService.getByKey('TIME_FORMAT'),
+          systemConfigService.getByKey('DATETIME_FORMAT')
         ]);
 
         let tenantName = typeof window !== 'undefined' ? localStorage.getItem('workspaceId') || '' : '';
@@ -59,6 +68,9 @@ export function useSystemConfig() {
           tenantNameDisplayPosition: displayPositionStr || 'TOP_HEADER_RIGHT',
           tenantName: tenantName,
           pageRecordDefault: pageRecordDefault,
+          dateFormat: dateFormatStr || 'dd/MM/yyyy',
+          timeFormat: timeFormatStr || 'HH:mm:ss',
+          dateTimeFormat: dateTimeFormatStr || 'dd/MM/yyyy HH:mm:ss',
         });
       } catch (error) {
         console.error('Error fetching system configs:', error);

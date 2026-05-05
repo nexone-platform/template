@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search, X, Check, Megaphone, Users, Building2, UserCircle, ShieldCheck, Send, Info, AlertTriangle, CheckCircle, Clock, CheckCircle2 } from 'lucide-react';
 import { coreAnnouncementApi, Announcement } from '../services/api';
-import { useLanguage } from '@nexone/ui';
+import { useLanguage, useSystemConfig } from '@nexone/ui';
+import { format } from 'date-fns';
 
 export default function SystemAnnouncements() {
   const { lang } = useLanguage();
+  const { configs } = useSystemConfig();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -262,7 +264,7 @@ export default function SystemAnnouncements() {
                             {item.isActive ? 'ส่งแล้ว' : 'ตั้งเวลาส่ง'}
                           </div>
                           <div className="text-[11px] text-gray-400 mt-2 font-medium">
-                            {item.createDate ? new Date(item.createDate).toLocaleString('sv-SE').replace('T', ' ') : '-'}
+                            {item.createDate ? format(new Date(item.createDate), configs?.dateTimeFormat || 'yyyy-MM-dd HH:mm:ss') : '-'}
                           </div>
                         </div>
                       </td>

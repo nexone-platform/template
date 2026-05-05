@@ -247,7 +247,7 @@ export default function ActivityLogs() {
                     <ExportButtons
                         onExportXLSX={() => exportToXLSX(getExportData(), 'AuditLogs', exportColumns)}
                         onExportCSV={() => exportToCSV(getExportData(), 'AuditLogs', exportColumns)}
-                        onExportPDF={() => exportToPDF(getExportData(), 'AuditLogs', exportColumns, 'Activity Logs Report - NexCore')}
+                        onExportPDF={(orientation) => exportToPDF(getExportData(), 'AuditLogs', exportColumns, 'Activity Logs Report - NexCore', orientation)}
                     />
                 )}
                 

@@ -7,9 +7,10 @@ interface PaginationProps {
     totalItems: number;
     setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
     setPageSize: React.Dispatch<React.SetStateAction<number>>;
+    t?: Record<string, string>;
 }
 
-export default function Pagination({ currentPage, pageSize, totalItems, setCurrentPage, setPageSize }: PaginationProps) {
+export default function Pagination({ currentPage, pageSize, totalItems, setCurrentPage, setPageSize, t }: PaginationProps) {
     if (totalItems <= 0) return null;
     
     const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -60,7 +61,7 @@ export default function Pagination({ currentPage, pageSize, totalItems, setCurre
             padding: '10px 16px', borderTop: '1px solid var(--border-color)', gap: '12px',
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                <span>แสดง</span>
+                <span>{t?.['paging_show'] || 'แสดง'}</span>
                 <select value={pageSize || 10} onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
                     style={{
                         padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border-color)',
@@ -68,9 +69,9 @@ export default function Pagination({ currentPage, pageSize, totalItems, setCurre
                     }}>
                     {[5, 10, 20, 50].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
-                <span>รายการ / หน้า</span>
+                <span>{t?.['paging_items_per_page'] || 'รายการ / หน้า'}</span>
                 <span style={{ marginLeft: '8px', color: 'var(--text-muted)' }}>
-                    ({getRangeStart()}–{getRangeEnd()} จาก {totalItems})
+                    ({getRangeStart()}–{getRangeEnd()} {t?.['paging_from'] || 'จาก'} {totalItems})
                 </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>

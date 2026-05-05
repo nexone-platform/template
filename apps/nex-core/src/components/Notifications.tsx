@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell, Send, CheckCircle2, AlertTriangle, Info, Clock, Search, Filter, MailPlus, User, Plus, X, Check, Megaphone } from 'lucide-react';
 import { coreAnnouncementApi, Announcement } from '../services/api';
-import { useLanguage } from '@nexone/ui';
+import { useLanguage, useSystemConfig } from '@nexone/ui';
+import { format } from 'date-fns';
 
 const StatCard = ({ title, value, suffix, icon: Icon, color, iconBgColor }: any) => (
   <div
@@ -85,6 +86,7 @@ const TARGET_OPTIONS: Record<string, {id: string, label: string}[]> = {
 
 export default function Notifications() {
   const { lang } = useLanguage();
+  const { configs } = useSystemConfig();
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
   
@@ -423,17 +425,17 @@ export default function Notifications() {
                       <td style={{ padding: "16px 24px", verticalAlign: "middle", minWidth: "160px" }}>
                         <div style={{ fontSize: "12px", color: "#475569" }}>
                           <div style={{ fontWeight: 600, marginBottom: "4px" }}>
-                            เริ่ม: <span style={{ fontWeight: 400 }}>{item.scheduleDate ? new Date(item.scheduleDate).toLocaleString('sv-SE').replace('T', ' ').slice(0, 16) : 'ทันที'}</span>
+                            เริ่ม: <span style={{ fontWeight: 400 }}>{item.scheduleDate ? format(new Date(item.scheduleDate), configs?.dateTimeFormat || 'yyyy-MM-dd HH:mm:ss') : 'ทันที'}</span>
                           </div>
                           <div style={{ fontWeight: 600 }}>
-                            สิ้นสุด: <span style={{ fontWeight: 400 }}>{item.endDate ? new Date(item.endDate).toLocaleString('sv-SE').replace('T', ' ').slice(0, 16) : 'ไม่มี'}</span>
+                            สิ้นสุด: <span style={{ fontWeight: 400 }}>{item.endDate ? format(new Date(item.endDate), configs?.dateTimeFormat || 'yyyy-MM-dd HH:mm:ss') : 'ไม่มี'}</span>
                           </div>
                         </div>
                       </td>
                       <td style={{ padding: "16px 24px", verticalAlign: "middle", minWidth: "130px" }}>
                         {getStatusBadge(uiStatus)}
                         <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "6px", fontWeight: 500 }}>
-                          {item.createDate ? new Date(item.createDate).toLocaleString('sv-SE').replace('T', ' ').slice(0, 16) : '-'}
+                          {item.createDate ? format(new Date(item.createDate), configs?.dateTimeFormat || 'yyyy-MM-dd HH:mm:ss') : '-'}
                         </div>
                       </td>
                       <td style={{ padding: "16px 24px", verticalAlign: "middle", textAlign: "right", minWidth: "120px" }}>

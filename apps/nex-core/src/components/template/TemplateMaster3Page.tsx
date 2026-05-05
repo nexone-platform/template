@@ -1,11 +1,13 @@
 'use client';
 import { useSystemConfig } from '@nexone/ui';
+import { format } from 'date-fns';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import StatusDropdown from '@/components/StatusDropdown';
 import { Search, Plus, Eye, Pencil, Trash2, X, FileSpreadsheet, Info, FileText, Download, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, LayoutGrid, List, Package, MapPin, DollarSign, Truck, User, Calendar, Weight } from 'lucide-react';
 import { api, Order, LocationItem } from '@/services/api';
-import { ExportButtons, ImportExcelButton, SearchInput } from '@/components/CrudComponents';
+import { ExportButtons, SearchInput, AdvancedSearchModal, AdvancedSearchField } from '@/components/CrudComponents';
+import ImportExcelButton from '@/components/ImportExcelButton';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
 import { usePagePermission } from '@/contexts/PermissionContext';
 
@@ -167,6 +169,43 @@ export default function TemplateMaster3Page() {
     ];
 
 
+    const importColumns = [
+        { key: 'id', header: 'รหัส Order', required: true, type: 'string' as const },
+        { key: 'customerName', header: 'ชื่อลูกค้า', required: true, type: 'string' as const },
+        { key: 'origin', header: 'ต้นทาง', required: true, type: 'string' as const },
+        { key: 'destination', header: 'ปลายทาง', required: true, type: 'string' as const },
+        { key: 'cargoType', header: 'ประเภทสินค้า', type: 'string' as const },
+        { key: 'weight', header: 'น้ำหนัก (ตัน)', type: 'number' as const },
+        { key: 'priority', header: 'Priority', type: 'string' as const },
+        { key: 'deliveryDate', header: 'วันส่ง', type: 'string' as const },
+        { key: 'estimatedCost', header: 'ราคาประเมิน (บาท)', type: 'number' as const }
+    ];
+
+    const handleImport = async (data: any[]) => {
+        let success = 0;
+        let failed = 0;
+        for (const item of data) {
+            try {
+                await api.createOrder({
+                    id: item.id || `ORD-${Math.floor(Math.random() * 1000)}`,
+                    customerName: item.customerName,
+                    origin: item.origin,
+                    destination: item.destination,
+                    cargoType: item.cargoType || 'General',
+                    weight: Number(item.weight) || 0,
+                    status: (item.status as any) || 'pending',
+                    priority: (item.priority as any) || 'normal',
+                    deliveryDate: item.deliveryDate || new Date().toISOString().split('T')[0],
+                    estimatedCost: Number(item.estimatedCost) || 0
+                });
+                success++;
+            } catch {
+                failed++;
+            }
+        }
+        return { success, failed };
+    };
+
     // ===== Handlers =====
     const handleAdd = () => { setForm(emptyForm); setFormErrors({}); setShowAddModal(true); };
     const handleView = (o: Order) => { setSelectedOrder(o); setShowViewModal(true); };
@@ -303,7 +342,7 @@ export default function TemplateMaster3Page() {
                         <option value="express">⚡ ด่วนพิเศษ</option>
                     </select>
                 </div>
-                <div>
+                {/* <div>
                     <label style={labelStyle}>สถานะ</label>
                     <select style={inputStyle} value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}>
                         <option value="pending">⏳ รอจัดส่ง</option>
@@ -311,7 +350,7 @@ export default function TemplateMaster3Page() {
                         <option value="completed">สำเร็จ</option>
                         <option value="cancelled">❌ ยกเลิก</option>
                     </select>
-                </div>
+                </div> */}
                 <div>
                     <label style={labelStyle}>วันส่ง *</label>
                     <input style={{ ...inputStyle, ...(formErrors.deliveryDate ? errorInputStyle : {}) }} type="date" value={form.deliveryDate} onChange={e => { setForm(p => ({ ...p, deliveryDate: e.target.value })); clearError('deliveryDate'); }} />
@@ -374,31 +413,7 @@ export default function TemplateMaster3Page() {
         border: 'none', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s',
     };
 
-        const handleImport = async (data: any[]) => {
-        setSaving(true);
-        try {
-            for (const item of data) {
-                if (item['ลูกค้า']) {
-                    await api.createOrder({
-                        id: item['Order ID'] || `ORD-${Math.floor(Math.random() * 1000)}`,
-                        customerName: item['ลูกค้า'],
-                        origin: item['ต้นทาง'] || '',
-                        destination: item['ปลายทาง'] || '',
-                        cargoType: item['สินค้า'] || '',
-                        weight: Number(item['น้ำหนัก (ตัน)']) || 0,
-                        status: 'pending',
-                        priority: 'normal',
-                        deliveryDate: item['วันส่ง'] || new Date().toISOString().split('T')[0],
-                        estimatedCost: Number(item['ราคา (บาท)']) || 0
-                    });
-                }
-            }
-            loadOrders();
-        } catch (err) {
-            console.error('Import failed:', err);
-        }
-        setSaving(false);
-    };
+
 
     if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}><div className="loading-spinner" /></div>;
 
@@ -423,9 +438,10 @@ export default function TemplateMaster3Page() {
                 />}
                 {perm.canAdd && (
                     <ImportExcelButton 
+                        columns={importColumns as any}
+                        filenamePrefix="Template3"
                         onImport={handleImport}
-                        expectedColumns={['ลูกค้า', 'ต้นทาง', 'ปลายทาง', 'สินค้า', 'น้ำหนัก (ตัน)', 'ราคา (บาท)', 'วันส่ง']}
-                        isLoading={saving}
+                        onImportComplete={() => loadOrders()}
                     />
                 )}
                 {selectedIds.size > 0 && (
@@ -595,7 +611,7 @@ export default function TemplateMaster3Page() {
                                 </div>
                                 <div>
                                     <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>วันที่สร้าง</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedOrder.createdAt ? new Date(selectedOrder.createdAt).toLocaleString('th-TH') : '-'}</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedOrder.createdAt ? format(new Date(selectedOrder.createdAt), configs?.dateFormat || 'dd/MM/yyyy') : '-'}</span>
                                 </div>
                                 <div>
                                     <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>แก้ไขล่าสุดโดย</span>
@@ -603,7 +619,7 @@ export default function TemplateMaster3Page() {
                                 </div>
                                 <div>
                                     <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>วันที่แก้ไขล่าสุด</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedOrder.updatedAt ? new Date(selectedOrder.updatedAt).toLocaleString('th-TH') : '-'}</span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedOrder.updatedAt ? format(new Date(selectedOrder.updatedAt), configs?.dateFormat || 'dd/MM/yyyy') : '-'}</span>
                                 </div>
                             </div>
                         </div>
