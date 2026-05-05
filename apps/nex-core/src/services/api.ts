@@ -250,6 +250,62 @@ export const templateApi = {
         corePut<Template>(`/${id}/status`, { is_active }),
 };
 
+const USER_API_BASE = process.env.NEXT_PUBLIC_CORE_API_URL
+    ? `${process.env.NEXT_PUBLIC_CORE_API_URL}/users`
+    : 'http://localhost:8101/api/users';
+
+const ROLE_API_BASE = process.env.NEXT_PUBLIC_CORE_API_URL
+    ? `${process.env.NEXT_PUBLIC_CORE_API_URL}/roles`
+    : 'http://localhost:8101/api/roles';
+
+export const coreUserApi = {
+    getAll: async (page = 1, limit = 1000, search = '') => {
+        const res = await fetch(`${USER_API_BASE}?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`, { credentials: 'include' });
+        if (!res.ok) throw new Error(`User API Error: ${res.status}`);
+        const json = await res.json();
+        return json.data || [];
+    },
+    getOne: async (id: string) => {
+        const res = await fetch(`${USER_API_BASE}/${id}`, { credentials: 'include' });
+        if (!res.ok) throw new Error(`User API Error: ${res.status}`);
+        const json = await res.json();
+        return json.data !== undefined ? json.data : json;
+    },
+    create: async (dto: any) => {
+        const res = await fetch(`${USER_API_BASE}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dto), credentials: 'include'
+        });
+        if (!res.ok) throw new Error(`User API Error: ${res.status}`);
+        const json = await res.json();
+        return json.data !== undefined ? json.data : json;
+    },
+    update: async (id: string, dto: any) => {
+        const res = await fetch(`${USER_API_BASE}/${id}`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dto), credentials: 'include'
+        });
+        if (!res.ok) throw new Error(`User API Error: ${res.status}`);
+        const json = await res.json();
+        return json.data !== undefined ? json.data : json;
+    },
+    remove: async (id: string) => {
+        const res = await fetch(`${USER_API_BASE}/${id}`, { method: 'DELETE', credentials: 'include' });
+        if (!res.ok) throw new Error(`User API Error: ${res.status}`);
+        const json = await res.json();
+        return json.data !== undefined ? json.data : json;
+    },
+};
+
+export const coreRoleApi = {
+    getAll: async () => {
+        const res = await fetch(`${ROLE_API_BASE}`, { credentials: 'include' });
+        if (!res.ok) throw new Error(`Role API Error: ${res.status}`);
+        const json = await res.json();
+        return Array.isArray(json) ? json : (json?.data || []);
+    }
+};
+
 export const coreDashboardApi = {
     getUsersStats: async () => {
         const baseUrl = process.env.NEXT_PUBLIC_CORE_API_URL 

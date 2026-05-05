@@ -3,7 +3,7 @@ import { UsersService } from './users.service';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AuditLog } from '../../common/decorators/audit-log.decorator';
 
-@Controller('api/users')
+@Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

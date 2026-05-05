@@ -1,33 +1,85 @@
-import { useSystemConfig } from '@nexone/ui';
-import React, { useEffect,  useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import CrudLayout from '@/components/CrudLayout';
-import { SearchInput, crudStyles, StatusDropdown, BaseModal, ExportButtons } from '@/components/CrudComponents';
+import { SearchInput, AdvancedSearchModal, AdvancedSearchField, crudStyles, StatusDropdown, BaseModal, ExportButtons } from '@/components/CrudComponents';
+import ImportExcelButton from '@/components/ImportExcelButton';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
-import { Plus, Edit2, Trash2, Eye, Shield, Building2, Mail, Hash } from 'lucide-react';
+import { Plus, Edit2, Info, Trash2, Eye, ArrowUp, ArrowDown, ChevronsUpDown, Settings } from 'lucide-react';
 import Pagination from '@/components/Pagination';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  department: string;
-  branch: string;
-  status: boolean; // Changed to boolean to fit StatusDropdown
-}
-
-const INITIAL_USERS: User[] = [
-  { id: 'USR-001', name: 'สมชาย รักดี', email: 'somchai.r@nexone.co.th', role: 'Super Admin', department: 'IT', branch: 'สำนักงานใหญ่', status: true },
-  { id: 'USR-002', name: 'สมหญิง จริงใจ', email: 'somying.j@nexone.co.th', role: 'Fleet Manager', department: 'Logistics', branch: 'คลังสินค้าบางนา', status: true },
-  { id: 'USR-003', name: 'วิชัย มั่นคง', email: 'wichai.m@nexone.co.th', role: 'Warehouse Lead', department: 'Warehouse', branch: 'คลังสินค้าบางนา', status: true },
-  { id: 'USR-004', name: 'นารี สวยสด', email: 'naree.s@nexone.co.th', role: 'Accountant', department: 'Finance', branch: 'สำนักงานใหญ่', status: false },
-  { id: 'USR-005', name: 'เอกพงษ์ กล้าหาญ', email: 'ekapong.k@nexone.co.th', role: 'Dispatcher', department: 'Logistics', branch: 'ศูนย์กระจายสินค้าภาคเหนือ', status: false },
-];
+import { coreUserApi, coreRoleApi } from '@/services/api';
+import { usePagePermission } from '@/contexts/PermissionContext';
+import { useSystemConfig, useLanguage } from '@nexone/ui';
+import { useApiConfig } from '@/contexts/ApiConfigContext';
+import { format } from 'date-fns';
 
 export default function UserManagement() {
+    const perm = usePagePermission('User Management');
+    const { lang } = useLanguage();
+    const { getEndpoint } = useApiConfig();
+    const { configs, loading: configLoading } = useSystemConfig();
+    const coreApi = getEndpoint('NexCore', '');
+    const [t, setT] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        const fetchTranslations = async () => {
+            try {
+                const res = await fetch(`${coreApi}/translations/map?lang=${lang}`, { credentials: 'include' });
+                const data = await res.json();
+                if (data && typeof data === 'object') {
+                    setT(data);
+                }
+            } catch (err) {
+                console.error('Failed to load translations:', err);
+            }
+        };
+        if (coreApi && lang) {
+            fetchTranslations();
+        }
+    }, [coreApi, lang]);
+
+    const [data, setData] = useState<any[]>([]);
+    const [roles, setRoles] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const { configs, loading: configLoading } = useSystemConfig();
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' | null }>({ key: '', direction: null });
+
+    // Column Settings State
+    const [isColumnSettingsOpen, setIsColumnSettingsOpen] = useState(false);
+    const [visibleColumns, setVisibleColumns] = useState({
+        id: true,
+        displayName: true,
+        email: true,
+        roleName: true,
+        isActive: true
+    });
+
+    // Advanced Search State
+    const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+    const [advSearchValues, setAdvSearchValues] = useState<Record<string, string>>({ displayName: '', email: '', status: 'all' });
+
+    const advancedSearchFields: AdvancedSearchField[] = [
+        { key: 'displayName', label: t['name'] || 'ชื่อพนักงาน', type: 'text', placeholder: t['name'] || 'พิมพ์ชื่อพนักงาน...' },
+        { key: 'email', label: t['email'] || 'อีเมล์', type: 'text', placeholder: t['email'] || 'พิมพ์อีเมล์...' },
+        {
+            key: 'status', label: t['status'] || 'สถานะ', type: 'select', options: [
+                { value: 'all', label: t['all'] || 'ทั้งหมด' },
+                { value: 'active', label: t['active'] || 'ใช้งาน' },
+                { value: 'inactive', label: t['inactive'] || 'ยกเลิก' },
+            ]
+        },
+    ];
+
+    const handleAdvSearchChange = (key: string, value: string) => {
+        setAdvSearchValues(prev => ({ ...prev, [key]: value }));
+    };
+    const handleAdvSearchClear = () => {
+        setAdvSearchValues({ displayName: '', email: '', status: 'all' });
+    };
+    const handleAdvSearchSubmit = () => {
+        setCurrentPage(1);
+        setShowAdvancedSearch(false);
+    };
+
     const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
     const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
 
@@ -37,16 +89,13 @@ export default function UserManagement() {
             setHasSetDefaultPageSize(true);
         }
     }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
-    const [users, setUsers] = useState<User[]>([]);
-    const [totalItems, setTotalItems] = useState(0);
-    
+
     // CRUD State
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalMode, setModalMode] = useState<'add'|'edit'|'view'|'delete'>('add');
-    const [selectedItem, setSelectedItem] = useState<User | null>(null);
-    const [formData, setFormData] = useState<Partial<User>>({ name: '', email: '', role: '', branch: '', department: '', status: true });
-
-    const [roles, setRoles] = useState<{id: string | number, roleName: string}[]>([]);
+    const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view' | 'delete'>('add');
+    const [selectedItem, setSelectedItem] = useState<any | null>(null);
+    const [formData, setFormData] = useState({ displayName: '', email: '', roleId: '', password: '', isActive: true });
+    const [saving, setSaving] = useState(false);
     const [emailError, setEmailError] = useState('');
 
     const validateEmail = (email: string) => {
@@ -56,367 +105,535 @@ export default function UserManagement() {
         }
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!re.test(email)) {
-            setEmailError('รูปแบบอีเมล์ไม่ถูกต้อง');
+            setEmailError(t['invalid_email'] || 'รูปแบบอีเมล์ไม่ถูกต้อง');
             return false;
         }
         setEmailError('');
         return true;
     };
 
-    const fetchUsers = async () => {
-        try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8101/api'}/users?page=${currentPage}&limit=${pageSize}&search=${search}`, { credentials: 'include' });
-            if (res.ok) {
-                const data = await res.json();
-                const mappedUsers = (data.data || []).map((u: any) => ({
-                    id: u.id,
-                    name: u.displayName || '-',
-                    email: u.email,
-                    role: u.roleName,
-                    department: u.costCenterCode || '-',
-                    branch: u.companyId || '-',
-                    status: u.isActive
-                }));
-                setUsers(mappedUsers);
-                setTotalItems(data.total || 0);
-            }
-        } catch (err) {
-            console.error('Failed to fetch users', err);
-        }
-    };
-
-    useEffect(() => {
-        const fetchRoles = async () => {
-            try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8101/api'}/roles`, { credentials: 'include' });
-                if (res.ok) {
-                    const data = await res.json();
-                    setRoles(Array.isArray(data) ? data : data?.data || []);
-                }
-            } catch (err) {
-                console.error('Failed to fetch roles', err);
-            }
-        };
-        fetchRoles();
+    const loadData = useCallback(() => {
+        setLoading(true);
+        coreUserApi.getAll(1, 1000, '') // Fetch all for local pagination/filtering to match Master template
+            .then(res => { setData(res || []); })
+            .catch(err => { console.error('Failed to load users:', err); setData([]); })
+            .finally(() => setLoading(false));
     }, []);
 
-    useEffect(() => {
-        fetchUsers();
-    }, [currentPage, pageSize, search]);
+    const loadRoles = useCallback(() => {
+        coreRoleApi.getAll()
+            .then(res => { setRoles(res || []); })
+            .catch(err => console.error('Failed to load roles', err));
+    }, []);
+
+    useEffect(() => { loadData(); loadRoles(); }, [loadData, loadRoles]);
 
     // Action Handlers
     const handleAdd = () => {
-        setFormData({ name: '', email: '', role: '', branch: '', department: '', status: true });
+        setFormData({ displayName: '', email: '', roleId: '', password: '', isActive: true });
         setEmailError('');
         setModalMode('add');
         setIsModalOpen(true);
     };
-
-    const handleEdit = (item: User) => {
-        setFormData({ ...item });
+    const handleEdit = (item: any) => {
+        setFormData({ displayName: item.displayName || '', email: item.email || '', roleId: item.roleId || '', password: '', isActive: item.isActive });
         setSelectedItem(item);
         setEmailError('');
         setModalMode('edit');
         setIsModalOpen(true);
     };
-
-    const handleView = (item: User) => {
-        setFormData({ ...item });
+    const handleView = (item: any) => {
+        setFormData({ displayName: item.displayName || '', email: item.email || '', roleId: item.roleId || '', password: '', isActive: item.isActive });
         setSelectedItem(item);
         setEmailError('');
         setModalMode('view');
         setIsModalOpen(true);
     };
-
-    const handleDelete = (item: User) => {
+    const handleDelete = (item: any) => {
         setSelectedItem(item);
         setModalMode('delete');
         setIsModalOpen(true);
     };
 
     const saveForm = async () => {
-        if (!formData.name?.trim()) return;
+        if (!formData.displayName?.trim()) return;
         if (formData.email && !validateEmail(formData.email)) return;
-        
-        const payload = {
-            displayName: formData.name,
-            email: formData.email,
-            roleName: formData.role,
-            isActive: formData.status,
-            // Assuming branch = companyId, department = costCenterCode for demo mapping
-            companyId: formData.branch !== '-' ? formData.branch : null,
-            costCenterCode: formData.department !== '-' ? formData.department : null
-        };
 
+        setSaving(true);
         try {
+            const payload: any = {
+                displayName: formData.displayName,
+                email: formData.email,
+                roleId: formData.roleId,
+                isActive: formData.isActive
+            };
+            if (formData.password) payload.password = formData.password;
+
             if (modalMode === 'add') {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8101/api'}/users`, { credentials: 'include', 
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (res.ok) {
-                    fetchUsers();
-                    setIsModalOpen(false);
-                } else {
-                    const errData = await res.json();
-                    alert(errData.message || 'Error saving user');
-                }
-            } else if (modalMode === 'edit') {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8101/api'}/users/${selectedItem?.id}`, { credentials: 'include', 
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (res.ok) {
-                    fetchUsers();
-                    setIsModalOpen(false);
-                } else {
-                    const errData = await res.json();
-                    alert(errData.message || 'Error saving user');
-                }
+                await coreUserApi.create(payload);
+            } else if (modalMode === 'edit' && selectedItem) {
+                await coreUserApi.update(selectedItem.id, payload);
             }
-        } catch (error) {
-            console.error('Error saving:', error);
-            alert('Cannot connect to server');
+            setIsModalOpen(false);
+            loadData();
+        } catch (err: any) { 
+            console.error(err);
+            alert(err.message || 'Error saving user');
         }
+        setSaving(false);
     };
 
     const confirmDelete = async () => {
         if (!selectedItem) return;
+        setSaving(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8101/api'}/users/${selectedItem.id}`, { credentials: 'include', 
-                method: 'DELETE'
-            });
-            if (res.ok) {
-                fetchUsers();
-                setIsModalOpen(false);
-            } else {
-                alert('Error deleting user');
-            }
-        } catch (error) {
-            console.error('Error deleting:', error);
-        }
+            await coreUserApi.remove(selectedItem.id);
+            setIsModalOpen(false);
+            loadData();
+        } catch (err) { console.error(err); }
+        setSaving(false);
     };
 
-    // Filter - local filtering removed since API handles it via search
-    const filteredData = users;
-    const paginatedData = users;
+    const handleToggleStatus = async (item: any, val: boolean) => {
+        try {
+            await coreUserApi.update(item.id, { isActive: val });
+            setData(prev => prev.map(d => d.id === item.id ? { ...d, isActive: val } : d));
+        } catch (err) { console.error(err); }
+    };
+
+    const handleSort = (key: string) => {
+        let direction: 'asc' | 'desc' | null = 'asc';
+        if (sortConfig.key === key) {
+            if (sortConfig.direction === 'asc') direction = 'desc';
+            else if (sortConfig.direction === 'desc') direction = null;
+            else direction = 'asc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const searchLower = search.toLowerCase();
+    const filteredData = data.filter(item => {
+        // Quick search
+        const matchQuickSearch = !searchLower ||
+            (item.displayName || '').toLowerCase().includes(searchLower) ||
+            (item.email || '').toLowerCase().includes(searchLower);
+
+        // Advanced search filters
+        const matchName = !advSearchValues.displayName || (item.displayName || '').toLowerCase().includes(advSearchValues.displayName.toLowerCase());
+        const matchEmail = !advSearchValues.email || (item.email || '').toLowerCase().includes(advSearchValues.email.toLowerCase());
+        const matchStatus = advSearchValues.status === 'all' || advSearchValues.status === '' ||
+            (advSearchValues.status === 'active' && item.isActive) ||
+            (advSearchValues.status === 'inactive' && !item.isActive);
+
+        return matchQuickSearch && matchName && matchEmail && matchStatus;
+    });
+
+    let sortedData = [...filteredData];
+    if (sortConfig.key && sortConfig.direction !== null) {
+        sortedData.sort((a, b) => {
+            const aVal = (a as any)[sortConfig.key];
+            const bVal = (b as any)[sortConfig.key];
+
+            if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
+    const paginatedData = sortedData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+    const renderSortIcon = (columnKey: string) => {
+        if (sortConfig.key !== columnKey || sortConfig.direction === null) {
+            return <ChevronsUpDown size={14} style={{ opacity: 0.3 }} />;
+        }
+        if (sortConfig.direction === 'asc') {
+            return <ArrowDown size={14} />;
+        }
+        return <ArrowUp size={14} />;
+    };
+
+    const renderTh = (label: string, columnKey: string, width?: string) => (
+        <th
+            style={{ width, cursor: 'pointer', whiteSpace: 'nowrap', userSelect: 'none' }}
+            onClick={() => handleSort(columnKey)}
+        >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
+                <span>{label}</span>
+                {renderSortIcon(columnKey)}
+            </div>
+        </th>
+    );
+
+    const handleImport = async (importData: any[]) => {
+        let success = 0;
+        let failed = 0;
+        try {
+            for (const item of importData) {
+                if (item.displayName && item.email) {
+                    await coreUserApi.create({
+                        displayName: item.displayName,
+                        email: item.email,
+                        isActive: true
+                    });
+                    success++;
+                } else {
+                    failed++;
+                }
+            }
+        } catch (err) {
+            console.error('Import failed:', err);
+        }
+        return { success, failed };
+    };
+
+    const getRoleName = (roleId: string) => {
+        const role = roles.find(r => r.id === roleId);
+        return role ? role.roleName : '-';
+    };
+
+    if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}><div className="loading-spinner" /></div>;
 
     return (
         <CrudLayout
             toolbarLeft={
-                <ExportButtons 
-                    onExportXLSX={() => exportToXLSX(filteredData, 'Users', [
-                        { key: 'id', label: 'ID' },
-                        { key: 'name', label: 'พนักงาน' },
-                        { key: 'email', label: 'อีเมล์' },
-                        { key: 'role', label: 'สิทธิ์' },
-                        { key: 'status', label: 'สถานะ', format: (v: any) => v.status ? 'ใช้งาน' : 'ยกเลิก' }
-                    ])}
-                    onExportCSV={() => exportToCSV(filteredData, 'Users', [
-                        { key: 'id', label: 'ID' },
-                        { key: 'name', label: 'พนักงาน' },
-                        { key: 'email', label: 'อีเมล์' },
-                        { key: 'status', label: 'สถานะ', format: (v: any) => v.status ? 'ใช้งาน' : 'ยกเลิก' }
-                    ])}
-                    onExportPDF={(orientation) => exportToPDF(filteredData, 'Users', [
-                        { key: 'id', label: 'ID' },
-                        { key: 'name', label: 'พนักงาน' },
-                        { key: 'email', label: 'อีเมล์' },
-                        { key: 'role', label: 'สิทธิ์' },
-                        { key: 'status', label: 'สถานะ', format: (v: any) => v.status ? 'ใช้งาน' : 'ยกเลิก' }
-                    ], 'User Account Report', orientation)}
-                />
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    {perm.canExport && (
+                        <ExportButtons
+                            t={t}
+                            onExportXLSX={() => exportToXLSX(filteredData, 'Users', [
+                                { key: 'id', label: t['id'] || 'ID' },
+                                { key: 'displayName', label: t['name'] || 'ชื่อพนักงาน' },
+                                { key: 'email', label: t['email'] || 'อีเมล์' },
+                                { key: 'roleId', label: t['role'] || 'สิทธิ์', format: (v: any) => getRoleName(v.roleId) },
+                                { key: 'isActive', label: t['is_active'] || 'สถานะ', format: (v: any) => v.isActive ? (t['active'] || 'ใช้งาน') : (t['inactive'] || 'ยกเลิก') }
+                            ])}
+                            onExportCSV={() => exportToCSV(filteredData, 'Users', [
+                                { key: 'id', label: t['id'] || 'ID' },
+                                { key: 'displayName', label: t['name'] || 'ชื่อพนักงาน' },
+                                { key: 'email', label: t['email'] || 'อีเมล์' },
+                                { key: 'roleId', label: t['role'] || 'สิทธิ์', format: (v: any) => getRoleName(v.roleId) },
+                                { key: 'isActive', label: t['is_active'] || 'สถานะ', format: (v: any) => v.isActive ? (t['active'] || 'ใช้งาน') : (t['inactive'] || 'ยกเลิก') }
+                            ])}
+                            onExportPDF={(orientation) => exportToPDF(filteredData, 'Users', [
+                                { key: 'id', label: t['id'] || 'ID' },
+                                { key: 'displayName', label: t['name'] || 'ชื่อพนักงาน' },
+                                { key: 'email', label: t['email'] || 'อีเมล์' },
+                                { key: 'roleId', label: t['role'] || 'สิทธิ์', format: (v: any) => getRoleName(v.roleId) },
+                                { key: 'isActive', label: t['is_active'] || 'สถานะ', format: (v: any) => v.isActive ? (t['active'] || 'ใช้งาน') : (t['inactive'] || 'ยกเลิก') }
+                            ], 'User Account Report', orientation)}
+                        />
+                    )}
+                    {perm.canAdd && (
+                        <ImportExcelButton
+                            translations={t}
+                            columns={[
+                                { header: t['name'] || 'ชื่อพนักงาน', key: 'displayName', required: true },
+                                { header: t['email'] || 'อีเมล์', key: 'email', required: true }
+                            ]}
+                            filenamePrefix="Users_Import"
+                            onImport={handleImport}
+                            onImportComplete={() => loadData()}
+                        />
+                    )}
+                </div>
             }
             toolbarRight={
                 <>
-                    <SearchInput value={search} onChange={setSearch} placeholder="ค้นหาชื่อ, อีเมล์พนักงาน..." />
-                    <button onClick={handleAdd} className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 500, cursor: 'pointer' }}><Plus size={16} /> <span>เพิ่มผู้ใช้งาน</span></button>
+                    {perm.canView && <SearchInput
+                        value={search}
+                        onChange={(val) => { setSearch(val); setCurrentPage(1); }}
+                        onClear={() => { setSearch(''); setCurrentPage(1); handleAdvSearchClear(); }}
+                        placeholder={t['search_placeholder_user'] || 'ค้นหาชื่อ, อีเมล์...'}
+                        onAdvancedSearch={() => setShowAdvancedSearch(true)}
+                        advancedSearchValues={advSearchValues}
+                        onAdvancedSearchClear={handleAdvSearchClear}
+                        t={t}
+                    />}
+                    {perm.canAdd && <button onClick={handleAdd} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '0 16px', height: '38.39px', fontWeight: 500, cursor: 'pointer' }}><Plus size={16} /> <span>{t['add_user_button'] || 'เพิ่มผู้ใช้งาน'}</span></button>}
                 </>
             }
         >
-            <div style={{ height: '720px', overflowY: 'auto' }}>
-                <table className="data-table">
-                    <thead>
-                        <tr>
-                        <th style={{ width: '130px' }}>รหัสพนักงาน</th>
-                        <th>พนักงาน (Employee)</th>
-                        <th>สิทธิ์การใช้งาน (Role)</th>
-                        <th>สาขา / แผนก</th>
-                        <th className="text-center" style={{ width: '120px' }}>สถานะ</th>
-                        <th className="text-center" style={{ width: '100px', paddingRight: '24px' }}>จัดการ</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {paginatedData.map((item) => (
-                        <tr key={item.id}>
-                            <td>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: 'var(--accent-blue)' }}>
-                                    <Hash size={14} style={{ opacity: 0.7 }} /> {item.id}
-                                </div>
-                            </td>
-                            <td>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(99,102,241,0.1)', color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '13px' }}>
-                                        {item.name.charAt(0)}
-                                    </div>
-                                    <div>
-                                        <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '14px' }}>{item.name}</div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                                            <Mail size={10} /> {item.email}
+            {(() => {
+                const hasActions = perm.canView || perm.canEdit || perm.canDelete;
+                return (
+                    <div style={{ height: '720px', overflowY: 'auto' }}>
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    {visibleColumns.id && renderTh(t['id'] || 'รหัสพนักงาน', 'id', '130px')}
+                                    {visibleColumns.displayName && renderTh(t['name'] || 'พนักงาน', 'displayName')}
+                                    {visibleColumns.email && renderTh(t['email'] || 'อีเมล์', 'email')}
+                                    {visibleColumns.roleName && renderTh(t['role'] || 'สิทธิ์', 'roleId')}
+                                    {visibleColumns.isActive && renderTh(t['is_active'] || 'สถานะ', 'isActive', '100px')}
+                                    {hasActions && <th className="text-center" style={{ width: '100px', paddingRight: '16px', whiteSpace: 'nowrap' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
+                                            <span>{t['action'] || 'จัดการ'}</span>
+                                            <span title={t['column_settings'] || 'ตั้งค่าคอลัมน์'} style={{ display: 'flex', alignItems: 'center' }}>
+                                                <Settings size={16} style={{ cursor: 'pointer', color: 'var(--text-muted)' }} onClick={() => setIsColumnSettingsOpen(true)} />
+                                            </span>
                                         </div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)' }}>
-                                    <Shield size={12} color="var(--accent-blue)" style={{ opacity: 0.8 }} /> {item.role}
-                                </div>
-                            </td>
-                            <td>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-primary)' }}>
-                                        <Building2 size={12} color="var(--text-muted)" /> {item.branch}
-                                    </div>
-                                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: '18px' }}>
-                                        ฝ่าย/แผนก: {item.department}
-                                    </div>
-                                </div>
-                            </td>
-                            <td className="text-center">
-                                <StatusDropdown 
-                                    status={item.status} 
-                                    onChange={async (val) => {
-                                        try {
-                                            const res = await fetch(`${process.env.NEXT_PUBLIC_CORE_API_URL || 'http://localhost:8101/api'}/users/${item.id}`, { credentials: 'include', 
-                                                method: 'PATCH',
-                                                headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify({ isActive: val })
-                                            });
-                                            if (res.ok) {
-                                                setUsers(prev => prev.map(d => d.id === item.id ? { ...d, status: val } : d));
-                                            } else {
-                                                alert('Failed to update status');
-                                            }
-                                        } catch (e) {
-                                            console.error(e);
-                                            alert('Failed to connect to server');
-                                        }
-                                    }} 
-                                />
-                            </td>
-                            <td className="text-center" style={{ paddingRight: '24px' }}>
-                                <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-                                    <button onClick={() => handleView(item)} style={{ ...crudStyles.actionBtn, color: 'var(--accent-blue)', background: 'rgba(59,130,246,0.1)' }} title="เรียกดู">
-                                        <Eye size={14} />
-                                    </button>
-                                    <button onClick={() => handleEdit(item)} style={{ ...crudStyles.actionBtn, color: '#f59e0b', background: '#fef3c7' }} title="แก้ไข">
-                                        <Edit2 size={14} />
-                                    </button>
-                                    <button onClick={() => handleDelete(item)} style={{ ...crudStyles.actionBtn, color: '#ef4444', background: '#fee2e2' }} title="ลบ">
-                                        <Trash2 size={14} />
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
-                    {users.length === 0 && (
-                        <tr>
-                            <td colSpan={6} className="text-center" style={{ padding: '40px 0', color: 'var(--text-muted)' }}>
-                                ไม่พบข้อมูล
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-                </table>
-            </div>
+                                    </th>}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {paginatedData.map((item) => (
+                                    <tr key={item.id}>
+                                        {visibleColumns.id && <td className="text-medium font-medium" style={{ color: 'var(--accent-blue)', fontSize: '12px' }}>{item.id}</td>}
+                                        {visibleColumns.displayName && <td><span className="font-medium" style={{ color: 'var(--accent-blue)' }}>{item.displayName}</span></td>}
+                                        {visibleColumns.email && <td className="text-muted">{item.email}</td>}
+                                        {visibleColumns.roleName && <td className="text-muted">{getRoleName(item.roleId)}</td>}
+                                        {visibleColumns.isActive && <td className="text-center">
+                                            <StatusDropdown status={item.isActive} onChange={(val) => handleToggleStatus(item, val)} disabled={!perm.canEdit} t={t} />
+                                        </td>}
+                                        {hasActions && (
+                                            <td className="text-center" style={{ paddingRight: '24px' }}>
+                                                <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                                                    {perm.canView && <button onClick={() => handleView(item)} style={{ ...crudStyles.actionBtn, color: 'var(--accent-blue)', background: 'rgba(59,130,246,0.1)' }} title={t['view_tooltip'] || "เรียกดู"}><Eye size={14} /></button>}
+                                                    {perm.canEdit && <button onClick={() => handleEdit(item)} style={{ ...crudStyles.actionBtn, color: '#f59e0b', background: '#fef3c7' }} title={t['edit_tooltip'] || "แก้ไข"}><Edit2 size={14} /></button>}
+                                                    {perm.canDelete && <button onClick={() => handleDelete(item)} style={{ ...crudStyles.actionBtn, color: '#ef4444', background: '#fee2e2' }} title={t['delete_tooltip'] || "ลบ"}><Trash2 size={14} /></button>}
+                                                </div>
+                                            </td>
+                                        )}
+                                    </tr>
+                                ))}
+                                {filteredData.length === 0 && (
+                                    <tr><td colSpan={Object.values(visibleColumns).filter(Boolean).length + (hasActions ? 1 : 0)} className="text-center" style={{ padding: '40px 0', color: 'var(--text-muted)' }}>{t['no_data'] || 'ไม่พบข้อมูล'}</td></tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                );
+            })()}
 
-            {totalItems > 0 && (
+            {filteredData.length > 0 && (
                 <Pagination
                     currentPage={currentPage}
                     pageSize={pageSize}
-                    totalItems={totalItems}
+                    totalItems={filteredData.length}
                     setCurrentPage={setCurrentPage}
                     setPageSize={setPageSize}
+                    t={t}
                 />
             )}
 
-            <BaseModal 
-                isOpen={isModalOpen && modalMode !== 'delete'} 
+            {/* Modal Add/Edit/View */}
+            <BaseModal
+                isOpen={isModalOpen && modalMode !== 'delete'}
                 onClose={() => setIsModalOpen(false)}
-                title={modalMode === 'add' ? 'เพิ่มผู้ใช้งานใหม่' : modalMode === 'edit' ? 'แก้ไขบัญชีผู้ใช้งาน' : 'รายละเอียดผู้ใช้งาน'}
+                title={modalMode === 'add' ? (t['modal_add_user_title'] || 'เพิ่มผู้ใช้งานใหม่') : modalMode === 'edit' ? (t['modal_edit_user_title'] || 'แก้ไขบัญชีผู้ใช้งาน') : (t['modal_view_user_title'] || 'รายละเอียดผู้ใช้งาน')}
                 footer={
                     modalMode !== 'view' ? (
                         <>
-                            <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>ยกเลิก</button>
-                            <button onClick={saveForm} style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: formData.name?.trim() ? 1 : 0.5 }} disabled={!formData.name?.trim()}>{modalMode === 'add' ? 'เพิ่มผู้ใช้งาน' : 'บันทึกข้อมูล'}</button>
+                            <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>{t['cancel'] || 'ยกเลิก'}</button>
+                            <button onClick={saveForm} disabled={!formData.displayName?.trim() || saving || !!emailError}
+                                style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: (formData.displayName?.trim() && !saving && !emailError) ? 1 : 0.5 }}>
+                                {saving ? (t['saving'] || 'กำลังบันทึก...') : modalMode === 'add' ? (t['add_button'] || 'เพิ่มข้อมูล') : (t['save_button'] || 'บันทึกข้อมูล')}
+                            </button>
                         </>
                     ) : (
-                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>ปิด</button>
+                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>{t['close'] || 'ปิด'}</button>
                     )
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div>
-                        <label style={crudStyles.label}>ชื่อพนักงาน <span style={{color: '#ef4444'}}>*</span></label>
-                        <input type="text" style={crudStyles.input} placeholder="ระบุชื่อจริง-นามสกุล" value={formData.name || ''} onChange={(e) => setFormData({...formData, name: e.target.value})} disabled={modalMode === 'view'} />
+                        <label style={crudStyles.label}>{t['name'] || 'ชื่อพนักงาน'} <span style={{ color: '#ef4444' }}>*</span></label>
+                        <input type="text" style={crudStyles.input} placeholder={t['name_placeholder'] || "ระบุชื่อจริง-นามสกุล"}
+                            value={formData.displayName}
+                            onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                            disabled={modalMode === 'view'} />
                     </div>
                     <div>
-                        <label style={crudStyles.label}>อีเมล์</label>
-                        <input 
-                            type="email" 
-                            style={{ ...crudStyles.input, borderColor: emailError ? '#ef4444' : 'var(--border-color)' }} 
-                            placeholder="user@nexone.co.th" 
-                            value={formData.email || ''} 
+                        <label style={crudStyles.label}>{t['email'] || 'อีเมล์'}</label>
+                        <input type="email" style={{ ...crudStyles.input, borderColor: emailError ? '#ef4444' : 'var(--border-color)' }}
+                            placeholder="user@nexone.co.th"
+                            value={formData.email}
                             onChange={(e) => {
-                                setFormData({...formData, email: e.target.value});
+                                setFormData({ ...formData, email: e.target.value });
                                 if (emailError) validateEmail(e.target.value);
-                            }} 
+                            }}
                             onBlur={(e) => validateEmail(e.target.value)}
-                            disabled={modalMode === 'view'} 
-                        />
+                            disabled={modalMode === 'view'} />
                         {emailError && <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', display: 'block' }}>{emailError}</span>}
                     </div>
                     <div>
-                        <label style={crudStyles.label}>สิทธิ์การใช้งาน (Role)</label>
-                        <select style={crudStyles.input} value={formData.role || ''} onChange={(e) => setFormData({...formData, role: e.target.value})} disabled={modalMode === 'view'}>
-                            <option value="">-- เลือกสิทธิ์การใช้งาน --</option>
+                        <label style={crudStyles.label}>{t['password'] || 'รหัสผ่าน'}</label>
+                        <input type="password" style={crudStyles.input} placeholder={modalMode === 'edit' ? (t['password_placeholder_edit'] || "เว้นว่างถ้าไม่ต้องการเปลี่ยน") : (t['password_placeholder'] || "กำหนดรหัสผ่าน")}
+                            value={formData.password}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                            disabled={modalMode === 'view'} />
+                    </div>
+                    <div>
+                        <label style={crudStyles.label}>{t['role'] || 'สิทธิ์การใช้งาน (Role)'}</label>
+                        <select style={crudStyles.input} value={formData.roleId} onChange={(e) => setFormData({ ...formData, roleId: e.target.value })} disabled={modalMode === 'view'}>
+                            <option value="">{t['select_role'] || '-- เลือกสิทธิ์การใช้งาน --'}</option>
                             {roles.map(r => (
-                                <option key={r.id} value={r.roleName}>{r.roleName}</option>
+                                <option key={r.id} value={r.id}>{r.roleName}</option>
                             ))}
-                            {/* Fallback if API fails to load roles */}
-                            {roles.length === 0 && (
-                                <>
-                                    <option value="Super Admin">Super Admin</option>
-                                    <option value="Fleet Manager">Fleet Manager</option>
-                                    <option value="Warehouse Lead">Warehouse Lead</option>
-                                    <option value="Accountant">Accountant</option>
-                                    <option value="Dispatcher">Dispatcher</option>
-                                </>
-                            )}
                         </select>
                     </div>
+                    {modalMode === 'view' && (
+                        <div>
+                            <label style={crudStyles.label}>{t['usage_status'] || 'สถานะการใช้งาน'}</label>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                <StatusDropdown status={formData.isActive}
+                                    onChange={(val) => { if (modalMode !== 'view') setFormData({ ...formData, isActive: val }); }}
+                                    disabled={modalMode === 'view'} t={t} />
+                                {modalMode === 'view' && <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{t['view_only_remark'] || '*(ดูอย่างเดียว)'}</span>}
+                            </div>
+                        </div>
+                    )}
+                    {modalMode === 'view' && (
+                        <div style={{ marginTop: '16px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
+                                <Info size={16} />
+                                <span style={{ fontSize: '13px', fontWeight: 600 }}>{t['system_logs'] || 'ข้อมูลระบบ (System Logs)'}</span>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
+                                <div>
+                                    <span style={{ color: 'var(--text-muted)' }}>{t['create_by'] || 'สร้างโดย'} : </span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.createBy || '-'}</span>
+                                </div>
+                                <div>
+                                    <span style={{ color: 'var(--text-muted)' }}>{t['create_date'] || 'วันที่สร้าง'} : </span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.createDate ? format(new Date(selectedItem.createDate), configs.dateFormat || 'dd/MM/yyyy') : '-'}</span>
+                                </div>
+                                <div>
+                                    <span style={{ color: 'var(--text-muted)' }}>{t['update_by'] || 'แก้ไขล่าสุดโดย'} : </span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.updateBy || '-'}</span>
+                                </div>
+                                <div>
+                                    <span style={{ color: 'var(--text-muted)' }}>{t['update_date'] || 'วันที่แก้ไขล่าสุด'} : </span>
+                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.updateDate ? format(new Date(selectedItem.updateDate), configs.dateFormat || 'dd/MM/yyyy') : '-'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </BaseModal>
 
-            <BaseModal 
-                isOpen={isModalOpen && modalMode === 'delete'} 
+            {/* Delete Confirm Modal */}
+            <BaseModal
+                isOpen={isModalOpen && modalMode === 'delete'}
                 onClose={() => setIsModalOpen(false)}
-                title="ยืนยันการลบข้อมูล"
+                title={t['delete_confirm_title'] || 'ยืนยันการลบข้อมูล'}
                 width="400px"
                 footer={
                     <>
-                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>ยกเลิก</button>
-                        <button onClick={confirmDelete} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>ลบข้อมูล</button>
+                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>{t['cancel'] || 'ยกเลิก'}</button>
+                        <button onClick={confirmDelete} disabled={saving} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: saving ? 0.5 : 1 }}>{saving ? (t['deleting'] || 'กำลังลบ...') : (t['delete_button'] || 'ลบข้อมูล')}</button>
                     </>
                 }
             >
                 <div>
-                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)' }}>คุณแน่ใจหรือไม่ว่าต้องการลบผู้ใช้งาน <strong style={{ color: 'var(--text-primary)' }}>{selectedItem?.name}</strong> ?</p>
-                    <p style={{ margin: 0, fontSize: '13px', color: '#ef4444' }}>การกระทำนี้จะไม่สามารถย้อนกลับได้</p>
+                    <p style={{ margin: '0 0 4px 0', color: 'var(--text-secondary)' }}>{t['delete_confirm_message'] || 'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูล'}</p>
+                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-primary)' }}><strong>{selectedItem?.displayName}</strong></p>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#ef4444' }}>{t['delete_warning'] || 'การกระทำนี้จะไม่สามารถย้อนกลับได้'}</p>
                 </div>
             </BaseModal>
+
+            {/* Column Settings Modal */}
+            <BaseModal
+                isOpen={isColumnSettingsOpen}
+                onClose={() => setIsColumnSettingsOpen(false)}
+                title={t['column_settings_title'] || 'ตั้งค่าการแสดงผลตาราง'}
+                width="450px"
+                footer={
+                    <button onClick={() => setIsColumnSettingsOpen(false)} style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>{t['ok_button'] || 'ตกลง'}</button>
+                }
+            >
+                <div style={{ marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>
+                        <h4 style={{ margin: 0, fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>{t['select_columns_to_show'] || 'เลือกคอลัมน์ที่ต้องการแสดง'}</h4>
+                        <h4 style={{ margin: 0, fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600, width: '130px' }}>{t['sort_data'] || 'เรียงลำดับข้อมูล'}</h4>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {/* ID */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.id} onChange={(e) => setVisibleColumns({ ...visibleColumns, id: e.target.checked })} /> {t['id'] || 'รหัสพนักงาน'}
+                            </label>
+                            <select
+                                style={{ ...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0 }}
+                                value={sortConfig.key === 'id' && sortConfig.direction !== null ? sortConfig.direction : 'none'}
+                                onChange={(e) => setSortConfig({ key: 'id', direction: e.target.value === 'none' ? null : e.target.value as 'asc' | 'desc' })}
+                            >
+                                <option value="none">{t['no_sort'] || 'ไม่เรียง'}</option>
+                                <option value="asc">{t['sort'] || 'เรียง'}</option>
+                            </select>
+                        </div>
+
+                        {/* Name */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.displayName} onChange={(e) => setVisibleColumns({ ...visibleColumns, displayName: e.target.checked })} /> {t['name'] || 'พนักงาน'}
+                            </label>
+                            <select
+                                style={{ ...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0 }}
+                                value={sortConfig.key === 'displayName' && sortConfig.direction !== null ? sortConfig.direction : 'none'}
+                                onChange={(e) => setSortConfig({ key: 'displayName', direction: e.target.value === 'none' ? null : e.target.value as 'asc' | 'desc' })}
+                            >
+                                <option value="none">{t['no_sort'] || 'ไม่เรียง'}</option>
+                                <option value="asc">{t['sort'] || 'เรียง'}</option>
+                            </select>
+                        </div>
+
+                        {/* Email */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.email} onChange={(e) => setVisibleColumns({ ...visibleColumns, email: e.target.checked })} /> {t['email'] || 'อีเมล์'}
+                            </label>
+                            <select
+                                style={{ ...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0 }}
+                                value={sortConfig.key === 'email' && sortConfig.direction !== null ? sortConfig.direction : 'none'}
+                                onChange={(e) => setSortConfig({ key: 'email', direction: e.target.value === 'none' ? null : e.target.value as 'asc' | 'desc' })}
+                            >
+                                <option value="none">{t['no_sort'] || 'ไม่เรียง'}</option>
+                                <option value="asc">{t['sort'] || 'เรียง'}</option>
+                            </select>
+                        </div>
+
+                        {/* Role */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.roleName} onChange={(e) => setVisibleColumns({ ...visibleColumns, roleName: e.target.checked })} /> {t['role'] || 'สิทธิ์'}
+                            </label>
+                            <select disabled style={{ ...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0, opacity: 0.5 }}>
+                                <option value="none">{t['no_sort'] || 'ไม่เรียง'}</option>
+                            </select>
+                        </div>
+
+                        {/* Status */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.isActive} onChange={(e) => setVisibleColumns({ ...visibleColumns, isActive: e.target.checked })} /> {t['is_active'] || 'สถานะ'}
+                            </label>
+                            <select
+                                style={{ ...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0 }}
+                                value={sortConfig.key === 'isActive' && sortConfig.direction !== null ? sortConfig.direction : 'none'}
+                                onChange={(e) => setSortConfig({ key: 'isActive', direction: e.target.value === 'none' ? null : e.target.value as 'asc' | 'desc' })}
+                            >
+                                <option value="none">{t['no_sort'] || 'ไม่เรียง'}</option>
+                                <option value="asc">{t['sort'] || 'เรียง'}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </BaseModal>
+
+            {/* Advanced Search Modal */}
+            <AdvancedSearchModal
+                isOpen={showAdvancedSearch}
+                onClose={() => setShowAdvancedSearch(false)}
+                title={t['advanced_search_title'] || 'ค้นหาขั้นสูง'}
+                fields={advancedSearchFields}
+                values={advSearchValues}
+                onChange={handleAdvSearchChange}
+                onSearch={handleAdvSearchSubmit}
+                onClear={handleAdvSearchClear}
+                t={t}
+            />
         </CrudLayout>
     );
 }
