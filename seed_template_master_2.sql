@@ -1,147 +1,143 @@
-DO $$
-DECLARE
-    -- 'template-master-2' variables
-    page_key_name VARCHAR := 'template-master-2';
+DELETE FROM nex_core.language_translations WHERE page_key = 'template-master-2';
+
+INSERT INTO nex_core.language_translations (translation_id, language_code, page_key, label_key, label_value)
+VALUES
+    -- General & Search
+    (gen_random_uuid(), 'th', 'template-master-2', 'title', 'หัวข้อ'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'title', 'Title'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'category', 'หมวดหมู่'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'category', 'Category'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'description', 'คำอธิบาย'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'description', 'Description'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'status', 'สถานะ'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'status', 'Status'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'all', 'ทั้งหมด'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'all', 'All'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'active', 'ใช้งาน'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'active', 'Active'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'inactive', 'ยกเลิก'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'inactive', 'Inactive'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'search_title', 'พิมพ์หัวข้อ...'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'search_title', 'Search title...'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'search_category', 'พิมพ์หมวดหมู่...'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'search_category', 'Search category...'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'search_desc', 'พิมพ์คำอธิบาย...'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'search_desc', 'Search description...'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'search_placeholder', 'ค้นหาตัวอย่าง...'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'search_placeholder', 'Search examples...'),
     
-    -- Function to insert or update translations
-    PROCEDURE upsert_translation(
-        p_page_key VARCHAR,
-        p_label_key VARCHAR,
-        p_lang VARCHAR,
-        p_value VARCHAR
-    ) AS $proc$
-    BEGIN
-        INSERT INTO nex_core.language_translations (page_key, label_key, language_code, label_value, is_active)
-        VALUES (p_page_key, p_label_key, p_lang, p_value, true)
-        ON CONFLICT (language_code, page_key, label_key)
-        DO UPDATE SET label_value = EXCLUDED.label_value, is_active = true, updated_at = NOW();
-    END;
-    $proc$ LANGUAGE plpgsql;
+    -- Table Headers
+    (gen_random_uuid(), 'th', 'template-master-2', 'template_id', 'ID'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'template_id', 'ID'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'template_name', 'หัวข้อ'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'template_name', 'Title'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'template_group', 'หมวดหมู่'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'template_group', 'Category'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'template_desc', 'อธิบายการใช้งาน'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'template_desc', 'Usage Description'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'is_active', 'สถานะ'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'is_active', 'Status'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'manage', 'จัดการ'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'manage', 'Manage'),
 
-BEGIN
-    -- Template Master 2 Keys
-    -- English
-    CALL upsert_translation(page_key_name, 'title', 'en', 'Title');
-    CALL upsert_translation(page_key_name, 'category', 'en', 'Category');
-    CALL upsert_translation(page_key_name, 'description', 'en', 'Description');
-    CALL upsert_translation(page_key_name, 'status', 'en', 'Status');
-    CALL upsert_translation(page_key_name, 'all', 'en', 'All');
-    CALL upsert_translation(page_key_name, 'active', 'en', 'Active');
-    CALL upsert_translation(page_key_name, 'inactive', 'en', 'Inactive');
-    CALL upsert_translation(page_key_name, 'search_title', 'en', 'Search title...');
-    CALL upsert_translation(page_key_name, 'search_category', 'en', 'Search category...');
-    CALL upsert_translation(page_key_name, 'search_desc', 'en', 'Search description...');
-    CALL upsert_translation(page_key_name, 'search_placeholder', 'en', 'Search examples...');
-    CALL upsert_translation(page_key_name, 'template_id', 'en', 'ID');
-    CALL upsert_translation(page_key_name, 'template_name', 'en', 'Title');
-    CALL upsert_translation(page_key_name, 'template_group', 'en', 'Category');
-    CALL upsert_translation(page_key_name, 'template_desc', 'en', 'Usage Description');
-    CALL upsert_translation(page_key_name, 'is_active', 'en', 'Status');
-    CALL upsert_translation(page_key_name, 'manage', 'en', 'Manage');
-    CALL upsert_translation(page_key_name, 'total_items', 'en', 'Total Items');
-    CALL upsert_translation(page_key_name, 'items', 'en', 'Items');
-    CALL upsert_translation(page_key_name, 'add_data', 'en', 'Add Data');
-    CALL upsert_translation(page_key_name, 'view', 'en', 'View');
-    CALL upsert_translation(page_key_name, 'edit', 'en', 'Edit');
-    CALL upsert_translation(page_key_name, 'delete', 'en', 'Delete');
-    CALL upsert_translation(page_key_name, 'column_settings', 'en', 'Column Settings');
-    CALL upsert_translation(page_key_name, 'template_2_report', 'en', 'Template 2 Report');
-    CALL upsert_translation(page_key_name, 'add_new_data', 'en', 'Add New Data');
-    CALL upsert_translation(page_key_name, 'edit_data', 'en', 'Edit Data');
-    CALL upsert_translation(page_key_name, 'view_data', 'en', 'Data Details');
-    CALL upsert_translation(page_key_name, 'cancel', 'en', 'Cancel');
-    CALL upsert_translation(page_key_name, 'save_data', 'en', 'Save Data');
-    CALL upsert_translation(page_key_name, 'saving', 'en', 'Saving...');
-    CALL upsert_translation(page_key_name, 'close', 'en', 'Close');
-    CALL upsert_translation(page_key_name, 'enter_title', 'en', 'Enter title');
-    CALL upsert_translation(page_key_name, 'add_category', 'en', 'Add Category');
-    CALL upsert_translation(page_key_name, 'enter_desc', 'en', 'Enter description or remarks');
-    CALL upsert_translation(page_key_name, 'usage_status', 'en', 'Usage Status');
-    CALL upsert_translation(page_key_name, 'read_only', 'en', '*(Read Only)');
-    CALL upsert_translation(page_key_name, 'add_new_category', 'en', 'Add New Category');
-    CALL upsert_translation(page_key_name, 'category_name', 'en', 'Category Name');
-    CALL upsert_translation(page_key_name, 'enter_category_name', 'en', 'Enter category name');
-    CALL upsert_translation(page_key_name, 'confirm_delete_title', 'en', 'Confirm Data Deletion');
-    CALL upsert_translation(page_key_name, 'deleting', 'en', 'Deleting...');
-    CALL upsert_translation(page_key_name, 'delete_data', 'en', 'Delete Data');
-    CALL upsert_translation(page_key_name, 'delete_confirm_msg', 'en', 'Are you sure you want to delete data');
-    CALL upsert_translation(page_key_name, 'cannot_undo', 'en', 'This action cannot be undone');
-    CALL upsert_translation(page_key_name, 'column_settings_title', 'en', 'Table Display Settings');
-    CALL upsert_translation(page_key_name, 'select_columns_to_show', 'en', 'Select columns to display');
-    CALL upsert_translation(page_key_name, 'sort_data', 'en', 'Sort Data');
-    CALL upsert_translation(page_key_name, 'no_sort', 'en', 'No Sort');
-    CALL upsert_translation(page_key_name, 'sort', 'en', 'Sort');
-    CALL upsert_translation(page_key_name, 'no_data_found', 'en', 'No data found');
-    CALL upsert_translation(page_key_name, 'require_template_name', 'en', 'Please enter data name');
-    CALL upsert_translation(page_key_name, 'save_success', 'en', 'Data saved successfully');
-    CALL upsert_translation(page_key_name, 'error_saving', 'en', 'Error saving data');
-    CALL upsert_translation(page_key_name, 'delete_success', 'en', 'Data deleted successfully');
-    CALL upsert_translation(page_key_name, 'error_deleting', 'en', 'Error deleting data');
-    CALL upsert_translation(page_key_name, 'error_changing_status', 'en', 'Error changing status');
-    CALL upsert_translation(page_key_name, 'error_title', 'en', 'Error Notification');
-    CALL upsert_translation(page_key_name, 'success_title', 'en', 'Success');
-    CALL upsert_translation(page_key_name, 'ok_button', 'en', 'OK');
+    -- Summary Cards
+    (gen_random_uuid(), 'th', 'template-master-2', 'total_items', 'รายการทั้งหมด'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'total_items', 'Total Items'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'items', 'รายการ'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'items', 'Items'),
 
-    -- Thai
-    CALL upsert_translation(page_key_name, 'title', 'th', 'หัวข้อ');
-    CALL upsert_translation(page_key_name, 'category', 'th', 'หมวดหมู่');
-    CALL upsert_translation(page_key_name, 'description', 'th', 'คำอธิบาย');
-    CALL upsert_translation(page_key_name, 'status', 'th', 'สถานะ');
-    CALL upsert_translation(page_key_name, 'all', 'th', 'ทั้งหมด');
-    CALL upsert_translation(page_key_name, 'active', 'th', 'ใช้งาน');
-    CALL upsert_translation(page_key_name, 'inactive', 'th', 'ยกเลิก');
-    CALL upsert_translation(page_key_name, 'search_title', 'th', 'พิมพ์หัวข้อ...');
-    CALL upsert_translation(page_key_name, 'search_category', 'th', 'พิมพ์หมวดหมู่...');
-    CALL upsert_translation(page_key_name, 'search_desc', 'th', 'พิมพ์คำอธิบาย...');
-    CALL upsert_translation(page_key_name, 'search_placeholder', 'th', 'ค้นหาตัวอย่าง...');
-    CALL upsert_translation(page_key_name, 'template_id', 'th', 'ID');
-    CALL upsert_translation(page_key_name, 'template_name', 'th', 'หัวข้อ');
-    CALL upsert_translation(page_key_name, 'template_group', 'th', 'หมวดหมู่');
-    CALL upsert_translation(page_key_name, 'template_desc', 'th', 'อธิบายการใช้งาน');
-    CALL upsert_translation(page_key_name, 'is_active', 'th', 'สถานะ');
-    CALL upsert_translation(page_key_name, 'manage', 'th', 'จัดการ');
-    CALL upsert_translation(page_key_name, 'total_items', 'th', 'รายการทั้งหมด');
-    CALL upsert_translation(page_key_name, 'items', 'th', 'รายการ');
-    CALL upsert_translation(page_key_name, 'add_data', 'th', 'เพิ่มข้อมูล');
-    CALL upsert_translation(page_key_name, 'view', 'th', 'เรียกดู');
-    CALL upsert_translation(page_key_name, 'edit', 'th', 'แก้ไข');
-    CALL upsert_translation(page_key_name, 'delete', 'th', 'ลบ');
-    CALL upsert_translation(page_key_name, 'column_settings', 'th', 'ตั้งค่าคอลัมน์');
-    CALL upsert_translation(page_key_name, 'template_2_report', 'th', 'Template 2 Report');
-    CALL upsert_translation(page_key_name, 'add_new_data', 'th', 'เพิ่มข้อมูลใหม่');
-    CALL upsert_translation(page_key_name, 'edit_data', 'th', 'แก้ไขข้อมูล');
-    CALL upsert_translation(page_key_name, 'view_data', 'th', 'รายละเอียดข้อมูล');
-    CALL upsert_translation(page_key_name, 'cancel', 'th', 'ยกเลิก');
-    CALL upsert_translation(page_key_name, 'save_data', 'th', 'บันทึกข้อมูล');
-    CALL upsert_translation(page_key_name, 'saving', 'th', 'กำลังบันทึก...');
-    CALL upsert_translation(page_key_name, 'close', 'th', 'ปิด');
-    CALL upsert_translation(page_key_name, 'enter_title', 'th', 'ระบุชื่อหัวข้อ');
-    CALL upsert_translation(page_key_name, 'add_category', 'th', 'เพิ่มหมวดหมู่');
-    CALL upsert_translation(page_key_name, 'enter_desc', 'th', 'ระบุคำอธิบาย หรือหมายเหตุ');
-    CALL upsert_translation(page_key_name, 'usage_status', 'th', 'สถานะการใช้งาน');
-    CALL upsert_translation(page_key_name, 'read_only', 'th', '*(ดูอย่างเดียว)');
-    CALL upsert_translation(page_key_name, 'add_new_category', 'th', 'เพิ่มหมวดหมู่ใหม่');
-    CALL upsert_translation(page_key_name, 'category_name', 'th', 'ชื่อหมวดหมู่');
-    CALL upsert_translation(page_key_name, 'enter_category_name', 'th', 'ระบุชื่อหมวดหมู่');
-    CALL upsert_translation(page_key_name, 'confirm_delete_title', 'th', 'ยืนยันการลบข้อมูล');
-    CALL upsert_translation(page_key_name, 'deleting', 'th', 'กำลังลบ...');
-    CALL upsert_translation(page_key_name, 'delete_data', 'th', 'ลบข้อมูล');
-    CALL upsert_translation(page_key_name, 'delete_confirm_msg', 'th', 'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูล');
-    CALL upsert_translation(page_key_name, 'cannot_undo', 'th', 'การกระทำนี้จะไม่สามารถย้อนกลับได้');
-    CALL upsert_translation(page_key_name, 'column_settings_title', 'th', 'ตั้งค่าการแสดงผลตาราง');
-    CALL upsert_translation(page_key_name, 'select_columns_to_show', 'th', 'เลือกคอลัมน์ที่ต้องการแสดง');
-    CALL upsert_translation(page_key_name, 'sort_data', 'th', 'เรียงลำดับข้อมูล');
-    CALL upsert_translation(page_key_name, 'no_sort', 'th', 'ไม่เรียง');
-    CALL upsert_translation(page_key_name, 'sort', 'th', 'เรียง');
-    CALL upsert_translation(page_key_name, 'no_data_found', 'th', 'ไม่พบข้อมูล');
-    CALL upsert_translation(page_key_name, 'require_template_name', 'th', 'กรุณาระบุชื่อข้อมูล');
-    CALL upsert_translation(page_key_name, 'save_success', 'th', 'บันทึกข้อมูลเรียบร้อยแล้ว');
-    CALL upsert_translation(page_key_name, 'error_saving', 'th', 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
-    CALL upsert_translation(page_key_name, 'delete_success', 'th', 'ลบข้อมูลเรียบร้อยแล้ว');
-    CALL upsert_translation(page_key_name, 'error_deleting', 'th', 'ลบข้อมูลไม่สำเร็จ');
-    CALL upsert_translation(page_key_name, 'error_changing_status', 'th', 'เปลี่ยนสถานะไม่สำเร็จ');
-    CALL upsert_translation(page_key_name, 'error_title', 'th', 'แจ้งเตือนข้อผิดพลาด');
-    CALL upsert_translation(page_key_name, 'success_title', 'th', 'สำเร็จ');
-    CALL upsert_translation(page_key_name, 'ok_button', 'th', 'ตกลง');
+    -- Actions
+    (gen_random_uuid(), 'th', 'template-master-2', 'add_data', 'เพิ่มข้อมูล'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'add_data', 'Add Data'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'view', 'เรียกดู'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'view', 'View'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'edit', 'แก้ไข'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'edit', 'Edit'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'delete', 'ลบ'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'delete', 'Delete'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'column_settings', 'ตั้งค่าคอลัมน์'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'column_settings', 'Column Settings'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'template_2_report', 'Template 2 Report'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'template_2_report', 'Template 2 Report'),
 
-END $$;
+    -- Modals (CRUD)
+    (gen_random_uuid(), 'th', 'template-master-2', 'add_new_data', 'เพิ่มข้อมูลใหม่'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'add_new_data', 'Add New Data'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'edit_data', 'แก้ไขข้อมูล'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'edit_data', 'Edit Data'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'view_data', 'รายละเอียดข้อมูล'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'view_data', 'Data Details'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'cancel', 'ยกเลิก'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'cancel', 'Cancel'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'save_data', 'บันทึกข้อมูล'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'save_data', 'Save Data'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'saving', 'กำลังบันทึก...'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'saving', 'Saving...'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'close', 'ปิด'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'close', 'Close'),
+
+    -- Modal Inputs
+    (gen_random_uuid(), 'th', 'template-master-2', 'enter_title', 'ระบุชื่อหัวข้อ'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'enter_title', 'Enter title'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'add_category', 'เพิ่มหมวดหมู่'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'add_category', 'Add Category'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'enter_desc', 'ระบุคำอธิบาย หรือหมายเหตุ'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'enter_desc', 'Enter description or remarks'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'usage_status', 'สถานะการใช้งาน'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'usage_status', 'Usage Status'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'read_only', '*(ดูอย่างเดียว)'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'read_only', '*(Read Only)'),
+
+    -- Add Category Modal
+    (gen_random_uuid(), 'th', 'template-master-2', 'add_new_category', 'เพิ่มหมวดหมู่ใหม่'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'add_new_category', 'Add New Category'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'category_name', 'ชื่อหมวดหมู่'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'category_name', 'Category Name'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'enter_category_name', 'ระบุชื่อหมวดหมู่'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'enter_category_name', 'Enter category name'),
+
+    -- Delete Confirmation
+    (gen_random_uuid(), 'th', 'template-master-2', 'confirm_delete_title', 'ยืนยันการลบข้อมูล'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'confirm_delete_title', 'Confirm Data Deletion'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'deleting', 'กำลังลบ...'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'deleting', 'Deleting...'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'delete_data', 'ลบข้อมูล'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'delete_data', 'Delete Data'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'delete_confirm_msg', 'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูล'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'delete_confirm_msg', 'Are you sure you want to delete data'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'cannot_undo', 'การกระทำนี้จะไม่สามารถย้อนกลับได้'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'cannot_undo', 'This action cannot be undone'),
+
+    -- Column Settings
+    (gen_random_uuid(), 'th', 'template-master-2', 'column_settings_title', 'ตั้งค่าการแสดงผลตาราง'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'column_settings_title', 'Table Display Settings'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'select_columns_to_show', 'เลือกคอลัมน์ที่ต้องการแสดง'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'select_columns_to_show', 'Select columns to display'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'sort_data', 'เรียงลำดับข้อมูล'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'sort_data', 'Sort Data'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'no_sort', 'ไม่เรียง'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'no_sort', 'No Sort'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'sort', 'เรียง'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'sort', 'Sort'),
+
+    -- Feedback / Alert Messages
+    (gen_random_uuid(), 'th', 'template-master-2', 'no_data_found', 'ไม่พบข้อมูล'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'no_data_found', 'No data found'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'require_template_name', 'กรุณาระบุชื่อข้อมูล'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'require_template_name', 'Please enter data name'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'save_success', 'บันทึกข้อมูลเรียบร้อยแล้ว'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'save_success', 'Data saved successfully'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'error_saving', 'เกิดข้อผิดพลาดในการบันทึกข้อมูล'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'error_saving', 'Error saving data'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'delete_success', 'ลบข้อมูลเรียบร้อยแล้ว'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'delete_success', 'Data deleted successfully'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'error_deleting', 'ลบข้อมูลไม่สำเร็จ'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'error_deleting', 'Error deleting data'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'error_changing_status', 'เปลี่ยนสถานะไม่สำเร็จ'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'error_changing_status', 'Error changing status'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'error_title', 'แจ้งเตือนข้อผิดพลาด'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'error_title', 'Error Notification'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'success_title', 'สำเร็จ'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'success_title', 'Success'),
+    (gen_random_uuid(), 'th', 'template-master-2', 'ok_button', 'ตกลง'),
+    (gen_random_uuid(), 'en', 'template-master-2', 'ok_button', 'OK');
