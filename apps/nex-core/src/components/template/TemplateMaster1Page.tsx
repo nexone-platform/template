@@ -173,7 +173,7 @@ export default function TemplateMaster1Page() {
             setData(prev => prev.map(d => d.template_id === item.template_id ? { ...d, is_active: val } : d));
         } catch (err: any) { 
             console.error(err); 
-            setAlertConfig({isOpen: true, message: err.message || t['error_saving'] || 'เปลี่ยนสถานะไม่สำเร็จ', isError: true});
+            setAlertConfig({isOpen: true, message: err.message || t['error_changing_status'] || 'เปลี่ยนสถานะไม่สำเร็จ', isError: true});
         }
     };
 
@@ -288,7 +288,7 @@ export default function TemplateMaster1Page() {
                                 { key: 'template_name', label: t['template_name'] || 'ชื่อข้อมูล' },
                                 { key: 'template_desc', label: t['template_desc'] || 'คำอธิบาย' },
                                 { key: 'is_active', label: t['is_active'] || 'สถานะ', format: (v: any) => v.is_active ? (t['active'] || 'ใช้งาน') : (t['inactive'] || 'ยกเลิก') }
-                            ], 'Template 1 Report', orientation)}
+                            ], t['template_1_report'] || 'Template 1 Report', orientation)}
                         />
                     )}
                     {perm.canImport && (
