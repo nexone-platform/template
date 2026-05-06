@@ -156,7 +156,7 @@ export const exportToPDF = async (data: any[], filenamePrefix: string, columns: 
         body: body,
         theme: 'grid',
         styles: { fontSize: 10, font: 'Sarabun' },
-        headStyles: { fillColor: [59, 130, 246], font: 'Sarabun', fontStyle: 'normal' },
+        headStyles: { fillColor: [59, 130, 246], font: 'Sarabun', fontStyle: 'normal', lineColor: [200, 200, 200], lineWidth: 0.1 },
         didDrawPage: (data) => {
             // Draw Header
             doc.setFontSize(16);

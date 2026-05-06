@@ -62,6 +62,8 @@ interface SidebarProps {
     onToggleSidebar?: () => void;
     menuApiUrl?: string; // e.g. 'http://localhost:8101/api' — if set, fetch menus dynamically
     systemConfig?: any;
+    allowedMenuKeys?: string[];
+    deniedMenuKeys?: string[];
 }
 
 export const navSections = [
@@ -189,8 +191,33 @@ function getIconComponent(materialicon?: string): any {
 }
 
 // Convert flat DB menu rows to sectioned structure based on page_key prefix patterns
-function flatMenusToSections(menus: any[], lang: string = 'th'): any[] {
-    const activeMenus = menus.filter(m => m.is_active !== false).sort((a, b) => (a.menu_seq || 0) - (b.menu_seq || 0));
+function flatMenusToSections(menus: any[], lang: string = 'th', allowedMenuKeys?: string[], deniedMenuKeys?: string[]): any[] {
+    let activeMenus = menus.filter(m => m.is_active !== false).sort((a, b) => (a.menu_seq || 0) - (b.menu_seq || 0));
+    
+    // Filter by allowedMenuKeys if provided
+    if (allowedMenuKeys || deniedMenuKeys) {
+        activeMenus = activeMenus.filter(m => {
+            const keysToMatch = [m.menu_code, m.page_key, m.route, String(m.menu_id)].filter(Boolean);
+            
+            // If the menu is explicitly denied, hide it
+            if (deniedMenuKeys && keysToMatch.some(k => deniedMenuKeys.includes(k))) return false;
+
+            // If the menu itself is allowed, keep it
+            if (allowedMenuKeys && keysToMatch.some(k => allowedMenuKeys.includes(k))) return true;
+            
+            // Or if it's a parent that has at least one allowed child, keep it
+            const hasAllowedChild = menus.some(child => {
+                const childKeys = [child.menu_code, child.page_key, child.route, String(child.menu_id)].filter(Boolean);
+                // Also ensure the child is not explicitly denied
+                const isChildDenied = deniedMenuKeys && childKeys.some(k => deniedMenuKeys.includes(k));
+                if (isChildDenied) return false;
+                
+                return child.parent_id === m.menu_id && allowedMenuKeys && childKeys.some(k => allowedMenuKeys.includes(k));
+            });
+            return hasAllowedChild;
+        });
+    }
+
     const parents = activeMenus.filter(m => !m.parent_id);
     
     if (parents.length === 0) return [];
@@ -234,7 +261,7 @@ function flatMenusToSections(menus: any[], lang: string = 'th'): any[] {
     }));
 }
 
-export default function Sidebar({ currentPage, onNavigate, isOpen = true, appName = 'nexspeed', sections = navSections, defaultThemeColor, onToggleSidebar, menuApiUrl, systemConfig }: SidebarProps) {
+export default function Sidebar({ currentPage, onNavigate, isOpen = true, appName = 'nexspeed', sections = navSections, defaultThemeColor, onToggleSidebar, menuApiUrl, systemConfig, allowedMenuKeys, deniedMenuKeys }: SidebarProps) {
     const [dynamicSections, setDynamicSections] = React.useState<any[] | null>(null);
     const [rawMenus, setRawMenus] = React.useState<any[]>([]);
     
@@ -244,7 +271,7 @@ export default function Sidebar({ currentPage, onNavigate, isOpen = true, appNam
     // Recompute dynamic sections whenever lang or rawMenus changes
     React.useEffect(() => {
         if (rawMenus.length > 0) {
-            setDynamicSections(flatMenusToSections(rawMenus, lang));
+            setDynamicSections(flatMenusToSections(rawMenus, lang, allowedMenuKeys, deniedMenuKeys));
         } else {
             // Also translate the static sections fallback
             const translatedStatic = sections.map(s => ({
@@ -257,7 +284,7 @@ export default function Sidebar({ currentPage, onNavigate, isOpen = true, appNam
             }));
             setDynamicSections(translatedStatic);
         }
-    }, [rawMenus, lang, sections]);
+    }, [rawMenus, lang, sections, allowedMenuKeys, deniedMenuKeys]);
 
     const activeSections = dynamicSections || sections;
     // Default all sections to true (expanded)

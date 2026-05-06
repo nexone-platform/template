@@ -133,8 +133,8 @@ export const systemAppService = {
 
 // ========== Templates API (nex-core-api port 8101) ==========
 const CORE_API_BASE = process.env.NEXT_PUBLIC_CORE_API_URL
-    ? `${process.env.NEXT_PUBLIC_CORE_API_URL}/templates`
-    : 'http://localhost:8101/api/templates';
+    ? `${process.env.NEXT_PUBLIC_CORE_API_URL}/template-basic`
+    : 'http://localhost:8101/api/template-basic';
 
 export interface Template {
     template_id: number;
@@ -333,6 +333,43 @@ export const coreRoleApi = {
             if (Array.isArray(json.data.data)) return json.data.data;
         }
         return [];
+    },
+    getPermissions: async (roleId: string, appName: string) => {
+        const res = await fetch(`${ROLE_API_BASE}/${roleId}/permissions?app=${appName}`, { credentials: 'include' });
+        if (!res.ok) throw new Error(`Role Permission Error: ${res.status}`);
+        const json = await res.json();
+        return json.data !== undefined ? json.data : json;
+    },
+    savePermissions: async (roleId: string, appName: string, permissions: any[]) => {
+        const res = await fetch(`${ROLE_API_BASE}/${roleId}/permissions?app=${appName}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ permissions }),
+            credentials: 'include'
+        });
+        if (!res.ok) throw new Error(`Role Permission Save Error: ${res.status}`);
+        return res.json();
+    },
+    create: async (dto: any) => {
+        const res = await fetch(`${ROLE_API_BASE}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dto), credentials: 'include'
+        });
+        if (!res.ok) throw new Error(`Role Create Error: ${res.status}`);
+        return res.json();
+    },
+    update: async (id: string, dto: any) => {
+        const res = await fetch(`${ROLE_API_BASE}/${id}`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dto), credentials: 'include'
+        });
+        if (!res.ok) throw new Error(`Role Update Error: ${res.status}`);
+        return res.json();
+    },
+    remove: async (id: string) => {
+        const res = await fetch(`${ROLE_API_BASE}/${id}`, { method: 'DELETE', credentials: 'include' });
+        if (!res.ok) throw new Error(`Role Delete Error: ${res.status}`);
+        return res.json();
     }
 };
 
@@ -416,11 +453,11 @@ export const api = {
     updateDriver: (id: string, d: Partial<Driver>) => putAPI(`/drivers/${id}`, d),
     deleteDriver: (id: string) => deleteAPI(`/drivers/${id}`),
 
-    // Orders
-    getOrders: () => fetchAPI<Order[]>('/orders'),
-    createOrder: (o: Partial<Order>) => postAPI('/orders', o),
-    updateOrder: (id: string, o: Partial<Order>) => putAPI(`/orders/${id}`, o),
-    deleteOrder: (id: string) => deleteAPI(`/orders/${id}`),
+    // Orders (Template3 / TemplateCheckbox)
+    getOrders: () => fetchAPI<Order[]>('/template-checkbox'),
+    createOrder: (o: Partial<Order>) => postAPI('/template-checkbox', o),
+    updateOrder: (id: string, o: Partial<Order>) => putAPI(`/template-checkbox/${id}`, o),
+    deleteOrder: (id: string) => deleteAPI(`/template-checkbox/${id}`),
 
     // Trips
     getTrips: () => fetchAPI<Trip[]>('/trips'),

@@ -19,8 +19,8 @@ export class RolePermission {
   @Column({ name: 'menu_id', type: 'uuid', nullable: true })
   menuId: string;
 
-  @Column({ name: 'app_name', nullable: true })
-  appName: string;
+  @Column({ name: 'app_name', type: 'varchar', nullable: true })
+  appName: string | null;
 
   @Column({ name: 'can_view', default: false })
   canView: boolean;
@@ -47,11 +47,11 @@ export class RolePermission {
   createDate: Date;
 
   @Column({ name: 'create_by', type: 'uuid', nullable: true })
-  createBy: string;
+  createBy: string | null;
 
   @UpdateDateColumn({ name: 'update_date', type: 'timestamptz', nullable: true })
   updateDate: Date;
 
   @Column({ name: 'update_by', type: 'uuid', nullable: true })
-  updateBy: string;
+  updateBy: string | null;
 }

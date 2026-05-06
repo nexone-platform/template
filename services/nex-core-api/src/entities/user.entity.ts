@@ -1,5 +1,7 @@
-import { Entity, Column, PrimaryColumn, BeforeInsert, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, BeforeInsert, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { v7 as uuidv7 } from 'uuid';
+import { Role } from './role.entity';
+import { Employee } from './employee.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -23,13 +25,21 @@ export class User {
   displayName: string;
 
   @Column({ name: 'role_id', type: 'uuid', nullable: true })
-  roleId: string;
+  roleId: string | null;
+
+  @ManyToOne(() => Role)
+  @JoinColumn({ name: 'role_id' })
+  role: Role;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
   @Column({ name: 'employee_id', type: 'uuid', nullable: true })
-  employeeId: string;
+  employeeId: string | null;
+
+  @ManyToOne(() => Employee)
+  @JoinColumn({ name: 'employee_id' })
+  employee: Employee;
 
   @Column({ name: 'avatar_url', length: 500, nullable: true })
   avatarUrl: string;
@@ -82,11 +92,11 @@ export class User {
   createDate: Date;
 
   @Column({ name: 'create_by', type: 'uuid', nullable: true })
-  createBy: string;
+  createBy: string | null;
 
   @UpdateDateColumn({ name: 'update_date', type: 'timestamptz' })
   updateDate: Date;
 
   @Column({ name: 'update_by', type: 'uuid', nullable: true })
-  updateBy: string;
+  updateBy: string | null;
 }

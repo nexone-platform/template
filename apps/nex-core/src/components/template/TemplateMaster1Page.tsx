@@ -291,9 +291,9 @@ export default function TemplateMaster1Page() {
                             ], 'Template 1 Report', orientation)}
                         />
                     )}
-                    {perm.canAdd && (
+                    {perm.canImport && (
                         <ImportExcelButton
-                            translations={t}
+
                             columns={[
                                 { header: t['template_name'] || 'ชื่อข้อมูล', key: 'template_name', required: true },
                                 { header: t['template_desc'] || 'คำอธิบาย', key: 'template_desc' }
@@ -336,9 +336,11 @@ export default function TemplateMaster1Page() {
                                     {hasActions && <th className="text-center" style={{ width: '100px', paddingRight: '16px', whiteSpace: 'nowrap' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
                                             <span>{t['action'] || 'จัดการ'}</span>
-                                            <span title={t['column_settings'] || 'ตั้งค่าคอลัมน์'} style={{ display: 'flex', alignItems: 'center' }}>
-                                                <Settings size={16} style={{ cursor: 'pointer', color: 'var(--text-muted)' }} onClick={() => setIsColumnSettingsOpen(true)} />
-                                            </span>
+                                            {perm.canView && (
+                                                <span title={t['column_settings'] || 'ตั้งค่าคอลัมน์'} style={{ display: 'flex', alignItems: 'center' }}>
+                                                    <Settings size={16} style={{ cursor: 'pointer', color: 'var(--text-muted)' }} onClick={() => setIsColumnSettingsOpen(true)} />
+                                                </span>
+                                            )}
                                         </div>
                                     </th>}
                                 </tr>
@@ -429,28 +431,7 @@ export default function TemplateMaster1Page() {
                             </div>
                         </div>
                     )}
-                    {modalMode === 'view' && (
-                        <div style={{ marginTop: '16px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
-                                <Info size={16} />
-                                <span style={{ fontSize: '13px', fontWeight: 600 }}>{t['system_logs'] || 'ข้อมูลระบบ (System Logs)'}</span>
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
-                                    <span style={{ color: 'var(--text-muted)' }}>{t['create_by'] || 'Created By'} :</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500, marginRight: '16px' }}>{selectedItem?.create_by || '-'}</span>
-                                    <span style={{ color: 'var(--text-muted)' }}>{t['create_date'] || 'Created Date'} :</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.create_date ? format(new Date(selectedItem.create_date), configs.dateFormat || 'dd/MM/yyyy') : '-'}</span>
-                                </div>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
-                                    <span style={{ color: 'var(--text-muted)' }}>{t['update_by'] || 'Update By'} :</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500, marginRight: '16px' }}>{selectedItem?.update_by || '-'}</span>
-                                    <span style={{ color: 'var(--text-muted)' }}>{t['update_date'] || 'Update Date'} :</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.update_date ? format(new Date(selectedItem.update_date), configs.dateFormat || 'dd/MM/yyyy') : '-'}</span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+
                 </div>
             </BaseModal>
 

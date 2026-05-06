@@ -1,8 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity('templates', { schema: 'nex_core' })
-
-export class Template {
+@Entity('template_basic', { schema: 'nex_core' })
+export class TemplateBasic {
   @PrimaryGeneratedColumn({ name: 'template_id' })
   template_id: number;
 

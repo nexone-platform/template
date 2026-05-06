@@ -1,4 +1,4 @@
-import { useSystemConfig } from '@nexone/ui';
+import { useSystemConfig, useLanguage } from '@nexone/ui';
 import React, { useState, useEffect } from 'react';
 import CrudLayout from '@/components/CrudLayout';
 import { SearchInput, crudStyles, StatusDropdown, BaseModal, ExportButtons } from '@/components/CrudComponents';
@@ -6,6 +6,8 @@ import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
 import { Plus, Edit2, Trash2, Eye, Mail, Link, Globe2, Hash, Layers } from 'lucide-react';
 import Pagination from '@/components/Pagination';
 import { useApiConfig } from '../contexts/ApiConfigContext';
+import { usePagePermission } from '@/contexts/PermissionContext';
+
 
 interface EmailTemplate {
   template_id: string;
@@ -75,13 +77,12 @@ const INITIAL_TEMPLATES: EmailTemplate[] = [
   { template_id: '40', template_code: 'LEAVE_REQUEST', title: 'ขออนุมัติการลา', language_code: 'ไทย (TH)', app_name: ['NexForce'], is_active: true, email_content: 'เรียนผู้มีอำนาจอนุมัติ,\n\n{{EmployeeName}} ได้ยื่นคำขอลา\nประเภทการลา: {{LeaveType}}\nวันที่ลา: {{StartDate}} ถึง {{EndDate}}\nเหตุผล: {{Reason}}' },
   { template_id: '41', template_code: 'LEAVE_APPROVED', title: 'แจ้งอนุมัติการลา', language_code: 'ไทย (TH)', app_name: ['NexForce'], is_active: true, email_content: 'เรียนคุณ {{EmployeeName}},\n\nคำขอลาของคุณในวันที่ {{LeaveDate}} ได้รับการอนุมัติแล้ว' },
   { template_id: '42', template_code: 'RESIGNATION_APPROVED', title: 'แจ้งอนุมัติการลาออก', language_code: 'ไทย (TH)', app_name: ['NexForce'], is_active: true, email_content: 'เรียนคุณ {{EmployeeName}},\n\nคำขอลาออกของคุณมีผลในวันที่ {{ResignationDate}} ได้รับการอนุมัติเรียบร้อยแล้ว' },
-  { template_id: '43', template_code: 'PAYROLL_PERIOD', title: 'ขออนุมัติการสร้างรอบเงินเดือน', language_code: 'ไทย (TH)', app_name: ['NexFinance'], is_active: true, email_content: 'เรียนผู้มีอำนาจอนุมัติ,\n\nมีคำขอให้อนุมัติการสร้างรอบเงินเดือนใหม่\nเดือน: {{PayrollMonth}}\nปี: {{PayrollYear}}' },
-  { template_id: '44', template_code: 'TERMINATION_NOTE', title: 'แจ้งการสิ้นสุดสัญญาจ้าง', language_code: 'ไทย (TH)', app_name: ['NexForce'], is_active: true, email_content: 'เรียนคุณ {{EmployeeName}},\n\nเราขอแจ้งให้ทราบว่าการจ้างงานของคุณจะสิ้นสุดลงในวันที่ {{TerminationDate}}\nขอบคุณสำหรับความทุ่มเทตลอดเวลาที่ผ่านมา' },
-  { template_id: '45', template_code: 'OVERTIME_REQUEST', title: 'Overtime Request Approval', language_code: 'อังกฤษ (EN)', app_name: ['NexForce'], is_active: true, email_content: 'Dear Approver,\n\n{{EmployeeName}} has submitted an overtime request. Details:\n- Overtime date: {{OvertimeDate}}' },
-  { template_id: '46', template_code: 'RESIGNATION_REQUEST', title: 'ขออนุมัติการลาออก', language_code: 'ไทย (TH)', app_name: ['NexForce'], is_active: true, email_content: 'เรียนผู้มีอำนาจอนุมัติ,\n\n{{EmployeeName}} ได้ยื่นคำขอลาออก\nวันที่ลาออก: {{ResignationDate}}\nเหตุผล: {{Reason}}' },
 ];
 
 export default function EmailTemplates() {
+    const { lang } = useLanguage();
+    const [t, setT] = useState<Record<string, string>>({});
+    const perm = usePagePermission('EM_TEMPLATE');
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const { configs, loading: configLoading } = useSystemConfig();
@@ -102,7 +103,8 @@ export default function EmailTemplates() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'add'|'edit'|'view'|'delete'>('add');
     const [selectedItem, setSelectedItem] = useState<EmailTemplate | null>(null);
-    const [formData, setFormData] = useState<Partial<EmailTemplate>>({ template_code: '', title: '', language_code: 'ไทย (TH)', app_name: [], email_content: '', is_active: true });
+        const [formData, setFormData] = useState<Partial<EmailTemplate>>({ template_code: '', title: '', language_code: 'TH', app_name: [], email_content: '', is_active: true });
+
 
     // Add Language Form State
     const [isLangModalOpen, setIsLangModalOpen] = useState(false);
@@ -111,6 +113,23 @@ export default function EmailTemplates() {
     const { getEndpoint } = useApiConfig();
     const coreApi = getEndpoint('NexCore', '');
     const API_URL = `${coreApi}/email-templates`;
+
+    useEffect(() => {
+        const fetchTranslations = async () => {
+            try {
+                const res = await fetch(`${coreApi}/translations/map?lang=${lang}`, { credentials: 'include' });
+                const data = await res.json();
+                if (data && typeof data === 'object') {
+                    setT(data);
+                }
+            } catch (err) {
+                console.error('Failed to load translations:', err);
+            }
+        };
+        if (coreApi && lang) {
+            fetchTranslations();
+        }
+    }, [coreApi, lang]);
     const LANG_API_URL = `${coreApi}/translations/languages`;
     const SYSTEM_APPS_API_URL = `${coreApi}/v1/system-apps?all=true`;
 
@@ -144,7 +163,7 @@ export default function EmailTemplates() {
             if (Array.isArray(apps) && apps.length > 0) {
                 // "All App" option first, then apps from DB sorted by seq_no
                 const names = [
-                    'All App (ใช้กับทุกระบบ)',
+                    'All App',
                     ...apps.map((a: any) => a.app_name as string),
                 ];
                 setSystemApps(names);
@@ -166,7 +185,7 @@ export default function EmailTemplates() {
     // ─── Action Handlers ─────────────────────────────────────────────────────────
 
     const handleAdd = () => {
-        setFormData({ template_code: '', title: '', language_code: 'ไทย (TH)', app_name: [], email_content: '', is_active: true });
+        setFormData({ template_code: '', title: '', language_code: 'TH', app_name: [], email_content: '', is_active: true });
         setModalMode('add');
         setIsModalOpen(true);
     };
@@ -287,37 +306,42 @@ export default function EmailTemplates() {
             toolbarLeft={
                 <ExportButtons
                     onExportXLSX={() => exportToXLSX(filteredData, 'EmailTemplates', [
-                        { key: 'template_code', label: 'รหัส (Code)' },
-                        { key: 'title', label: 'ชื่อแม่แบบ' },
-                        { key: 'language_code', label: 'ภาษา' },
-                        { key: 'app_name', label: 'แอป' },
-                        { key: 'is_active', label: 'สถานะ', format: (v: any) => v.is_active ? 'ใช้งาน' : 'ยกเลิก' },
+                        { key: 'template_code', label: 'Code' },
+                        { key: 'title', label: 'Template Name' },
+                        { key: 'language_code', label: 'Language' },
+                        { key: 'app_name', label: 'App' },
+                        { key: 'is_active', label: 'Status', format: (v: any) => v.is_active ? 'Active' : 'Inactive' },
                     ])}
                     onExportCSV={() => exportToCSV(filteredData, 'EmailTemplates', [
-                        { key: 'template_code', label: 'รหัส (Code)' },
-                        { key: 'title', label: 'ชื่อแม่แบบ' },
-                        { key: 'language_code', label: 'ภาษา' },
-                        { key: 'app_name', label: 'แอป' },
-                        { key: 'is_active', label: 'สถานะ', format: (v: any) => v.is_active ? 'ใช้งาน' : 'ยกเลิก' },
+                        { key: 'template_code', label: 'Code' },
+                        { key: 'title', label: 'Template Name' },
+                        { key: 'language_code', label: 'Language' },
+                        { key: 'app_name', label: 'App' },
+                        { key: 'is_active', label: 'Status', format: (v: any) => v.is_active ? 'Active' : 'Inactive' },
                     ])}
                     onExportPDF={(orientation) => exportToPDF(filteredData, 'EmailTemplates', [
-                        { key: 'template_code', label: 'รหัส (Code)' },
-                        { key: 'title', label: 'ชื่อแม่แบบ' },
-                        { key: 'language_code', label: 'ภาษา' },
-                        { key: 'app_name', label: 'แอป' },
-                        { key: 'is_active', label: 'สถานะ', format: (v: any) => v.is_active ? 'ใช้งาน' : 'ยกเลิก' },
+                        { key: 'template_code', label: 'Code' },
+                        { key: 'title', label: 'Template Name' },
+                        { key: 'language_code', label: 'Language' },
+                        { key: 'app_name', label: 'App' },
+                        { key: 'is_active', label: 'Status', format: (v: any) => v.is_active ? 'Active' : 'Inactive' },
                     ], 'Email Templates Report', orientation)}
                 />
             }
             toolbarRight={
                 <>
-                    <SearchInput value={search} onChange={setSearch} placeholder="ค้นหาชื่อแม่แบบ, แอป..." />
-                    <button
+                                                                                <SearchInput value={search} onChange={setSearch} placeholder={t['search_placeholder'] || "Search Code, Subject..."} />
+
+                                        {perm.canAdd && (
+                        <button
+
                         onClick={handleAdd}
                         style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 500, cursor: 'pointer', fontSize: '14px' }}
                     >
-                        <Plus size={16} /> <span>สร้างแม่แบบใหม่</span>
-                    </button>
+                        <Plus size={16} /> <span>{t['add_template'] || 'Add Template'}</span>
+                                            </button>
+                    )}
+
                 </>
             }
         >
@@ -326,12 +350,19 @@ export default function EmailTemplates() {
                 <table className="data-table">
                     <thead>
                         <tr>
-                            <th>รหัสแม่แบบ (Template Code)</th>
-                            <th>หัวข้ออีเมล (Subject Name)</th>
-                            <th>ภาษา</th>
-                            <th>เชื่อมโยงแอป</th>
-                            <th className="text-center" style={{ width: '120px' }}>สถานะ</th>
-                            <th className="text-center" style={{ width: '100px', paddingRight: '24px' }}>จัดการ</th>
+                                                        <th>{t['template_code'] || 'Template Code'}</th>
+
+
+                                                        <th>{t['subject_name'] || 'Subject Name'}</th>
+
+                                                        <th>{t['language'] || 'Language'}</th>
+
+                                                        <th>{t['link_app'] || 'Linked Apps'}</th>
+
+                                                        <th className="text-center" style={{ width: '120px' }}>{t['status'] || 'Status'}</th>
+
+                                                        <th className="text-center" style={{ width: '100px', paddingRight: '24px' }}>{t['manage'] || 'Manage'}</th>
+
                         </tr>
                     </thead>
                     <tbody>
@@ -378,23 +409,27 @@ export default function EmailTemplates() {
                                 <td className="text-center">
                                     <StatusDropdown
                                         status={item.is_active}
-                                        onChange={async (val) => {
+                                        onChange={perm.canEdit ? (val) => {
                                             try {
-                                                await fetch(`${API_URL}/${item.template_id}`, { credentials: 'include', 
+                                                fetch(`${API_URL}/${item.template_id}`, {
+                                                    credentials: 'include',
                                                     method: 'PUT',
                                                     headers: { 'Content-Type': 'application/json' },
                                                     body: JSON.stringify({ is_active: val }),
-                                                });
-                                                fetchTemplates();
+                                                }).then(() => fetchTemplates());
                                             } catch (e) { console.error(e); }
-                                        }}
+                                        } : () => {}}
+
                                     />
                                 </td>
                                 <td className="text-center" style={{ paddingRight: '24px' }}>
                                     <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-                                        <button onClick={() => handleView(item)} style={{ ...crudStyles.actionBtn, color: 'var(--accent-blue)', background: 'rgba(59,130,246,0.1)' }} title="เรียกดู"><Eye size={14} /></button>
-                                        <button onClick={() => handleEdit(item)} style={{ ...crudStyles.actionBtn, color: '#f59e0b', background: '#fef3c7' }} title="แก้ไข"><Edit2 size={14} /></button>
-                                        <button onClick={() => handleDelete(item)} style={{ ...crudStyles.actionBtn, color: '#ef4444', background: '#fee2e2' }} title="ลบ"><Trash2 size={14} /></button>
+                                        {perm.canView && <button onClick={() => handleView(item)} style={{ ...crudStyles.actionBtn, color: 'var(--accent-blue)', background: 'rgba(59,130,246,0.1)' }} title={t['view'] || "เรียกดู"}><Eye size={14} /></button>}
+
+                                        {perm.canEdit && <button onClick={() => handleEdit(item)} style={{ ...crudStyles.actionBtn, color: '#f59e0b', background: '#fef3c7' }} title={t['edit'] || "แก้ไข"}><Edit2 size={14} /></button>}
+
+                                        {perm.canDelete && <button onClick={() => handleDelete(item)} style={{ ...crudStyles.actionBtn, color: '#ef4444', background: '#fee2e2' }} title={t['delete'] || "ลบ"}><Trash2 size={14} /></button>}
+
                                     </div>
                                 </td>
                             </tr>
@@ -402,7 +437,8 @@ export default function EmailTemplates() {
                         {templates.length === 0 && (
                             <tr>
                                 <td colSpan={6} className="text-center" style={{ padding: '40px 0', color: 'var(--text-muted)' }}>
-                                    ไม่พบข้อมูลแม่แบบอีเมล
+                                    {t['no_email_template_data'] || 'ไม่พบข้อมูลแม่แบบอีเมล'}
+
                                 </td>
                             </tr>
                         )}
@@ -424,18 +460,22 @@ export default function EmailTemplates() {
             <BaseModal
                 isOpen={isModalOpen && modalMode !== 'delete'}
                 onClose={() => setIsModalOpen(false)}
-                title={modalMode === 'add' ? 'สร้างแม่แบบใหม่' : modalMode === 'edit' ? 'แก้ไขอีเมลแม่แบบ' : 'รายละเอียดแม่แบบ'}
+                                title={modalMode === 'add' ? (t['add_new_template'] || 'สร้างแม่แบบใหม่') : modalMode === 'edit' ? (t['edit_email_template'] || 'แก้ไขอีเมลแม่แบบ') : (t['template_details'] || 'รายละเอียดแม่แบบ')}
+
                 width="700px"
                 footer={
                     modalMode !== 'view' ? (
                         <div style={{ display: 'flex', gap: '12px', width: '100%', justifyContent: 'flex-end', paddingTop: '16px' }}>
-                            <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 24px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, fontSize: '14px' }}>ยกเลิก</button>
+                            <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 24px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, fontSize: '14px' }}>{t['cancel'] || 'ยกเลิก'}</button>
+
                             <button onClick={saveForm} style={{ padding: '8px 24px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, fontSize: '14px', opacity: formData.title?.trim() ? 1 : 0.5 }} disabled={!formData.title?.trim()}>
-                                {modalMode === 'add' ? 'สร้างแม่แบบ' : 'บันทึกการแก้ไข'}
+                                {modalMode === 'add' ? (t['create_template'] || 'สร้างแม่แบบ') : (t['save_changes'] || 'บันทึกการแก้ไข')}
+
                             </button>
                         </div>
                     ) : (
-                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>ปิด</button>
+                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>{t['close'] || 'ปิด'}</button>
+
                     )
                 }
             >
@@ -443,12 +483,16 @@ export default function EmailTemplates() {
                     {/* Row 1: Code + Title */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '16px' }}>
                         <div>
-                            <label style={crudStyles.label}>รหัสแม่แบบ (Code) <span style={{ color: '#ef4444' }}>*</span></label>
-                            <input type="text" style={crudStyles.input} placeholder="เช่น PAYROLL_APPRV" value={formData.template_code || ''} onChange={(e) => setFormData({ ...formData, template_code: e.target.value })} disabled={modalMode === 'view'} />
+                            <label style={crudStyles.label}>{t['template_code'] || 'รหัสแม่แบบ (Code)'} <span style={{ color: '#ef4444' }}>*</span></label>
+
+                            <input type="text" style={crudStyles.input} placeholder={t['example_code'] || "เช่น PAYROLL_APPRV"} value={formData.template_code || ''} onChange={(e) => setFormData({ ...formData, template_code: e.target.value })} disabled={modalMode === 'view'} />
+
                         </div>
                         <div>
-                            <label style={crudStyles.label}>หัวข้อ (Subject) <span style={{ color: '#ef4444' }}>*</span></label>
-                            <input type="text" style={crudStyles.input} placeholder="หัวข้ออีเมล" value={formData.title || ''} onChange={(e) => setFormData({ ...formData, title: e.target.value })} disabled={modalMode === 'view'} />
+                            <label style={crudStyles.label}>{t['subject'] || 'หัวข้อ (Subject)'} <span style={{ color: '#ef4444' }}>*</span></label>
+
+                            <input type="text" style={crudStyles.input} placeholder={t['email_subject'] || "หัวข้ออีเมล"} value={formData.title || ''} onChange={(e) => setFormData({ ...formData, title: e.target.value })} disabled={modalMode === 'view'} />
+
                         </div>
                     </div>
 
@@ -457,10 +501,12 @@ export default function EmailTemplates() {
                         {/* Language */}
                         <div>
                             <label style={{ ...crudStyles.label, display: 'flex', justifyContent: 'space-between' }}>
-                                ภาษา (Language)
+                                                                {t['language'] || 'ภาษา (Language)'}
+
                                 {modalMode !== 'view' && (
                                     <button type="button" onClick={() => setIsLangModalOpen(true)} style={{ background: 'none', border: 'none', color: 'var(--accent-blue)', textDecoration: 'underline', cursor: 'pointer', fontSize: '12px', padding: 0 }}>
-                                        + เพิ่มภาษา
+                                                                                + {t['add_language'] || 'เพิ่มภาษา'}
+
                                     </button>
                                 )}
                             </label>
@@ -489,10 +535,12 @@ export default function EmailTemplates() {
                         <div>
                             <label style={{ ...crudStyles.label, display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 <Layers size={13} style={{ opacity: 0.6 }} />
-                                เชื่อมโยงกับแอประบบ
+                                                                {t['link_app_system'] || 'เชื่อมโยงกับแอประบบ'}
+
                                 {(formData.app_name?.length ?? 0) > 0 && (
                                     <span style={{ marginLeft: 'auto', fontSize: '11px', fontWeight: 600, color: 'var(--accent-blue)', background: 'rgba(59,130,246,0.1)', padding: '1px 8px', borderRadius: '12px' }}>
-                                        {formData.app_name!.length} แอป
+                                        {formData.app_name!.length} {t['apps'] || 'แอป'}
+
                                     </span>
                                 )}
                             </label>
@@ -509,9 +557,11 @@ export default function EmailTemplates() {
                                 }}
                             >
                                 {systemApps.length === 0 ? (
-                                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', padding: '4px' }}>กำลังโหลด...</span>
+                                                                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', padding: '4px' }}>{t['loading'] || 'กำลังโหลด...'}</span>
+
                                 ) : systemApps.map(appName => {
                                     const val = appName === 'All App (ใช้กับทุกระบบ)' ? 'ALL' : appName;
+
                                     const isChecked = Array.isArray(formData.app_name) && formData.app_name.includes(val);
                                     const badgeColor = getAppBadgeColor(val);
                                     return (
@@ -546,11 +596,15 @@ export default function EmailTemplates() {
                     {/* Row 3: Email Content */}
                     <div>
                         <label style={{ ...crudStyles.label, display: 'block', marginBottom: '8px' }}>
-                            ข้อความอีเมล (Email Content) <span style={{ color: '#ef4444' }}>*</span>
+                                                    
+                            {t['email_content'] || 'ข้อความอีเมล (Email Content)'} <span style={{ color: '#ef4444' }}>*</span>
                         </label>
+
+                        
                         <textarea
                             style={{ ...crudStyles.input, minHeight: '200px', resize: 'vertical', fontFamily: 'monospace', fontSize: '13px', lineHeight: '1.5' }}
-                            placeholder="พิมพ์ข้อความ... รองรับการใช้ตัวแปรเช่น {{name}}"
+                            placeholder={t['email_content_placeholder'] || "พิมพ์ข้อความ... รองรับการใช้ตัวแปรเช่น {{name}}"}
+
                             value={formData.email_content || ''}
                             onChange={(e) => setFormData({ ...formData, email_content: e.target.value })}
                             disabled={modalMode === 'view'}
@@ -568,18 +622,23 @@ export default function EmailTemplates() {
             <BaseModal
                 isOpen={isModalOpen && modalMode === 'delete'}
                 onClose={() => setIsModalOpen(false)}
-                title="ยืนยันการลบแม่แบบ"
+                title={t['confirm_delete_template'] || 'ยืนยันการลบแม่แบบ'}
+
                 width="400px"
                 footer={
                     <>
-                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>ยกเลิก</button>
-                        <button onClick={confirmDelete} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>ลบข้อมูล</button>
+                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>{t['cancel'] || 'ยกเลิก'}</button>
+
+                        <button onClick={confirmDelete} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>{t['delete_data'] || 'ลบข้อมูล'}</button>
+
                     </>
                 }
             >
                 <div>
-                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)' }}>คุณแน่ใจหรือไม่ว่าต้องการลบแม่แบบ <strong style={{ color: 'var(--text-primary)' }}>{selectedItem?.title}</strong> ?</p>
-                    <p style={{ margin: 0, fontSize: '13px', color: '#ef4444' }}>การกระทำนี้จะไม่สามารถย้อนกลับได้</p>
+                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)' }}>{t['confirm_delete_msg'] || 'คุณแน่ใจหรือไม่ว่าต้องการลบแม่แบบ'} <strong style={{ color: 'var(--text-primary)' }}>{selectedItem?.title}</strong> ?</p>
+
+                    <p style={{ margin: 0, fontSize: '13px', color: '#ef4444' }}>{t['action_cannot_undone'] || 'การกระทำนี้จะไม่สามารถย้อนกลับได้'}</p>
+
                 </div>
             </BaseModal>
 
@@ -587,27 +646,36 @@ export default function EmailTemplates() {
             <BaseModal
                 isOpen={isLangModalOpen}
                 onClose={() => setIsLangModalOpen(false)}
-                title="เพิ่มภาษาใหม่ (Add New Language)"
+                title={t['add_new_language'] || 'เพิ่มภาษาใหม่ (Add New Language)'}
+
                 width="400px"
                 footer={
                     <div style={{ display: 'flex', gap: '12px', width: '100%', justifyContent: 'flex-end' }}>
-                        <button onClick={() => setIsLangModalOpen(false)} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, fontSize: '14px' }}>ยกเลิก</button>
-                        <button onClick={handleSaveNewLanguage} style={{ padding: '8px 16px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, fontSize: '14px' }}>บันทึกภาษา</button>
+                        <button onClick={() => setIsLangModalOpen(false)} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, fontSize: '14px' }}>{t['cancel'] || 'ยกเลิก'}</button>
+
+                        <button onClick={handleSaveNewLanguage} style={{ padding: '8px 16px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, fontSize: '14px' }}>{t['save_language'] || 'บันทึกภาษา'}</button>
+
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div>
-                        <label style={crudStyles.label}>รหัสภาษา (Language Code) <span style={{ color: 'red' }}>*</span></label>
-                        <input type="text" style={crudStyles.input} value={langForm.languageCode} onChange={e => setLangForm({ ...langForm, languageCode: e.target.value })} placeholder="เช่น: th, en, ja, cn" />
+                        <label style={crudStyles.label}>{t['language_code'] || 'รหัสภาษา (Language Code)'} <span style={{ color: 'red' }}>*</span></label>
+
+                        <input type="text" style={crudStyles.input} value={langForm.languageCode} onChange={e => setLangForm({ ...langForm, languageCode: e.target.value })} placeholder={t['example_lang_code'] || "เช่น: th, en, ja, cn"} />
+
                     </div>
                     <div>
-                        <label style={crudStyles.label}>ชื่อภาษา (Language Name) <span style={{ color: 'red' }}>*</span></label>
-                        <input type="text" style={crudStyles.input} value={langForm.languageName} onChange={e => setLangForm({ ...langForm, languageName: e.target.value })} placeholder="เช่น: Thai, English" />
+                        <label style={crudStyles.label}>{t['language_name'] || 'ชื่อภาษา (Language Name)'} <span style={{ color: 'red' }}>*</span></label>
+
+                        <input type="text" style={crudStyles.input} value={langForm.languageName} onChange={e => setLangForm({ ...langForm, languageName: e.target.value })} placeholder={t['example_lang_name'] || "เช่น: Thai, English"} />
+
                     </div>
                     <div>
-                        <label style={crudStyles.label}>คำอธิบาย (Description)</label>
-                        <input type="text" style={crudStyles.input} value={langForm.description} onChange={e => setLangForm({ ...langForm, description: e.target.value })} placeholder="เช่น: ภาษาไทย, ภาษาอังกฤษ" />
+                        <label style={crudStyles.label}>{t['description'] || 'คำอธิบาย (Description)'}</label>
+
+                        <input type="text" style={crudStyles.input} value={langForm.description} onChange={e => setLangForm({ ...langForm, description: e.target.value })} placeholder={t['example_description'] || "เช่น: ภาษาไทย, ภาษาอังกฤษ"} />
+
                     </div>
                 </div>
             </BaseModal>

@@ -18,10 +18,12 @@ export class UsersService {
   }
 
   async findAll(page = 1, limit = 20, search = '') {
-    const query = this.usersRepository.createQueryBuilder('user');
+    const query = this.usersRepository.createQueryBuilder('user')
+      .leftJoinAndSelect('user.role', 'role')
+      .leftJoinAndSelect('user.employee', 'employee');
     
     if (search) {
-      query.where('user.email ILIKE :search OR user.displayName ILIKE :search', { search: `%${search}%` });
+      query.where('user.email ILIKE :search OR user.displayName ILIKE :search OR employee.employeeCode ILIKE :search', { search: `%${search}%` });
     }
 
     query.orderBy('user.createDate', 'DESC');
@@ -48,14 +50,20 @@ export class UsersService {
     const existing = await this.usersRepository.findOne({ where: { email: createUserDto.email } });
     if (existing) throw new ConflictException('Email already in use');
 
-    if (createUserDto.roleId === '') {
-      createUserDto.roleId = null;
-    }
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const cleanUuid = (val: any) => {
+      if (typeof val !== 'string') return null;
+      const cleaned = val.trim();
+      if (!cleaned || cleaned === '' || !uuidRegex.test(cleaned)) return null;
+      return cleaned;
+    };
 
     const user = this.usersRepository.create({
       ...createUserDto,
+      roleId: cleanUuid(createUserDto.roleId),
+      employeeId: cleanUuid(createUserDto.employeeId),
       password: this.hashPassword(createUserDto.password || '123456'),
-      createBy: userId || 'system',
+      createBy: cleanUuid(userId),
     });
 
     const saved = await this.usersRepository.save(user);
@@ -74,12 +82,47 @@ export class UsersService {
       delete updateUserDto.password;
     }
 
-    if (updateUserDto.roleId === '') {
+    if (updateUserDto.roleId === '' || updateUserDto.roleId === undefined) {
       updateUserDto.roleId = null;
     }
 
-    Object.assign(user, updateUserDto);
-    user.updateBy = userId || 'system';
+    // List of allowed fields to update to prevent accidental overwrite of sensitive fields
+    const allowedFields = ['displayName', 'email', 'roleId', 'isActive', 'language', 'mfaEnabled', 'password', 'employeeId'];
+    
+    for (const key of Object.keys(updateUserDto)) {
+      if (allowedFields.includes(key)) {
+        (user as any)[key] = updateUserDto[key];
+      }
+    }
+
+    // Ensure UUID fields are valid or null (prevent "invalid input syntax for type uuid: ''")
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    
+    const cleanUuid = (val: any) => {
+      if (typeof val !== 'string') return null;
+      const cleaned = val.trim();
+      if (!cleaned || cleaned === '' || !uuidRegex.test(cleaned)) return null;
+      return cleaned;
+    };
+
+    user.roleId = cleanUuid(user.roleId);
+    user.employeeId = cleanUuid(user.employeeId);
+    user.updateBy = cleanUuid(userId);
+    user.createBy = cleanUuid(user.createBy);
+
+    // DEBUG: Throw error to see the state in the UI
+    /*
+    throw new HttpException({
+      status: 500,
+      message: 'DEBUGGING UUID ISSUE',
+      user_state: {
+        roleId: user.roleId,
+        employeeId: user.employeeId,
+        updateBy: user.updateBy,
+        createBy: user.createBy
+      }
+    }, 500);
+    */
 
     const saved = await this.usersRepository.save(user);
     delete (saved as any).password;
@@ -90,7 +133,7 @@ export class UsersService {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
     
-    user.updateBy = userId || 'system';
+    user.updateBy = userId || null;
     await this.usersRepository.save(user);
     await this.usersRepository.softRemove(user);
     

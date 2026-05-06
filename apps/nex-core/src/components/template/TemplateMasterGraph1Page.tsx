@@ -1,13 +1,14 @@
-import { useSystemConfig } from '@nexone/ui';
 import React, { useState, useEffect, useCallback } from 'react';
 import CrudLayout from '@/components/CrudLayout';
 import { SummaryCard, SearchInput, crudStyles, BaseModal, ExportButtons } from '@/components/CrudComponents';
 import ImportExcelButton from '@/components/ImportExcelButton';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
-import { Plus, Edit2, Trash2, Eye, CheckCircle2, ChevronDown, Check, Clock, AlertTriangle, Receipt, BarChart3, LineChart as LineChartIcon, Info } from 'lucide-react';
+import { Plus, Edit2, Trash2, Eye, CheckCircle2, Check, Clock, AlertTriangle, Receipt, BarChart3, LineChart as LineChartIcon, Info } from 'lucide-react';
 import Pagination from '@/components/Pagination';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { usePagePermission } from '@/contexts/PermissionContext';
+import { useSystemConfig, useLanguage } from '@nexone/ui';
+import { useApiConfig } from '@/contexts/ApiConfigContext';
 
 // ---------- Types ----------
 interface InvoiceRecord {
@@ -36,7 +37,28 @@ const EMPTY_FORM = { invoice: '', customer: '', amount: 0, status: 'รอชำ
 
 export default function TemplateMasterGraph1Page() {
     const perm = usePagePermission('Master Graph 1');
-    const API = process.env.NEXT_PUBLIC_CORE_API_URL || '';
+    const { lang } = useLanguage();
+    const { getEndpoint } = useApiConfig();
+    const { configs, loading: configLoading } = useSystemConfig();
+    const API = getEndpoint('NexCore', '');
+    const [t, setT] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        const fetchTranslations = async () => {
+            try {
+                const res = await fetch(`${API}/translations/map?lang=${lang}`, { credentials: 'include' });
+                const data = await res.json();
+                if (data && typeof data === 'object') {
+                    setT(data);
+                }
+            } catch (err) {
+                console.error('Failed to load translations:', err);
+            }
+        };
+        if (API && lang) {
+            fetchTranslations();
+        }
+    }, [API, lang]);
 
     // ---------- State ----------
     const [data, setData] = useState<InvoiceRecord[]>([]);
@@ -44,7 +66,6 @@ export default function TemplateMasterGraph1Page() {
     const [saving, setSaving] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const { configs, loading: configLoading } = useSystemConfig();
     const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
     const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
 
@@ -155,15 +176,7 @@ export default function TemplateMasterGraph1Page() {
         setSaving(false);
     };
 
-    const importColumns = [
-        { key: 'invoice', header: 'รหัส Invoice', required: true, type: 'string' as const },
-        { key: 'customer', header: 'ลูกค้า', required: true, type: 'string' as const },
-        { key: 'amount', header: 'จำนวนเงิน', required: true, type: 'number' as const },
-        { key: 'status', header: 'สถานะ', required: true, type: 'string' as const },
-        { key: 'issueDate', header: 'วันออกเอกสาร', type: 'string' as const },
-        { key: 'dueDate', header: 'วันครบกำหนด', type: 'string' as const },
-        { key: 'orderId', header: 'Order ID (อ้างอิง)', type: 'string' as const }
-    ];
+
 
     const handleImport = async (data: any[]) => {
         let success = 0;
@@ -232,17 +245,17 @@ export default function TemplateMasterGraph1Page() {
         <CrudLayout
             summaryCards={
                 <>
-                    <SummaryCard title="ชำระแล้ว"   count={summaryData.paidCount}    icon={<CheckCircle2 size={24} color="#10b981" />} color="#10b981" isActive={currentTab === 'ชำระแล้ว'}   onClick={() => { setCurrentTab('ชำระแล้ว');   setCurrentPage(1); }} />
-                    <SummaryCard title="รอชำระ"      count={summaryData.pendingCount}  icon={<Clock       size={24} color="#f59e0b" />} color="#f59e0b" isActive={currentTab === 'รอชำระ'}     onClick={() => { setCurrentTab('รอชำระ');     setCurrentPage(1); }} />
-                    <SummaryCard title="เกินกำหนด"   count={summaryData.overdueCount}  icon={<AlertTriangle size={24} color="#ef4444" />} color="#ef4444" isActive={currentTab === 'เกินกำหนด'} onClick={() => { setCurrentTab('เกินกำหนด'); setCurrentPage(1); }} />
-                    <SummaryCard title="Invoice ทั้งหมด" count={summaryData.totalCount} icon={<Receipt size={24} color="#3b82f6" />} color="#3b82f6" isActive={currentTab === 'ทั้งหมด'}     onClick={() => { setCurrentTab('ทั้งหมด');   setCurrentPage(1); }} />
+                    <SummaryCard title={t['paid'] || "ชำระแล้ว"}   count={summaryData.paidCount}    icon={<CheckCircle2 size={24} color="#10b981" />} color="#10b981" isActive={currentTab === 'ชำระแล้ว'}   onClick={() => { setCurrentTab('ชำระแล้ว');   setCurrentPage(1); }} />
+                    <SummaryCard title={t['pending_payment'] || "รอชำระ"}      count={summaryData.pendingCount}  icon={<Clock       size={24} color="#f59e0b" />} color="#f59e0b" isActive={currentTab === 'รอชำระ'}     onClick={() => { setCurrentTab('รอชำระ');     setCurrentPage(1); }} />
+                    <SummaryCard title={t['overdue'] || "เกินกำหนด"}   count={summaryData.overdueCount}  icon={<AlertTriangle size={24} color="#ef4444" />} color="#ef4444" isActive={currentTab === 'เกินกำหนด'} onClick={() => { setCurrentTab('เกินกำหนด'); setCurrentPage(1); }} />
+                    <SummaryCard title={t['total_invoice'] || "Invoice ทั้งหมด"} count={summaryData.totalCount} icon={<Receipt size={24} color="#3b82f6" />} color="#3b82f6" isActive={currentTab === 'ทั้งหมด'}     onClick={() => { setCurrentTab('ทั้งหมด');   setCurrentPage(1); }} />
                 </>
             }
             customHeaderContent={
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '16px' }}>
                     <div className="card h-full">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontWeight: 600 }}>
-                            <BarChart3 size={18} color="var(--accent-blue)" /> รายได้ vs ต้นทุน
+                            <BarChart3 size={18} color="var(--accent-blue)" /> {t['revenue_vs_cost'] || 'รายได้ vs ต้นทุน'}
                         </div>
                         <div style={{ height: '260px' }}>
                             <ResponsiveContainer width="100%" height="100%">
@@ -250,15 +263,15 @@ export default function TemplateMasterGraph1Page() {
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
                                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
                                     <Tooltip formatter={(v: any) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(v)} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: 'var(--shadow-card)' }} />
-                                    <Bar dataKey="revenue" name="รายได้" fill="var(--accent-blue)"  radius={[4, 4, 0, 0]} />
-                                    <Bar dataKey="cost"    name="ต้นทุน" fill="var(--accent-amber)" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="revenue" name={t['revenue'] || "รายได้"} fill="var(--accent-blue)"  radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="cost"    name={t['cost'] || "ต้นทุน"} fill="var(--accent-amber)" radius={[4, 4, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
                     <div className="card h-full">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontWeight: 600 }}>
-                            <LineChartIcon size={18} color="var(--accent-green)" /> กำไรรายเดือน
+                            <LineChartIcon size={18} color="var(--accent-green)" /> {t['monthly_profit'] || 'กำไรรายเดือน'}
                         </div>
                         <div style={{ height: '260px' }}>
                             <ResponsiveContainer width="100%" height="100%">
@@ -266,7 +279,7 @@ export default function TemplateMasterGraph1Page() {
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
                                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
                                     <Tooltip formatter={(v: any) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(v)} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: 'var(--shadow-card)' }} />
-                                    <Bar dataKey="profit" name="กำไร" fill="var(--accent-green)" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="profit" name={t['profit'] || "กำไร"} fill="var(--accent-green)" radius={[4, 4, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
@@ -276,46 +289,56 @@ export default function TemplateMasterGraph1Page() {
             toolbarLeft={
                 <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                     <div style={{ display: 'flex', gap: '8px', background: 'var(--bg-secondary)', padding: '4px', borderRadius: '100px' }}>
-                        <button style={getTabStyle('ทั้งหมด')}   onClick={() => { setCurrentTab('ทั้งหมด');   setCurrentPage(1); }}>ทั้งหมด</button>
-                        <button style={getTabStyle('ชำระแล้ว')}  onClick={() => { setCurrentTab('ชำระแล้ว');  setCurrentPage(1); }}><Check        size={14} color={currentTab === 'ชำระแล้ว'  ? '#fff' : 'var(--accent-green)'} /> ชำระแล้ว</button>
-                        <button style={getTabStyle('รอชำระ')}    onClick={() => { setCurrentTab('รอชำระ');    setCurrentPage(1); }}><Clock        size={14} color={currentTab === 'รอชำระ'    ? '#fff' : 'var(--accent-amber)'} /> รอชำระ</button>
-                        <button style={getTabStyle('เกินกำหนด')} onClick={() => { setCurrentTab('เกินกำหนด'); setCurrentPage(1); }}><AlertTriangle size={14} color={currentTab === 'เกินกำหนด' ? '#fff' : 'var(--accent-red)'}   /> เกินกำหนด</button>
+                        <button style={getTabStyle('ทั้งหมด')}   onClick={() => { setCurrentTab('ทั้งหมด');   setCurrentPage(1); }}>{t['all'] || 'ทั้งหมด'}</button>
+                        <button style={getTabStyle('ชำระแล้ว')}  onClick={() => { setCurrentTab('ชำระแล้ว');  setCurrentPage(1); }}><Check        size={14} color={currentTab === 'ชำระแล้ว'  ? '#fff' : 'var(--accent-green)'} /> {t['paid'] || 'ชำระแล้ว'}</button>
+                        <button style={getTabStyle('รอชำระ')}    onClick={() => { setCurrentTab('รอชำระ');    setCurrentPage(1); }}><Clock        size={14} color={currentTab === 'รอชำระ'    ? '#fff' : 'var(--accent-amber)'} /> {t['pending_payment'] || 'รอชำระ'}</button>
+                        <button style={getTabStyle('เกินกำหนด')} onClick={() => { setCurrentTab('เกินกำหนด'); setCurrentPage(1); }}><AlertTriangle size={14} color={currentTab === 'เกินกำหนด' ? '#fff' : 'var(--accent-red)'}   /> {t['overdue'] || 'เกินกำหนด'}</button>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                         {perm.canExport && (
                         <ExportButtons
+                            t={t}
                             onExportXLSX={() => exportToXLSX(filteredData, 'TemplateGraph1', [
-                                { key: 'invoice', label: 'INVOICE' },
-                                { key: 'customer', label: 'ลูกค้า' },
-                                { key: 'amount', label: 'จำนวน' },
-                                { key: 'status', label: 'สถานะ' },
-                                { key: 'issueDate', label: 'วันออก' },
-                                { key: 'dueDate', label: 'ครบกำหนด' },
-                                { key: 'orderId', label: 'ORDER' },
+                                { key: 'invoice', label: t['invoice'] || 'INVOICE' },
+                                { key: 'customer', label: t['customer'] || 'ลูกค้า' },
+                                { key: 'amount', label: t['amount'] || 'จำนวน' },
+                                { key: 'status', label: t['status'] || 'สถานะ' },
+                                { key: 'issueDate', label: t['issue_date'] || 'วันออก' },
+                                { key: 'dueDate', label: t['due_date'] || 'ครบกำหนด' },
+                                { key: 'orderId', label: t['order_id'] || 'ORDER' },
                             ])}
                             onExportCSV={() => exportToCSV(filteredData, 'TemplateGraph1', [
-                                { key: 'invoice', label: 'INVOICE' },
-                                { key: 'customer', label: 'ลูกค้า' },
-                                { key: 'amount', label: 'จำนวน' },
-                                { key: 'status', label: 'สถานะ' },
-                                { key: 'issueDate', label: 'วันออก' },
-                                { key: 'dueDate', label: 'ครบกำหนด' },
-                                { key: 'orderId', label: 'ORDER' },
+                                { key: 'invoice', label: t['invoice'] || 'INVOICE' },
+                                { key: 'customer', label: t['customer'] || 'ลูกค้า' },
+                                { key: 'amount', label: t['amount'] || 'จำนวน' },
+                                { key: 'status', label: t['status'] || 'สถานะ' },
+                                { key: 'issueDate', label: t['issue_date'] || 'วันออก' },
+                                { key: 'dueDate', label: t['due_date'] || 'ครบกำหนด' },
+                                { key: 'orderId', label: t['order_id'] || 'ORDER' },
                             ])}
                             onExportPDF={(orientation) => exportToPDF(filteredData, 'TemplateGraph1', [
-                                { key: 'invoice', label: 'INVOICE' },
-                                { key: 'customer', label: 'ลูกค้า' },
-                                { key: 'amount', label: 'จำนวน' },
-                                { key: 'status', label: 'สถานะ' },
-                                { key: 'issueDate', label: 'วันออก' },
-                                { key: 'dueDate', label: 'ครบกำหนด' },
-                                { key: 'orderId', label: 'ORDER' },
-                            ], 'Template Graph 1 Report', orientation)}
+                                { key: 'invoice', label: t['invoice'] || 'INVOICE' },
+                                { key: 'customer', label: t['customer'] || 'ลูกค้า' },
+                                { key: 'amount', label: t['amount'] || 'จำนวน' },
+                                { key: 'status', label: t['status'] || 'สถานะ' },
+                                { key: 'issueDate', label: t['issue_date'] || 'วันออก' },
+                                { key: 'dueDate', label: t['due_date'] || 'ครบกำหนด' },
+                                { key: 'orderId', label: t['order_id'] || 'ORDER' },
+                            ], t['report_title'] || 'Template Graph 1 Report', orientation)}
                         />
                         )}
-                        {perm.canAdd && (
+                        {perm.canImport && (
                         <ImportExcelButton 
-                            columns={importColumns as any}
+
+                            columns={[
+                                { key: 'invoice', header: t['invoice'] || 'รหัส Invoice', required: true, type: 'string' as const },
+                                { key: 'customer', header: t['customer'] || 'ลูกค้า', required: true, type: 'string' as const },
+                                { key: 'amount', header: t['amount'] || 'จำนวนเงิน', required: true, type: 'number' as const },
+                                { key: 'status', header: t['status'] || 'สถานะ', required: true, type: 'string' as const },
+                                { key: 'issueDate', header: t['issue_date'] || 'วันออกเอกสาร', type: 'string' as const },
+                                { key: 'dueDate', header: t['due_date'] || 'วันครบกำหนด', type: 'string' as const },
+                                { key: 'orderId', header: t['order_id'] || 'Order ID (อ้างอิง)', type: 'string' as const }
+                            ] as any}
                             filenamePrefix="TemplateGraph1"
                             onImport={handleImport}
                             onImportComplete={() => loadData()}
@@ -326,22 +349,22 @@ export default function TemplateMasterGraph1Page() {
             }
             toolbarRight={
                 <>
-                    {perm.canView && <SearchInput value={searchTerm} onChange={e => { setSearchTerm(e); setCurrentPage(1); }} onClear={() => { setSearchTerm(''); setCurrentPage(1); }} placeholder="ค้นหา Invoice, ลูกค้า..." />}
-                    {perm.canAdd  && <button onClick={handleAdd} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 500, cursor: 'pointer' }}><Plus size={16} /><span>เพิ่มข้อมูล</span></button>}
+                    {perm.canView && <SearchInput t={t} value={searchTerm} onChange={e => { setSearchTerm(e); setCurrentPage(1); }} onClear={() => { setSearchTerm(''); setCurrentPage(1); }} placeholder={t['search_placeholder'] || "ค้นหา Invoice, ลูกค้า..."} />}
+                    {perm.canAdd  && <button onClick={handleAdd} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 500, cursor: 'pointer' }}><Plus size={16} /><span>{t['add_button'] || 'เพิ่มข้อมูล'}</span></button>}
                 </>
             }
         >
             <table className="data-table">
                     <thead>
                         <tr>
-                            <th style={{ width: '14%' }}>INVOICE</th>
-                            <th style={{ width: '24%' }}>ลูกค้า</th>
-                            <th style={{ width: '10%' }}>จำนวน</th>
-                            <th style={{ width: '13%' }}>สถานะ</th>
-                            <th style={{ width: '12%' }}>วันออก</th>
-                            <th style={{ width: '12%' }}>ครบกำหนด</th>
-                            <th style={{ width: '12%' }}>ORDER</th>
-                            {hasActions && <th style={{ width: '13%', textAlign: 'center' }}>จัดการ</th>}
+                            <th style={{ width: '14%' }}>{t['invoice'] || 'INVOICE'}</th>
+                            <th style={{ width: '24%' }}>{t['customer'] || 'ลูกค้า'}</th>
+                            <th style={{ width: '10%' }}>{t['amount'] || 'จำนวน'}</th>
+                            <th style={{ width: '13%' }}>{t['status'] || 'สถานะ'}</th>
+                            <th style={{ width: '12%' }}>{t['issue_date'] || 'วันออก'}</th>
+                            <th style={{ width: '12%' }}>{t['due_date'] || 'ครบกำหนด'}</th>
+                            <th style={{ width: '12%' }}>{t['order_id'] || 'ORDER'}</th>
+                            {hasActions && <th style={{ width: '13%', textAlign: 'center' }}>{t['manage'] || 'จัดการ'}</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -379,81 +402,56 @@ export default function TemplateMasterGraph1Page() {
             <BaseModal
                 isOpen={isModalOpen && modalMode !== 'delete'}
                 onClose={() => setIsModalOpen(false)}
-                title={modalMode === 'add' ? 'สร้างรายการ Invoice ใหม่' : modalMode === 'edit' ? 'แก้ไขรายการ Invoice' : 'รายละเอียด Invoice'}
+                title={modalMode === 'add' ? t['create_invoice'] || 'สร้างรายการ Invoice ใหม่' : modalMode === 'edit' ? t['edit_invoice'] || 'แก้ไขรายการ Invoice' : t['invoice_details'] || 'รายละเอียด Invoice'}
                 footer={
                     modalMode !== 'view' ? (
                         <>
-                            <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>ยกเลิก</button>
+                            <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>{t['cancel'] || 'ยกเลิก'}</button>
                             <button onClick={handleSave} disabled={!formData.customer.trim() || saving} style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: (!formData.customer.trim() || saving) ? 0.5 : 1 }}>
-                                {saving ? 'กำลังบันทึก...' : modalMode === 'add' ? 'เพิ่มข้อมูล' : 'บันทึกข้อมูล'}
+                                {saving ? t['saving'] || 'กำลังบันทึก...' : modalMode === 'add' ? t['add_data'] || 'เพิ่มข้อมูล' : t['save_data'] || 'บันทึกข้อมูล'}
                             </button>
                         </>
                     ) : (
-                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>ปิด</button>
+                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>{t['close'] || 'ปิด'}</button>
                     )
                 }
             >
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                     <div style={{ gridColumn: '1 / -1' }}>
-                        <label style={crudStyles.label}>รหัส Invoice <span style={{ color: '#ef4444' }}>*</span></label>
+                        <label style={crudStyles.label}>{t['invoice_code'] || 'รหัส Invoice'} <span style={{ color: '#ef4444' }}>*</span></label>
                         <input type="text" style={crudStyles.input} value={formData.invoice} disabled />
                     </div>
                     <div style={{ gridColumn: '1 / -1' }}>
-                        <label style={crudStyles.label}>ลูกค้า <span style={{ color: '#ef4444' }}>*</span></label>
-                        <input type="text" style={crudStyles.input} placeholder="ระบุชื่อลูกค้าและบริษัท" value={formData.customer} onChange={e => setFormData({ ...formData, customer: e.target.value })} disabled={modalMode === 'view'} />
+                        <label style={crudStyles.label}>{t['customer'] || 'ลูกค้า'} <span style={{ color: '#ef4444' }}>*</span></label>
+                        <input type="text" style={crudStyles.input} placeholder={t['enter_customer_name'] || "ระบุชื่อลูกค้าและบริษัท"} value={formData.customer} onChange={e => setFormData({ ...formData, customer: e.target.value })} disabled={modalMode === 'view'} />
                     </div>
                     <div>
-                        <label style={crudStyles.label}>จำนวนเงิน</label>
-                        <input type="number" style={crudStyles.input} placeholder="ระบุจำนวนเงิน" value={formData.amount} onChange={e => setFormData({ ...formData, amount: Number(e.target.value) })} disabled={modalMode === 'view'} />
+                        <label style={crudStyles.label}>{t['amount'] || 'จำนวนเงิน'}</label>
+                        <input type="number" style={crudStyles.input} placeholder={t['enter_amount'] || "ระบุจำนวนเงิน"} value={formData.amount} onChange={e => setFormData({ ...formData, amount: Number(e.target.value) })} disabled={modalMode === 'view'} />
                     </div>
                     {modalMode === 'view' && (
                         <div>
-                            <label style={crudStyles.label}>สถานะ <span style={{ color: '#ef4444' }}>*</span></label>
+                            <label style={crudStyles.label}>{t['status'] || 'สถานะ'} <span style={{ color: '#ef4444' }}>*</span></label>
                             <select style={crudStyles.input} value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} disabled={modalMode === 'view'}>
-                                <option value="รอชำระ">รอชำระ</option>
-                                <option value="ชำระแล้ว">ชำระแล้ว</option>
-                                <option value="เกินกำหนด">เกินกำหนด</option>
+                                <option value="รอชำระ">{t['pending_payment'] || 'รอชำระ'}</option>
+                                <option value="ชำระแล้ว">{t['paid'] || 'ชำระแล้ว'}</option>
+                                <option value="เกินกำหนด">{t['overdue'] || 'เกินกำหนด'}</option>
                             </select>
                         </div>
                     )}
                     <div>
-                        <label style={crudStyles.label}>วันออกเอกสาร</label>
+                        <label style={crudStyles.label}>{t['issue_date'] || 'วันออกเอกสาร'}</label>
                         <input type="date" style={crudStyles.input} value={formData.issueDate} onChange={e => setFormData({ ...formData, issueDate: e.target.value })} disabled={modalMode === 'view'} />
                     </div>
                     <div>
-                        <label style={crudStyles.label}>วันครบกำหนด</label>
+                        <label style={crudStyles.label}>{t['due_date'] || 'วันครบกำหนด'}</label>
                         <input type="date" style={crudStyles.input} value={formData.dueDate} onChange={e => setFormData({ ...formData, dueDate: e.target.value })} disabled={modalMode === 'view'} />
                     </div>
                     <div style={{ gridColumn: '1 / -1' }}>
-                        <label style={crudStyles.label}>Order ID (อ้างอิง)</label>
+                        <label style={crudStyles.label}>{t['order_id'] || 'Order ID (อ้างอิง)'}</label>
                         <input type="text" style={crudStyles.input} placeholder="เช่น ORD-2026-0001" value={formData.orderId} onChange={e => setFormData({ ...formData, orderId: e.target.value })} disabled={modalMode === 'view'} />
                     </div>
-                    {modalMode === 'view' && (
-                        <div style={{ gridColumn: '1 / -1', marginTop: '16px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
-                                <Info size={16} />
-                                <span style={{ fontSize: '13px', fontWeight: 600 }}>ข้อมูลระบบ (System Logs)</span>
-                            </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
-                                <div>
-                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>สร้างโดย</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>-</span>
-                                </div>
-                                <div>
-                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>วันที่สร้าง</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>-</span>
-                                </div>
-                                <div>
-                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>แก้ไขล่าสุดโดย</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>-</span>
-                                </div>
-                                <div>
-                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>วันที่แก้ไขล่าสุด</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>-</span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+
                 </div>
             </BaseModal>
 
@@ -461,18 +459,18 @@ export default function TemplateMasterGraph1Page() {
             <BaseModal
                 isOpen={isModalOpen && modalMode === 'delete'}
                 onClose={() => setIsModalOpen(false)}
-                title="ยืนยันการลบข้อมูล"
+                title={t['confirm_delete'] || "ยืนยันการลบข้อมูล"}
                 width="400px"
                 footer={
                     <>
-                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>ยกเลิก</button>
-                        <button onClick={handleConfirmDelete} disabled={saving} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: saving ? 0.5 : 1 }}>{saving ? 'กำลังลบ...' : 'ลบข้อมูล'}</button>
+                        <button onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>{t['cancel'] || 'ยกเลิก'}</button>
+                        <button onClick={handleConfirmDelete} disabled={saving} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: saving ? 0.5 : 1 }}>{saving ? t['deleting'] || 'กำลังลบ...' : t['delete_data'] || 'ลบข้อมูล'}</button>
                     </>
                 }
             >
                 <div>
-                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)' }}>คุณแน่ใจหรือไม่ว่าต้องการลบ Invoice <strong style={{ color: 'var(--text-primary)' }}>{selectedItem?.invoice}</strong> ?</p>
-                    <p style={{ margin: 0, fontSize: '13px', color: '#ef4444' }}>การกระทำนี้จะไม่สามารถย้อนกลับได้</p>
+                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)' }}>{t['delete_confirm_msg'] || 'คุณแน่ใจหรือไม่ว่าต้องการลบ Invoice'} <strong style={{ color: 'var(--text-primary)' }}>{selectedItem?.invoice}</strong> ?</p>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#ef4444' }}>{t['irreversible_action'] || 'การกระทำนี้จะไม่สามารถย้อนกลับได้'}</p>
                 </div>
             </BaseModal>
         </CrudLayout>

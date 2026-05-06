@@ -12,7 +12,7 @@ const client = new Client({
 async function run() {
   await client.connect();
   try {
-    const sql = fs.readFileSync('language_translations_insert.sql', 'utf8');
+    const sql = fs.readFileSync('seed_template_master_3.sql', 'utf8');
     await client.query(sql);
     console.log('SQL executed successfully');
   } catch (err) {

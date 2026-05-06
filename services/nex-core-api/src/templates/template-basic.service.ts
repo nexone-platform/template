@@ -1,28 +1,28 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Template } from '../entities/template.entity';
+import { TemplateBasic } from '../entities/template-basic.entity';
 
 @Injectable()
-export class TemplatesService {
+export class TemplateBasicService {
   constructor(
-    @InjectRepository(Template)
-    private readonly templateRepository: Repository<Template>,
+    @InjectRepository(TemplateBasic)
+    private readonly templateRepository: Repository<TemplateBasic>,
   ) {}
 
-  async findAll(): Promise<Template[]> {
+  async findAll(): Promise<TemplateBasic[]> {
     return this.templateRepository.find({
       order: { template_id: 'ASC' },
     });
   }
 
-  async findOne(id: number): Promise<Template> {
+  async findOne(id: number): Promise<TemplateBasic> {
     const item = await this.templateRepository.findOne({ where: { template_id: id } });
-    if (!item) throw new NotFoundException(`Template #${id} not found`);
+    if (!item) throw new NotFoundException(`TemplateBasic #${id} not found`);
     return item;
   }
 
-  async create(dto: Partial<Template>): Promise<Template> {
+  async create(dto: Partial<TemplateBasic>): Promise<TemplateBasic> {
     const item = this.templateRepository.create({
       ...dto,
       create_by: 'system',
@@ -31,7 +31,7 @@ export class TemplatesService {
     return this.templateRepository.save(item);
   }
 
-  async update(id: number, dto: Partial<Template>): Promise<Template> {
+  async update(id: number, dto: Partial<TemplateBasic>): Promise<TemplateBasic> {
     const item = await this.findOne(id);
     Object.assign(item, dto, { update_date: new Date() });
     return this.templateRepository.save(item);
@@ -42,7 +42,7 @@ export class TemplatesService {
     await this.templateRepository.remove(item);
   }
 
-  async toggleStatus(id: number, is_active: boolean): Promise<Template> {
+  async toggleStatus(id: number, is_active: boolean): Promise<TemplateBasic> {
     const item = await this.findOne(id);
     item.is_active = is_active;
     item.update_date = new Date();

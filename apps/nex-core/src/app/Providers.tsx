@@ -21,7 +21,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <ThemeProvider coreApiUrl={CORE_API_URL}>
           <LanguageProvider>
             <ToastProvider>
-              <PermissionProvider initialApp="nex-core">
+              <PermissionProvider initialApp="NexCore">
                 {children}
               </PermissionProvider>
             </ToastProvider>

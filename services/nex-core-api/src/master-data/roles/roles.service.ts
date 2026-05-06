@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
@@ -20,7 +19,7 @@ export class RolesService {
 
   async findAll(): Promise<Role[]> {
     return this.rolesRepo.find({
-      order: { roleId: 'ASC' },
+      order: { roleName: 'DESC' },
     });
   }
 
@@ -32,52 +31,61 @@ export class RolesService {
     return role;
   }
 
-  async create(createDto: Partial<Role>): Promise<Role> {
+  async create(createDto: Partial<Role>, userId?: string): Promise<Role> {
     const role = this.rolesRepo.create({
       roleName: createDto.roleName,
       description: createDto.description,
       isActive: createDto.isActive ?? true,
-      createBy: null,
+      createBy: userId || null,
+      updateBy: userId || null,
     });
     return this.rolesRepo.save(role);
   }
 
-  async update(id: string, updateDto: Partial<Role>): Promise<Role> {
+  async update(id: string, updateDto: Partial<Role>, userId?: string): Promise<Role> {
     const role = await this.findOne(id);
     if (updateDto.roleName !== undefined) role.roleName = updateDto.roleName;
     if (updateDto.description !== undefined) role.description = updateDto.description;
     if (updateDto.isActive !== undefined) role.isActive = updateDto.isActive;
-    role.updateBy = null;
+    role.updateBy = userId || null;
     return this.rolesRepo.save(role);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string): Promise<{ success: boolean }> {
     const role = await this.findOne(id);
     await this.rolesRepo.remove(role);
+    return { success: true };
   }
 
   /**
    * Get menus tree for a given app, with each menu's permission for a specific role
    */
   async getMenusWithPermissions(roleId: string, appName: string): Promise<any[]> {
-    // Fetch all menus for the app ordered by parent then seq
-    const menus = await this.menuRepo.find({
-      where: { app_name: appName, is_active: true },
-      order: { menu_seq: 'ASC' },
-    });
+    // Fetch all menus for the app ordered by parent then seq (case-insensitive match)
+    const menus = await this.menuRepo
+      .createQueryBuilder('m')
+      .where('LOWER(m.app_name) = LOWER(:appName)', { appName })
+      .andWhere('m.is_active = true')
+      .orderBy('m.menu_seq', 'ASC')
+      .getMany();
 
-    // Fetch existing permissions for this role+app
-    const perms = await this.permRepo.find({
-      where: { roleId, appName },
-    });
+    // Fetch existing permissions for this role+app (case-insensitive)
+    const perms = await this.permRepo
+      .createQueryBuilder('p')
+      .where('p.role_id = :roleId', { roleId })
+      .andWhere('LOWER(p.app_name) = LOWER(:appName)', { appName })
+      .getMany();
 
     // Build a lookup map: menuId -> permission
     const permMap: Record<string, RolePermission> = {};
     perms.forEach(p => { permMap[p.menuId] = p; });
 
     // Attach permissions to each menu
+    // ถ้ายังไม่มี RolePermission record → default เป็น allow ทั้งหมด
+    // ถ้ามี record แล้ว → ใช้ค่าที่บันทึกไว้จริง
     const menuWithPerms = menus.map(m => {
       const perm = permMap[m.menu_id];
+      const hasPermRecord = !!perm;
       return {
         menuId: m.menu_id,
         parentId: m.parent_id || null,
@@ -85,14 +93,15 @@ export class RolesService {
         menuCode: m.menu_code,
         menuSeq: m.menu_seq,
         icon: m.icon,
-        canView: perm?.canView ?? false,
-        canAdd: perm?.canAdd ?? false,
-        canEdit: perm?.canEdit ?? false,
-        canDelete: perm?.canDelete ?? false,
-        canImport: perm?.canImport ?? false,
-        canExport: perm?.canExport ?? false,
-        isActive: perm?.isActive ?? false,   // default OFF when no record exists
+        canView: hasPermRecord ? (perm.canView ?? false) : false,
+        canAdd: hasPermRecord ? (perm.canAdd ?? false) : false,
+        canEdit: hasPermRecord ? (perm.canEdit ?? false) : false,
+        canDelete: hasPermRecord ? (perm.canDelete ?? false) : false,
+        canImport: hasPermRecord ? (perm.canImport ?? false) : false,
+        canExport: hasPermRecord ? (perm.canExport ?? false) : false,
+        isActive: hasPermRecord ? (perm.isActive ?? false) : false,
         permissionId: perm?.permissionId ?? null,
+        menuType: m.menu_type || 'menu', // Explicit mapping with fallback
       };
     });
 
@@ -106,7 +115,6 @@ export class RolesService {
       } else if (menuMap[m.parentId]) {
         menuMap[m.parentId].children.push(menuMap[m.menuId]);
       } else {
-        // Parent not in this app scope — treat as root
         rootMenus.push(menuMap[m.menuId]);
       }
     });
@@ -114,9 +122,6 @@ export class RolesService {
     return rootMenus;
   }
 
-  /**
-   * Upsert permissions for a role (bulk save)
-   */
   async savePermissions(
     roleId: string,
     appName: string,
@@ -131,27 +136,14 @@ export class RolesService {
       canImport: boolean;
       canExport: boolean;
     }>,
-  ): Promise<void> {
-    for (const p of permissions) {
-      if (p.permissionId) {
-        // Update existing
-        await this.permRepo.update(p.permissionId, {
-          isActive: p.isActive,
-          canView: p.canView,
-          canAdd: p.canAdd,
-          canEdit: p.canEdit,
-          canDelete: p.canDelete,
-          canImport: p.canImport,
-          canExport: p.canExport,
-          updateBy: null,
-        });
-      } else {
-        // Insert new only if has any permission or is being activated
-        if (p.isActive || p.canView || p.canAdd || p.canEdit || p.canDelete || p.canImport || p.canExport) {
-          const perm = this.permRepo.create({
-            roleId,
-            menuId: p.menuId,
-            appName,
+    userId?: string,
+  ): Promise<{ success: boolean }> {
+    try {
+      console.log(`[RolesService] Saving permissions for role: ${roleId}, app: ${appName}, by user: ${userId}`);
+      for (const p of permissions) {
+        if (p.permissionId) {
+          // Update existing
+          await this.permRepo.update(p.permissionId, {
             isActive: p.isActive,
             canView: p.canView,
             canAdd: p.canAdd,
@@ -159,11 +151,33 @@ export class RolesService {
             canDelete: p.canDelete,
             canImport: p.canImport,
             canExport: p.canExport,
-            createBy: null,
+            updateBy: userId || null,
           });
-          await this.permRepo.save(perm);
+        } else {
+          // Insert new only if has any permission or is being activated
+          if (p.isActive || p.canView || p.canAdd || p.canEdit || p.canDelete || p.canImport || p.canExport) {
+            const perm = this.permRepo.create({
+              roleId,
+              menuId: p.menuId,
+              appName,
+              isActive: p.isActive,
+              canView: p.canView,
+              canAdd: p.canAdd,
+              canEdit: p.canEdit,
+              canDelete: p.canDelete,
+              canImport: p.canImport,
+              canExport: p.canExport,
+              createBy: userId || null,
+              updateBy: userId || null,
+            });
+            await this.permRepo.save(perm);
+          }
         }
       }
+      return { success: true };
+    } catch (error) {
+      console.error('[RolesService] Error in savePermissions:', error);
+      throw error;
     }
   }
 }

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useAuth } from '@nexone/auth';
+import { usePathname } from 'next/navigation';
 
 // ---------- Types ----------
 
@@ -28,11 +29,21 @@ interface PermissionContextValue {
   setAppName: (name: string) => void;
   /** ค้นหา permission ของ menu ใดก็ได้จาก menuCode หรือ title (case-insensitive) */
   getPermission: (menuCode: string) => MenuPermission | null;
-  /** ถ้าหา permission ไม่เจอ ให้ default เป็น allow ทั้งหมด (ป้องกัน page โล่ง) */
+  /** ถ้าหา permission ไม่เจอ ให้ default เป็น deny ทั้งหมด (เพื่อความปลอดภัย) */
   getPermissionOrAllow: (menuCode: string) => MenuPermission;
   /** สั่ง re-fetch permissions จาก API ทันที */
   refreshPermissions: () => void;
 }
+
+const ALL_DENY: Omit<MenuPermission, 'menuId' | 'menuCode' | 'title' | 'parentId'> = {
+  isActive: true,
+  canView: false,
+  canAdd: false,
+  canEdit: false,
+  canDelete: false,
+  canImport: false,
+  canExport: false,
+};
 
 const ALL_ALLOW: Omit<MenuPermission, 'menuId' | 'menuCode' | 'title' | 'parentId'> = {
   isActive: true,
@@ -46,13 +57,13 @@ const ALL_ALLOW: Omit<MenuPermission, 'menuId' | 'menuCode' | 'title' | 'parentI
 
 const PermissionContext = createContext<PermissionContextValue>({
   roleId: '',
-  appName: 'nex-core',
+  appName: 'NexCore',
   permissions: [],
   loading: false,
   setRoleId: () => {},
   setAppName: () => {},
   getPermission: () => null,
-  getPermissionOrAllow: () => ({ menuId: 0, menuCode: '', title: '', parentId: null, ...ALL_ALLOW }),
+  getPermissionOrAllow: () => ({ menuId: 0, menuCode: '', title: '', parentId: null, ...ALL_DENY }),
   refreshPermissions: () => {},
 });
 
@@ -84,12 +95,13 @@ function flatten(nodes: any[]): MenuPermission[] {
 
 // ---------- Provider ----------
 
-export function PermissionProvider({ children, initialRoleId = '', initialApp = 'nex-core' }: {
+export function PermissionProvider({ children, initialRoleId = '', initialApp = 'NexCore' }: {
   children: ReactNode;
   initialRoleId?: string | number;
   initialApp?: string;
 }) {
-  const { user, isLoggedIn } = useAuth();
+  const { user } = useAuth();
+  const pathname = usePathname();
   
   const [roleId, setRoleId] = useState<string | number>(initialRoleId);
   const [appName, setAppName] = useState(initialApp);
@@ -121,7 +133,10 @@ export function PermissionProvider({ children, initialRoleId = '', initialApp = 
     }
   }, [roleId, appName, API]);
 
-  useEffect(() => { fetchPermissions(); }, [fetchPermissions]);
+  // Re-fetch on role change OR pathname change (menu click/navigation)
+  useEffect(() => { 
+    fetchPermissions(); 
+  }, [fetchPermissions, pathname]);
 
   const getPermission = useCallback((menuCode: string): MenuPermission | null => {
     const code = menuCode.toLowerCase();
@@ -133,8 +148,8 @@ export function PermissionProvider({ children, initialRoleId = '', initialApp = 
   const getPermissionOrAllow = useCallback((menuCode: string): MenuPermission => {
     const p = getPermission(menuCode);
     if (p) return p;
-    // ถ้าหาไม่เจอ → allow ทั้งหมด เพื่อไม่ให้ page โล่ง
-    return { menuId: 0, menuCode, title: menuCode, parentId: null, ...ALL_ALLOW };
+    // ถ้าหาไม่เจอ → deny ทั้งหมด เพื่อความปลอดภัย (บังคับใช้สิทธิจริง)
+    return { menuId: 0, menuCode, title: menuCode, parentId: null, ...ALL_DENY };
   }, [getPermission]);
 
   return (

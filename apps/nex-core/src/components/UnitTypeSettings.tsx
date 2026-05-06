@@ -1,10 +1,12 @@
 import { useSystemConfig } from '@nexone/ui';
 import React, { useEffect,  useState } from 'react';
 import CrudLayout from '@/components/CrudLayout';
-import { SearchInput, crudStyles, StatusDropdown, BaseModal } from '@/components/CrudComponents';
+import { SearchInput, crudStyles, StatusDropdown, BaseModal, ExportButtons } from '@/components/CrudComponents';
 import { Plus, Edit2, Trash2, Box, Eye } from 'lucide-react';
 import Pagination from '@/components/Pagination';
 import { useApiConfig } from '../contexts/ApiConfigContext';
+import { usePagePermission } from '@/contexts/PermissionContext';
+import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
 
 interface UnitType {
   id: string;
@@ -15,6 +17,7 @@ interface UnitType {
 }
 
 export default function UnitTypeSettings() {
+    const perm = usePagePermission('Unit Types');
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const { configs, loading: configLoading } = useSystemConfig();
@@ -27,6 +30,7 @@ export default function UnitTypeSettings() {
             setHasSetDefaultPageSize(true);
         }
     }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
+
     const [data, setData] = useState<UnitType[]>([]);
     
     // Fetch data from API
@@ -136,20 +140,43 @@ export default function UnitTypeSettings() {
     );
 
     const paginatedData = filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    const hasActions = perm.canView || perm.canEdit || perm.canDelete;
 
     return (
         <CrudLayout
             toolbarLeft={
-                <div className="flex items-center gap-3">
-                     <span className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {perm.canExport && (
+                        <ExportButtons 
+                            onExportXLSX={() => exportToXLSX(filteredData, 'UnitTypes', [
+                                { key: 'name', label: 'ชื่อหน่วยนับ' },
+                                { key: 'symbol', label: 'สัญลักษณ์' },
+                                { key: 'group', label: 'กลุ่ม' },
+                                { key: 'status', label: 'สถานะ', format: (v: any) => v.status ? 'ใช้งาน' : 'ยกเลิก' }
+                            ])}
+                            onExportCSV={() => exportToCSV(filteredData, 'UnitTypes', [
+                                { key: 'name', label: 'ชื่อหน่วยนับ' },
+                                { key: 'symbol', label: 'สัญลักษณ์' },
+                                { key: 'group', label: 'กลุ่ม' },
+                                { key: 'status', label: 'สถานะ', format: (v: any) => v.status ? 'ใช้งาน' : 'ยกเลิก' }
+                            ])}
+                            onExportPDF={(orientation) => exportToPDF(filteredData, 'UnitTypes', [
+                                { key: 'name', label: 'ชื่อหน่วยนับ' },
+                                { key: 'symbol', label: 'สัญลักษณ์' },
+                                { key: 'group', label: 'กลุ่ม' },
+                                { key: 'status', label: 'สถานะ', format: (v: any) => v.status ? 'ใช้งาน' : 'ยกเลิก' }
+                            ], 'Unit Types Report', orientation)}
+                        />
+                    )}
+                     <span className="text-lg font-bold text-slate-800 flex items-center gap-2" style={{ marginLeft: '8px' }}>
                         <Box size={22} className="text-blue-600" /> จัดการข้อมูลหน่วยนับ (Unit Types)
                      </span>
                 </div>
             }
             toolbarRight={
                 <>
-                    <SearchInput value={search} onChange={setSearch} placeholder="ค้นหาหน่วยนับ..." />
-                    <button onClick={handleAdd} className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 500, cursor: 'pointer' }}><Plus size={16} /> <span>เพิ่มหน่วยนับ</span></button>
+                    {perm.canView && <SearchInput value={search} onChange={setSearch} placeholder="ค้นหาหน่วยนับ..." />}
+                    {perm.canAdd && <button onClick={handleAdd} className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 500, cursor: 'pointer' }}><Plus size={16} /> <span>เพิ่มหน่วยนับ</span></button>}
                 </>
             }
         >
@@ -161,7 +188,7 @@ export default function UnitTypeSettings() {
                             <th>สัญลักษณ์ (Symbol)</th>
                             <th>กลุ่ม (Group)</th>
                             <th className="text-center" style={{ width: '120px' }}>สถานะ</th>
-                            <th className="text-center" style={{ width: '100px', paddingRight: '24px' }}>จัดการ</th>
+                            {hasActions && <th className="text-center" style={{ width: '100px', paddingRight: '24px' }}>จัดการ</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -173,6 +200,7 @@ export default function UnitTypeSettings() {
                                 <td className="text-center">
                                     <StatusDropdown 
                                         status={item.status} 
+                                        disabled={!perm.canEdit}
                                         onChange={async (val) => {
                                             // Optimistic update — เปลี่ยน UI ทันที
                                             setData(prev => prev.map(d => d.id === item.id ? { ...d, status: val } : d));
@@ -190,19 +218,21 @@ export default function UnitTypeSettings() {
                                         }} 
                                     />
                                 </td>
-                                <td className="text-center" style={{ paddingRight: '24px' }}>
-                                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-                                        <button onClick={() => handleView(item)} style={{ ...crudStyles.actionBtn, color: 'var(--accent-blue)', background: 'rgba(59,130,246,0.1)' }} title="เรียกดู">
-                                            <Eye size={14} />
-                                        </button>
-                                        <button onClick={() => handleEdit(item)} style={{ ...crudStyles.actionBtn, color: '#f59e0b', background: '#fef3c7' }} title="แก้ไข">
-                                            <Edit2 size={14} />
-                                        </button>
-                                        <button onClick={() => handleDelete(item)} style={{ ...crudStyles.actionBtn, color: '#ef4444', background: '#fee2e2' }} title="ลบ">
-                                            <Trash2 size={14} />
-                                        </button>
-                                    </div>
-                                </td>
+                                {hasActions && (
+                                    <td className="text-center" style={{ paddingRight: '24px' }}>
+                                        <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                                            {perm.canView && <button onClick={() => handleView(item)} style={{ ...crudStyles.actionBtn, color: 'var(--accent-blue)', background: 'rgba(59,130,246,0.1)' }} title="เรียกดู">
+                                                <Eye size={14} />
+                                            </button>}
+                                            {perm.canEdit && <button onClick={() => handleEdit(item)} style={{ ...crudStyles.actionBtn, color: '#f59e0b', background: '#fef3c7' }} title="แก้ไข">
+                                                <Edit2 size={14} />
+                                            </button>}
+                                            {perm.canDelete && <button onClick={() => handleDelete(item)} style={{ ...crudStyles.actionBtn, color: '#ef4444', background: '#fee2e2' }} title="ลบ">
+                                                <Trash2 size={14} />
+                                            </button>}
+                                        </div>
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>

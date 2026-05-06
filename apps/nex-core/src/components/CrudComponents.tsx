@@ -82,6 +82,7 @@ export function StatusDropdown({
     disabled?: boolean,
     t?: Record<string, string>
 }) {
+    const { lang } = useLanguage();
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 

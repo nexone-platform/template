@@ -19,7 +19,7 @@ const c = new Client({
 });
 
 c.connect()
-  .then(() => c.query("UPDATE nex_core.users SET password = $1, failed_login_count = 0, locked_until = NULL WHERE email = 'admin@company.com' RETURNING id, email", [newPassword]))
+  .then(() => c.query("UPDATE nex_core.users SET password = $1, failed_login_count = 0, locked_until = NULL WHERE email = 'tigerlinly@gmail.com' RETURNING id, email", [newPassword]))
   .then(r => {
     if (r.rowCount > 0) {
       console.log('Password reset for:', r.rows[0].email);

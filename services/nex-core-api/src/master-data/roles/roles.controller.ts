@@ -1,6 +1,6 @@
 import {
   Controller, Get, Post, Body, Param, Put, Delete,
-  Query,
+  Query, Req, Patch,
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { Role } from '../../entities/role.entity';
@@ -24,14 +24,14 @@ export class RolesController {
 
   @Post()
   @AuditLog('Roles', 'Create')
-  create(@Body() createDto: Partial<Role>) {
-    return this.rolesService.create(createDto);
+  create(@Body() createDto: Partial<Role>, @Req() req: any) {
+    return this.rolesService.create(createDto, req.user?.userId);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @AuditLog('Roles', 'Update')
-  update(@Param('id') id: string, @Body() updateDto: Partial<Role>) {
-    return this.rolesService.update(id, updateDto);
+  update(@Param('id') id: string, @Body() updateDto: Partial<Role>, @Req() req: any) {
+    return this.rolesService.update(id, updateDto, req.user?.userId);
   }
 
   @Delete(':id')
@@ -57,7 +57,8 @@ export class RolesController {
     @Param('id') id: string,
     @Query('app') app: string = 'nex-core',
     @Body() body: { permissions: any[] },
+    @Req() req: any,
   ) {
-    return this.rolesService.savePermissions(id, app, body.permissions);
+    return this.rolesService.savePermissions(id, app, body.permissions, req.user?.userId);
   }
 }

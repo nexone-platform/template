@@ -12,7 +12,7 @@ import { useApiConfig } from '@/contexts/ApiConfigContext';
 import { format } from 'date-fns';
 
 export default function UserManagement() {
-    const perm = usePagePermission('User Management');
+    const perm = usePagePermission('users');
     const { lang } = useLanguage();
     const { getEndpoint } = useApiConfig();
     const { configs, loading: configLoading } = useSystemConfig();
@@ -47,9 +47,12 @@ export default function UserManagement() {
     const [isColumnSettingsOpen, setIsColumnSettingsOpen] = useState(false);
     const [visibleColumns, setVisibleColumns] = useState({
         id: true,
+        employeeId: true,
         displayName: true,
         email: true,
         roleName: true,
+        language: true,
+        mfaEnabled: true,
         isActive: true
     });
 
@@ -94,7 +97,7 @@ export default function UserManagement() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view' | 'delete'>('add');
     const [selectedItem, setSelectedItem] = useState<any | null>(null);
-    const [formData, setFormData] = useState({ displayName: '', email: '', roleId: '', password: '', isActive: true });
+    const [formData, setFormData] = useState({ displayName: '', email: '', roleId: '', password: '', isActive: true, language: 'TH', mfaEnabled: false, employeeId: '' });
     const [saving, setSaving] = useState(false);
     const [alertConfig, setAlertConfig] = useState<{isOpen: boolean, message: string, isError: boolean}>({isOpen: false, message: '', isError: false});
     const [emailError, setEmailError] = useState('');
@@ -113,9 +116,11 @@ export default function UserManagement() {
         return true;
     };
 
+    const [languages, setLanguages] = useState<any[]>([]);
+
     const loadData = useCallback(() => {
         setLoading(true);
-        coreUserApi.getAll(1, 1000, '') // Fetch all for local pagination/filtering to match Master template
+        coreUserApi.getAll(1, 1000, '') // Fetch all for local pagination/filtering to match Master template behaviors
             .then(res => { setData(res || []); })
             .catch(err => { console.error('Failed to load users:', err); setData([]); })
             .finally(() => setLoading(false));
@@ -132,24 +137,60 @@ export default function UserManagement() {
             .catch(err => console.error('Failed to load roles', err));
     }, []);
 
-    useEffect(() => { loadData(); loadRoles(); }, [loadData, loadRoles]);
+    const fetchLanguages = useCallback(async () => {
+        if (!coreApi) return;
+        try {
+            const res = await fetch(`${coreApi}/translations/languages`, { credentials: 'include' });
+            const json = await res.json();
+            const items = Array.isArray(json) ? json : (json?.data || []);
+            setLanguages(items.sort((a: any, b: any) => 
+                (a.languageName || '').localeCompare(b.languageName || '')
+            ));
+        } catch (err) {
+            console.error('Failed to load languages:', err);
+        }
+    }, [coreApi]);
+
+    useEffect(() => { 
+        loadData(); 
+        loadRoles(); 
+        fetchLanguages();
+    }, [loadData, loadRoles, fetchLanguages]);
 
     // Action Handlers
     const handleAdd = () => {
-        setFormData({ displayName: '', email: '', roleId: '', password: '', isActive: true });
+        setFormData({ displayName: '', email: '', roleId: '', password: '', isActive: true, language: 'TH', mfaEnabled: false, employeeId: '' });
         setEmailError('');
         setModalMode('add');
         setIsModalOpen(true);
     };
     const handleEdit = (item: any) => {
-        setFormData({ displayName: item.displayName || '', email: item.email || '', roleId: item.roleId || '', password: '', isActive: item.isActive });
+        setFormData({ 
+            displayName: item.displayName || '', 
+            email: item.email || '', 
+            roleId: item.roleId || '', 
+            password: '', 
+            isActive: item.isActive,
+            language: item.language || 'TH',
+            mfaEnabled: item.mfaEnabled || false,
+            employeeId: item.employeeId || ''
+        });
         setSelectedItem(item);
         setEmailError('');
         setModalMode('edit');
         setIsModalOpen(true);
     };
     const handleView = (item: any) => {
-        setFormData({ displayName: item.displayName || '', email: item.email || '', roleId: item.roleId || '', password: '', isActive: item.isActive });
+        setFormData({ 
+            displayName: item.displayName || '', 
+            email: item.email || '', 
+            roleId: item.roleId || '', 
+            password: '', 
+            isActive: item.isActive,
+            language: item.language || 'TH',
+            mfaEnabled: item.mfaEnabled || false,
+            employeeId: item.employeeId || ''
+        });
         setSelectedItem(item);
         setEmailError('');
         setModalMode('view');
@@ -176,8 +217,11 @@ export default function UserManagement() {
             const payload: any = {
                 displayName: formData.displayName,
                 email: formData.email,
-                roleId: formData.roleId,
-                isActive: formData.isActive
+                roleId: formData.roleId || null,
+                isActive: formData.isActive,
+                language: formData.language,
+                mfaEnabled: formData.mfaEnabled,
+                employeeId: formData.employeeId || null
             };
             if (formData.password) payload.password = formData.password;
 
@@ -245,8 +289,9 @@ export default function UserManagement() {
         const matchStatus = advSearchValues.status === 'all' || advSearchValues.status === '' ||
             (advSearchValues.status === 'active' && item.isActive) ||
             (advSearchValues.status === 'inactive' && !item.isActive);
+        const matchEmpId = !advSearchValues.employeeId || (item.employeeId || '').toLowerCase().includes(advSearchValues.employeeId.toLowerCase());
 
-        return matchQuickSearch && matchName && matchEmail && matchStatus;
+        return matchQuickSearch && matchName && matchEmail && matchStatus && matchEmpId;
     }) : [];
 
     let sortedData = [...filteredData];
@@ -307,8 +352,9 @@ export default function UserManagement() {
         return { success, failed };
     };
 
-    const getRoleName = (roleId: string) => {
-        const role = roles.find(r => r.id === roleId);
+    const getRoleName = (item: any) => {
+        if (item.role?.roleName) return item.role.roleName;
+        const role = roles.find((r: any) => (r.roleId || r.id) === item.roleId);
         return role ? role.roleName : '-';
     };
 
@@ -326,6 +372,8 @@ export default function UserManagement() {
                                 { key: 'displayName', label: t['name'] || 'ชื่อพนักงาน' },
                                 { key: 'email', label: t['email'] || 'อีเมล์' },
                                 { key: 'roleId', label: t['role'] || 'สิทธิ์', format: (v: any) => getRoleName(v.roleId) },
+                                { key: 'language', label: t['language'] || 'ภาษา' },
+                                { key: 'mfaEnabled', label: 'MFA', format: (v: any) => v.mfaEnabled ? 'Enabled' : 'Disabled' },
                                 { key: 'isActive', label: t['is_active'] || 'สถานะ', format: (v: any) => v.isActive ? (t['active'] || 'ใช้งาน') : (t['inactive'] || 'ยกเลิก') }
                             ])}
                             onExportCSV={() => exportToCSV(filteredData, 'Users', [
@@ -333,6 +381,8 @@ export default function UserManagement() {
                                 { key: 'displayName', label: t['name'] || 'ชื่อพนักงาน' },
                                 { key: 'email', label: t['email'] || 'อีเมล์' },
                                 { key: 'roleId', label: t['role'] || 'สิทธิ์', format: (v: any) => getRoleName(v.roleId) },
+                                { key: 'language', label: t['language'] || 'ภาษา' },
+                                { key: 'mfaEnabled', label: 'MFA', format: (v: any) => v.mfaEnabled ? 'Enabled' : 'Disabled' },
                                 { key: 'isActive', label: t['is_active'] || 'สถานะ', format: (v: any) => v.isActive ? (t['active'] || 'ใช้งาน') : (t['inactive'] || 'ยกเลิก') }
                             ])}
                             onExportPDF={(orientation) => exportToPDF(filteredData, 'Users', [
@@ -340,13 +390,15 @@ export default function UserManagement() {
                                 { key: 'displayName', label: t['name'] || 'ชื่อพนักงาน' },
                                 { key: 'email', label: t['email'] || 'อีเมล์' },
                                 { key: 'roleId', label: t['role'] || 'สิทธิ์', format: (v: any) => getRoleName(v.roleId) },
+                                { key: 'language', label: t['language'] || 'ภาษา' },
+                                { key: 'mfaEnabled', label: 'MFA', format: (v: any) => v.mfaEnabled ? 'Enabled' : 'Disabled' },
                                 { key: 'isActive', label: t['is_active'] || 'สถานะ', format: (v: any) => v.isActive ? (t['active'] || 'ใช้งาน') : (t['inactive'] || 'ยกเลิก') }
                             ], 'User Account Report', orientation)}
                         />
                     )}
-                    {perm.canAdd && (
+                    {perm.canImport && (
                         <ImportExcelButton
-                            translations={t}
+
                             columns={[
                                 { header: t['name'] || 'ชื่อพนักงาน', key: 'displayName', required: true },
                                 { header: t['email'] || 'อีเมล์', key: 'email', required: true }
@@ -381,17 +433,21 @@ export default function UserManagement() {
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    {visibleColumns.id && renderTh(t['id'] || 'รหัสพนักงาน', 'id', '130px')}
-                                    {visibleColumns.displayName && renderTh(t['name'] || 'พนักงาน', 'displayName')}
+                                    {visibleColumns.employeeId && renderTh(t['employee_id'] || 'รหัสพนักงาน', 'employeeId', '130px')}
+                                    {visibleColumns.displayName && renderTh(t['name'] || 'ชื่อพนักงาน', 'displayName')}
                                     {visibleColumns.email && renderTh(t['email'] || 'อีเมล์', 'email')}
-                                    {visibleColumns.roleName && renderTh(t['role'] || 'สิทธิ์', 'roleId')}
+                                    {visibleColumns.roleName && renderTh(t['role'] || 'สิทธิ์การใช้งาน', 'roleId')}
+                                    {visibleColumns.language && renderTh(t['language'] || 'ภาษา', 'language', '100px')}
+                                    {visibleColumns.mfaEnabled && renderTh('MFA', 'mfaEnabled', '80px')}
                                     {visibleColumns.isActive && renderTh(t['is_active'] || 'สถานะ', 'isActive', '100px')}
                                     {hasActions && <th className="text-center" style={{ width: '100px', paddingRight: '16px', whiteSpace: 'nowrap' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
                                             <span>{t['action'] || 'จัดการ'}</span>
-                                            <span title={t['column_settings'] || 'ตั้งค่าคอลัมน์'} style={{ display: 'flex', alignItems: 'center' }}>
-                                                <Settings size={16} style={{ cursor: 'pointer', color: 'var(--text-muted)' }} onClick={() => setIsColumnSettingsOpen(true)} />
-                                            </span>
+                                            {perm.canView && (
+                                                <span title={t['column_settings'] || 'ตั้งค่าคอลัมน์'} style={{ display: 'flex', alignItems: 'center' }}>
+                                                    <Settings size={16} style={{ cursor: 'pointer', color: 'var(--text-muted)' }} onClick={() => setIsColumnSettingsOpen(true)} />
+                                                </span>
+                                            )}
                                         </div>
                                     </th>}
                                 </tr>
@@ -399,10 +455,24 @@ export default function UserManagement() {
                             <tbody>
                                 {paginatedData.map((item) => (
                                     <tr key={item.id}>
-                                        {visibleColumns.id && <td className="text-medium font-medium" style={{ color: 'var(--accent-blue)', fontSize: '12px' }}>{item.id}</td>}
+                                        {visibleColumns.employeeId && <td className="text-medium font-medium" style={{ color: 'var(--accent-blue)', fontSize: '12px' }}>{item.employee?.employeeCode || item.employeeId || '-'}</td>}
                                         {visibleColumns.displayName && <td><span className="font-medium" style={{ color: 'var(--accent-blue)' }}>{item.displayName}</span></td>}
                                         {visibleColumns.email && <td className="text-muted">{item.email}</td>}
-                                        {visibleColumns.roleName && <td className="text-muted">{getRoleName(item.roleId)}</td>}
+                                        {visibleColumns.roleName && <td className="text-muted">{getRoleName(item)}</td>}
+                                        {visibleColumns.language && <td className="text-center text-muted">{item.language || '-'}</td>}
+                                        {visibleColumns.mfaEnabled && <td className="text-center">
+                                            <span style={{ 
+                                                padding: '2px 8px', 
+                                                borderRadius: '12px', 
+                                                fontSize: '11px', 
+                                                fontWeight: 600,
+                                                background: item.mfaEnabled ? 'rgba(16,185,129,0.1)' : 'rgba(100,116,139,0.1)',
+                                                color: item.mfaEnabled ? '#10b981' : '#64748b',
+                                                border: `1px solid ${item.mfaEnabled ? 'rgba(16,185,129,0.2)' : 'rgba(100,116,139,0.2)'}`
+                                            }}>
+                                                {item.mfaEnabled ? 'ON' : 'OFF'}
+                                            </span>
+                                        </td>}
                                         {visibleColumns.isActive && <td className="text-center">
                                             <StatusDropdown status={item.isActive} onChange={(val) => handleToggleStatus(item, val)} disabled={!perm.canEdit} t={t} />
                                         </td>}
@@ -457,12 +527,21 @@ export default function UserManagement() {
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div>
-                        <label style={crudStyles.label}>{t['name'] || 'ชื่อพนักงาน'} <span style={{ color: '#ef4444' }}>*</span></label>
-                        <input type="text" style={crudStyles.input} placeholder={t['name_placeholder'] || "ระบุชื่อจริง-นามสกุล"}
-                            value={formData.displayName}
-                            onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                            disabled={modalMode === 'view'} />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        <div>
+                            <label style={crudStyles.label}>{t['employee_id'] || 'รหัสพนักงาน'}</label>
+                            <input type="text" style={crudStyles.input} placeholder={t['employee_id_placeholder'] || "ระบุรหัสพนักงาน"}
+                                value={formData.employeeId}
+                                onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
+                                disabled={modalMode === 'view' || modalMode === 'edit'} />
+                        </div>
+                        <div>
+                            <label style={crudStyles.label}>{t['name'] || 'ชื่อพนักงาน'} <span style={{ color: '#ef4444' }}>*</span></label>
+                            <input type="text" style={crudStyles.input} placeholder={t['name_placeholder'] || "ระบุชื่อจริง-นามสกุล"}
+                                value={formData.displayName}
+                                onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                                disabled={modalMode === 'view'} />
+                        </div>
                     </div>
                     <div>
                         <label style={crudStyles.label}>{t['email'] || 'อีเมล์'}</label>
@@ -488,10 +567,38 @@ export default function UserManagement() {
                         <label style={crudStyles.label}>{t['role'] || 'สิทธิ์การใช้งาน (Role)'}</label>
                         <select style={crudStyles.input} value={formData.roleId} onChange={(e) => setFormData({ ...formData, roleId: e.target.value })} disabled={modalMode === 'view'}>
                             <option value="">{t['select_role'] || '-- เลือกสิทธิ์การใช้งาน --'}</option>
-                            {roles.map(r => (
-                                <option key={r.id} value={r.id}>{r.roleName}</option>
+                            {roles.map((r: any) => (
+                                <option key={r.roleId || r.id} value={r.roleId || r.id}>{r.roleName}</option>
                             ))}
                         </select>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        <div>
+                            <label style={crudStyles.label}>{t['language'] || 'ภาษา (Language)'}</label>
+                            <select style={crudStyles.input} value={formData.language} onChange={(e) => setFormData({ ...formData, language: e.target.value })} disabled={modalMode === 'view'}>
+                                <option value="TH">Thai (TH)</option>
+                                <option value="EN">English (EN)</option>
+                                {languages.filter(l => l.languageCode !== 'TH' && l.languageCode !== 'EN').map(l => (
+                                    <option key={l.id} value={l.languageCode}>{l.languageName} ({l.languageCode})</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label style={crudStyles.label}>MFA (Multi-Factor Auth)</label>
+                            <div style={{ display: 'flex', alignItems: 'center', height: '38px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: modalMode === 'view' ? 'default' : 'pointer' }}>
+                                    <input type="checkbox" 
+                                        checked={formData.mfaEnabled} 
+                                        onChange={(e) => setFormData({ ...formData, mfaEnabled: e.target.checked })} 
+                                        disabled={modalMode === 'view'}
+                                        style={{ width: '18px', height: '18px' }}
+                                    />
+                                    <span style={{ fontSize: '14px', color: formData.mfaEnabled ? '#10b981' : 'var(--text-muted)', fontWeight: 500 }}>
+                                        {formData.mfaEnabled ? 'Enabled' : 'Disabled'}
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                     {modalMode === 'view' && (
                         <div>
@@ -504,28 +611,7 @@ export default function UserManagement() {
                             </div>
                         </div>
                     )}
-                    {modalMode === 'view' && (
-                        <div style={{ marginTop: '16px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
-                                <Info size={16} />
-                                <span style={{ fontSize: '13px', fontWeight: 600 }}>{t['system_logs'] || 'ข้อมูลระบบ (System Logs)'}</span>
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
-                                    <span style={{ color: 'var(--text-muted)' }}>{t['create_by'] || 'Created By'} :</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500, marginRight: '16px' }}>{selectedItem?.createBy || '-'}</span>
-                                    <span style={{ color: 'var(--text-muted)' }}>{t['create_date'] || 'Created Date'} :</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.createDate ? format(new Date(selectedItem.createDate), configs.dateFormat || 'dd/MM/yyyy') : '-'}</span>
-                                </div>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
-                                    <span style={{ color: 'var(--text-muted)' }}>{t['update_by'] || 'Update By'} :</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500, marginRight: '16px' }}>{selectedItem?.updateBy || '-'}</span>
-                                    <span style={{ color: 'var(--text-muted)' }}>{t['update_date'] || 'Update Date'} :</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.updateDate ? format(new Date(selectedItem.updateDate), configs.dateFormat || 'dd/MM/yyyy') : '-'}</span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+
                 </div>
             </BaseModal>
 
@@ -560,11 +646,48 @@ export default function UserManagement() {
                 title={alertConfig.isError ? (t['error_title'] || "แจ้งเตือนข้อผิดพลาด") : (t['success_title'] || "สำเร็จ")}
                 width="400px"
                 footer={
-                    <button onClick={() => setAlertConfig({...alertConfig, isOpen: false})} style={{ padding: '8px 16px', background: alertConfig.isError ? '#ef4444' : 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, width: '100px' }}>{t['ok_button'] || 'ตกลง'}</button>
+                    <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                        <button 
+                            onClick={() => setAlertConfig({...alertConfig, isOpen: false})} 
+                            style={{ 
+                                padding: '10px 32px', 
+                                background: alertConfig.isError ? '#ef4444' : 'var(--accent-green)', 
+                                color: 'white', 
+                                border: 'none', 
+                                borderRadius: '8px', 
+                                cursor: 'pointer', 
+                                fontWeight: 600,
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                transition: 'transform 0.1s'
+                            }}
+                            onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'}
+                            onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        >
+                            {t['ok_button'] || 'ตกลง'}
+                        </button>
+                    </div>
                 }
             >
-                <div style={{ textAlign: 'center', padding: '10px 0' }}>
-                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)', fontSize: '15px' }}>{alertConfig.message}</p>
+                <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                    <div style={{ 
+                        width: '60px', 
+                        height: '60px', 
+                        borderRadius: '50%', 
+                        background: alertConfig.isError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        margin: '0 auto 16px' 
+                    }}>
+                        {alertConfig.isError ? (
+                            <Info size={32} style={{ color: '#ef4444' }} />
+                        ) : (
+                            <div style={{ color: '#10b981', fontSize: '32px', fontWeight: 'bold' }}>✓</div>
+                        )}
+                    </div>
+                    <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '16px', fontWeight: 500, lineHeight: '1.6' }}>
+                        {alertConfig.message}
+                    </p>
                 </div>
             </BaseModal>
 
@@ -588,12 +711,12 @@ export default function UserManagement() {
                         {/* ID */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
-                                <input type="checkbox" checked={visibleColumns.id} onChange={(e) => setVisibleColumns({ ...visibleColumns, id: e.target.checked })} /> {t['id'] || 'รหัสพนักงาน'}
+                                <input type="checkbox" checked={visibleColumns.employeeId} onChange={(e) => setVisibleColumns({ ...visibleColumns, employeeId: e.target.checked })} /> {t['employee_id'] || 'รหัสพนักงาน'}
                             </label>
                             <select
                                 style={{ ...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0 }}
-                                value={sortConfig.key === 'id' && sortConfig.direction !== null ? sortConfig.direction : 'none'}
-                                onChange={(e) => setSortConfig({ key: 'id', direction: e.target.value === 'none' ? null : e.target.value as 'asc' | 'desc' })}
+                                value={sortConfig.key === 'employeeId' && sortConfig.direction !== null ? sortConfig.direction : 'none'}
+                                onChange={(e) => setSortConfig({ key: 'employeeId', direction: e.target.value === 'none' ? null : e.target.value as 'asc' | 'desc' })}
                             >
                                 <option value="none">{t['no_sort'] || 'ไม่เรียง'}</option>
                                 <option value="asc">{t['sort'] || 'เรียง'}</option>
@@ -603,7 +726,7 @@ export default function UserManagement() {
                         {/* Name */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
-                                <input type="checkbox" checked={visibleColumns.displayName} onChange={(e) => setVisibleColumns({ ...visibleColumns, displayName: e.target.checked })} /> {t['name'] || 'พนักงาน'}
+                                <input type="checkbox" checked={visibleColumns.displayName} onChange={(e) => setVisibleColumns({ ...visibleColumns, displayName: e.target.checked })} /> {t['name'] || 'ชื่อพนักงาน'}
                             </label>
                             <select
                                 style={{ ...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0 }}
@@ -633,10 +756,40 @@ export default function UserManagement() {
                         {/* Role */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
-                                <input type="checkbox" checked={visibleColumns.roleName} onChange={(e) => setVisibleColumns({ ...visibleColumns, roleName: e.target.checked })} /> {t['role'] || 'สิทธิ์'}
+                                <input type="checkbox" checked={visibleColumns.roleName} onChange={(e) => setVisibleColumns({ ...visibleColumns, roleName: e.target.checked })} /> {t['role'] || 'สิทธิ์การใช้งาน'}
                             </label>
                             <select disabled style={{ ...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0, opacity: 0.5 }}>
                                 <option value="none">{t['no_sort'] || 'ไม่เรียง'}</option>
+                            </select>
+                        </div>
+
+                        {/* Language */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.language} onChange={(e) => setVisibleColumns({ ...visibleColumns, language: e.target.checked })} /> {t['language'] || 'ภาษา'}
+                            </label>
+                            <select
+                                style={{ ...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0 }}
+                                value={sortConfig.key === 'language' && sortConfig.direction !== null ? sortConfig.direction : 'none'}
+                                onChange={(e) => setSortConfig({ key: 'language', direction: e.target.value === 'none' ? null : e.target.value as 'asc' | 'desc' })}
+                            >
+                                <option value="none">{t['no_sort'] || 'ไม่เรียง'}</option>
+                                <option value="asc">{t['sort'] || 'เรียง'}</option>
+                            </select>
+                        </div>
+
+                        {/* MFA */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.mfaEnabled} onChange={(e) => setVisibleColumns({ ...visibleColumns, mfaEnabled: e.target.checked })} /> MFA
+                            </label>
+                            <select
+                                style={{ ...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0 }}
+                                value={sortConfig.key === 'mfaEnabled' && sortConfig.direction !== null ? sortConfig.direction : 'none'}
+                                onChange={(e) => setSortConfig({ key: 'mfaEnabled', direction: e.target.value === 'none' ? null : e.target.value as 'asc' | 'desc' })}
+                            >
+                                <option value="none">{t['no_sort'] || 'ไม่เรียง'}</option>
+                                <option value="asc">{t['sort'] || 'เรียง'}</option>
                             </select>
                         </div>
 

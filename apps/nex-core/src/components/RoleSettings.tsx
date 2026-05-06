@@ -1,15 +1,15 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Trash2, Save, X, ShieldCheck, ChevronRight } from 'lucide-react';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '';
+import { Plus, Pencil, Trash2, Save, X, ShieldCheck, ChevronRight, Info } from 'lucide-react';
+import { coreRoleApi } from '../services/api';
+import { BaseModal } from './CrudComponents';
 
 // App name mapping (display -> api value)
 const APP_MAP: Record<string, string> = {
-  'NexCore': 'nex-core',
-  'NexSite': 'nex-site',
-  'NexSpeed': 'nex-speed',
+  'NexCore': 'NexCore',
+  'NexStream': 'NexStream',
+  'NexOne': 'NexOne',
 };
 const SYSTEM_APPS = Object.keys(APP_MAP);
 
@@ -23,8 +23,8 @@ interface Role {
 }
 
 interface MenuNode {
-  menuId: number;
-  parentId: number | null;
+  menuId: string;
+  parentId: string | null;
   title: string;
   menuCode: string;
   menuSeq: number;
@@ -35,7 +35,8 @@ interface MenuNode {
   canImport: boolean;
   canExport: boolean;
   isActive: boolean;
-  permissionId: number | null;
+  permissionId: string | null;
+  menuType?: string; // e.g. 'heading', 'submenu', 'menu'
   children: MenuNode[];
   // Runtime state
   useToggle?: boolean;
@@ -107,9 +108,9 @@ function MenuRow({
   hasChildren: boolean;
   collapsed: boolean;
   parentDisabled: boolean; // true when any ancestor group is OFF
-  onCollapseToggle: (menuId: number) => void;
-  onToggleUse: (menuId: number) => void;
-  onTogglePerm: (menuId: number, field: any) => void;
+  onCollapseToggle: (menuId: string) => void;
+  onToggleUse: (menuId: string) => void;
+  onTogglePerm: (menuId: string, field: any) => void;
 }) {
   const isTop = level === 0;
   const indentBase = level === 0 ? 12 : level === 1 ? 28 : 48;
@@ -119,8 +120,8 @@ function MenuRow({
   const bgColor = isTop
     ? '#f1f5f9'
     : level === 1
-    ? isDisabled ? '#fafafa' : '#f8fafc'
-    : isDisabled ? '#fafafa' : 'transparent';
+      ? isDisabled ? '#fafafa' : '#f8fafc'
+      : isDisabled ? '#fafafa' : 'transparent';
 
   return (
     <tr
@@ -144,8 +145,8 @@ function MenuRow({
         color: isTop
           ? '#1e293b'
           : isDisabled
-          ? '#94a3b8'
-          : level === 1 ? '#2563eb' : '#475569',
+            ? '#94a3b8'
+            : level === 1 ? '#2563eb' : '#475569',
         whiteSpace: 'nowrap',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -205,10 +206,10 @@ function MenuRow({
 function renderMenuTree(
   nodes: MenuNode[],
   level: number,
-  collapsedIds: Set<number>,
-  onCollapseToggle: (id: number) => void,
-  onToggleUse: (id: number) => void,
-  onTogglePerm: (id: number, field: any) => void,
+  collapsedIds: Set<string>,
+  onCollapseToggle: (id: string) => void,
+  onToggleUse: (id: string) => void,
+  onTogglePerm: (id: string, field: any) => void,
   ancestorDisabled: boolean = false, // true if any parent group is OFF
 ): React.ReactNode {
   return nodes.map(node => {
@@ -247,12 +248,13 @@ export default function RoleSettings() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedId, setSelectedId] = useState<string>('');
   const [menuTree, setMenuTree] = useState<MenuNode[]>([]);
-  const [collapsedIds, setCollapsedIds] = useState<Set<number>>(new Set());
+  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
   const [hasChanges, setHasChanges] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loadingMenu, setLoadingMenu] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{ isOpen: boolean, message: string, isError: boolean }>({ isOpen: false, message: '', isError: false });
 
-  const handleCollapseToggle = useCallback((menuId: number) => {
+  const handleCollapseToggle = useCallback((menuId: string) => {
     setCollapsedIds(prev => {
       const next = new Set(prev);
       next.has(menuId) ? next.delete(menuId) : next.add(menuId);
@@ -275,41 +277,43 @@ export default function RoleSettings() {
   // ── Fetch roles list ──────────────────────────────────────────────────────
   const fetchRoles = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/api/roles`, { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
+      const data = await coreRoleApi.getAll();
+      if (Array.isArray(data)) {
         const mapped: Role[] = data.map((r: any) => ({
-          id: r.roleId.toString(),
-          name: r.roleName,
-          description: r.description,
-          isSystem: r.roleName === 'Admin' || r.roleName === 'SuperAdmin',
+          id: (r.roleId || r.id || '').toString(),
+          name: r.roleName || r.name || 'Untitled Role',
+          description: r.description || '',
+          isSystem: !!r.isSystem,
         }));
-        setRoles(mapped);
-        if (mapped.length > 0) {
-          setSelectedId(prev => (mapped.find(r => r.id === prev) ? prev : mapped[0].id));
+        const sorted = [...mapped].sort((a, b) => b.name.localeCompare(a.name));
+        setRoles(sorted);
+        if (mapped.length > 0 && !selectedId) {
+          setSelectedId(mapped[0].id);
         }
       }
     } catch (e) {
       console.error('Failed to fetch roles:', e);
     }
-  }, []);
-
+  }, [selectedId]);
   // ── Fetch menu permissions ────────────────────────────────────────────────
   const fetchPermissions = useCallback(async (roleId: string, appDisplay: string) => {
-    const appKey = APP_MAP[appDisplay] || 'nex-core';
     setLoadingMenu(true);
     try {
-      const res = await fetch(`${API}/api/roles/${roleId}/permissions?app=${appKey}`, { credentials: 'include' });
-      if (res.ok) {
-        const data: MenuNode[] = await res.json();
+      const res = await coreRoleApi.getPermissions(roleId, APP_MAP[appDisplay] || appDisplay);
+      const data = res.data || res;
+      console.log('Fetched menuTree data:', data);
+      if (Array.isArray(data)) {
         setMenuTree(data);
-        setCollapsedIds(new Set()); // reset collapse state on load
-        setHasChanges(false);
+        setCollapsedIds(new Set());
+      } else {
+        setMenuTree([]);
       }
     } catch (e) {
       console.error('Failed to fetch permissions:', e);
+      setMenuTree([]);
     } finally {
       setLoadingMenu(false);
+      setHasChanges(false);
     }
   }, []);
 
@@ -320,57 +324,196 @@ export default function RoleSettings() {
   }, [selectedId, selectedApp, fetchPermissions]);
 
   // ── Toggle use (enable/disable entire menu row) → maps to is_active
-  const handleToggleUse = (menuId: number) => {
-    // Helper: recursively set isActive (and clear perms when disabling) on all descendants
-    const setChildrenActive = (nodes: MenuNode[], active: boolean): MenuNode[] =>
-      nodes.map(n => ({
-        ...n,
-        isActive: active,
-        canView:   active,
-        canAdd:    active,
-        canEdit:   active,
-        canDelete: active,
-        canImport: active,
-        canExport: active,
-        children: n.children?.length ? setChildrenActive(n.children, active) : n.children,
-      }));
+  const handleToggleUse = (menuId: string) => {
+    if (!menuTree) return;
 
-    const toggle = (nodes: MenuNode[]): MenuNode[] =>
-      nodes.map(n => {
-        if (n.menuId === menuId) {
-          const newActive = !n.isActive;
+    console.log('--- handleToggleUse START ---', { menuId });
+
+    const idsToToggle = new Set<string>();
+    let newActiveState = false;
+
+    // 1. Find the target node
+    const findTarget = (nodes: MenuNode[]): MenuNode | null => {
+      for (const n of nodes) {
+        if (String(n.menuId) === String(menuId)) return n;
+        if (n.children) {
+          const found = findTarget(n.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    const target = findTarget(menuTree);
+    if (!target) {
+      console.log('Target not found for menuId:', menuId);
+      return;
+    }
+
+    newActiveState = !target.isActive;
+    idsToToggle.add(String(target.menuId));
+    console.log('Target found:', { title: target.title, type: target.menuType || (target as any).menu_type, newActiveState });
+
+    // 2. Collect descendants helper
+    const collectDescendants = (nodes: MenuNode[]) => {
+      nodes.forEach(n => {
+        idsToToggle.add(String(n.menuId));
+        if (n.children) collectDescendants(n.children);
+      });
+    };
+
+    // 3. If heading, collect sequential siblings + their descendants
+    let mType = target.menuType || (target as any).menu_type;
+
+    // SMART FALLBACK: If type is missing, but it's a root node with no children,
+    // it's likely a visual heading in this system's structure.
+    if (!mType && !target.parentId && (!target.children || target.children.length === 0)) {
+      console.log('Smart Fallback: Treating as heading based on structure');
+      mType = 'heading';
+    }
+
+    if (String(mType).toLowerCase() === 'heading') {
+      const findAndAddSiblings = (nodes: MenuNode[]) => {
+        const idx = nodes.findIndex(n => String(n.menuId) === String(menuId));
+        if (idx !== -1) {
+          console.log(`Found ${target.title} at index ${idx}. Checking siblings...`);
+          for (let i = idx + 1; i < nodes.length; i++) {
+            let sibType = nodes[i].menuType || (nodes[i] as any).menu_type;
+
+            // Smart Fallback for siblings too
+            if (!sibType && !nodes[i].parentId && (!nodes[i].children || nodes[i].children.length === 0)) {
+              sibType = 'heading';
+            }
+
+            if (String(sibType).toLowerCase() === 'heading') {
+              console.log('Next heading found:', nodes[i].title, '- stopping sibling collection.');
+              break;
+            }
+            console.log('Adding sibling:', nodes[i].title);
+            idsToToggle.add(String(nodes[i].menuId));
+            if (nodes[i].children) collectDescendants(nodes[i].children!);
+          }
+        } else {
+          for (const n of nodes) {
+            if (n.children) findAndAddSiblings(n.children);
+          }
+        }
+      };
+      findAndAddSiblings(menuTree);
+    }
+
+    // 4. Always add target's own descendants
+    if (target.children) {
+      console.log('Adding descendants of target...');
+      collectDescendants(target.children);
+    }
+
+    console.log('IDs to toggle:', Array.from(idsToToggle));
+
+    // 5. Apply state
+    const apply = (nodes: MenuNode[]): MenuNode[] => {
+      return nodes.map(n => {
+        const children = n.children ? apply(n.children) : n.children;
+        if (idsToToggle.has(String(n.menuId))) {
           return {
             ...n,
-            isActive: newActive,
-            // Open → grant all permissions; Close → revoke all permissions
-            canView:   newActive,
-            canAdd:    newActive,
-            canEdit:   newActive,
-            canDelete: newActive,
-            canImport: newActive,
-            canExport: newActive,
-            // Cascade to all children
-            children: n.children?.length
-              ? setChildrenActive(n.children, newActive)
-              : n.children,
+            isActive: newActiveState,
+            canView: newActiveState,
+            canAdd: newActiveState,
+            canEdit: newActiveState,
+            canDelete: newActiveState,
+            canImport: newActiveState,
+            canExport: newActiveState,
+            children
           };
         }
-        if (n.children?.length) return { ...n, children: toggle(n.children) };
-        return n;
+        return { ...n, children };
       });
-    setMenuTree(prev => toggle(prev));
+    };
+
+    const nextTree = apply(menuTree);
+    setMenuTree(nextTree);
     setHasChanges(true);
+    console.log('--- handleToggleUse END ---');
   };
 
-  // ── Toggle individual permission checkbox ─────────────────────────────────
-  const handleTogglePerm = (menuId: number, field: string) => {
-    const toggle = (nodes: MenuNode[]): MenuNode[] =>
-      nodes.map(n => {
-        if (n.menuId === menuId) return { ...n, [field]: !(n as any)[field] };
-        if (n.children?.length) return { ...n, children: toggle(n.children) };
-        return n;
+  const handleTogglePerm = (menuId: string, field: keyof MenuNode) => {
+    if (!menuTree) return;
+
+    const idsToToggle = new Set<string>();
+    let newValue = false;
+
+    const findTarget = (nodes: MenuNode[]): MenuNode | null => {
+      for (const n of nodes) {
+        if (String(n.menuId) === String(menuId)) return n;
+        if (n.children) {
+          const found = findTarget(n.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    const target = findTarget(menuTree);
+    if (!target) return;
+
+    newValue = !(target as any)[field];
+    idsToToggle.add(String(target.menuId));
+
+    const collectDescendants = (nodes: MenuNode[]) => {
+      nodes.forEach(n => {
+        idsToToggle.add(String(n.menuId));
+        if (n.children) collectDescendants(n.children);
       });
-    setMenuTree(prev => toggle(prev));
+    };
+
+    // 3. If heading, collect sequential siblings + their descendants
+    let mType = target.menuType || (target as any).menu_type;
+
+    // SMART FALLBACK: If type is missing, but it's a root node with no children,
+    // it's likely a visual heading in this system's structure.
+    if (!mType && !target.parentId && (!target.children || target.children.length === 0)) {
+      mType = 'heading';
+    }
+
+    if (String(mType).toLowerCase() === 'heading') {
+      const findAndAddSiblings = (nodes: MenuNode[]) => {
+        const idx = nodes.findIndex(n => String(n.menuId) === String(menuId));
+        if (idx !== -1) {
+          for (let i = idx + 1; i < nodes.length; i++) {
+            let sibType = nodes[i].menuType || (nodes[i] as any).menu_type;
+
+            // Smart Fallback for siblings too
+            if (!sibType && !nodes[i].parentId && (!nodes[i].children || nodes[i].children.length === 0)) {
+              sibType = 'heading';
+            }
+
+            if (String(sibType).toLowerCase() === 'heading') break;
+            idsToToggle.add(String(nodes[i].menuId));
+            if (nodes[i].children) collectDescendants(nodes[i].children!);
+          }
+        } else {
+          for (const n of nodes) {
+            if (n.children) findAndAddSiblings(n.children);
+          }
+        }
+      };
+      findAndAddSiblings(menuTree);
+    }
+
+    if (target.children) collectDescendants(target.children);
+
+    const apply = (nodes: MenuNode[]): MenuNode[] => {
+      return nodes.map(n => {
+        const children = n.children ? apply(n.children) : n.children;
+        if (idsToToggle.has(String(n.menuId))) {
+          return { ...n, [field]: newValue, children };
+        }
+        return { ...n, children };
+      });
+    };
+
+    setMenuTree(apply(menuTree));
     setHasChanges(true);
   };
 
@@ -384,16 +527,14 @@ export default function RoleSettings() {
     return result;
   };
 
-  // ── Save permissions ──────────────────────────────────────────────────────
   const handleSavePermissions = async () => {
-    const appKey = APP_MAP[selectedApp] || 'nex-core';
     setSaving(true);
     try {
       const flat = flattenTree(menuTree);
       const permissions = flat.map(n => ({
         menuId: n.menuId,
         permissionId: n.permissionId,
-        isActive: n.isActive,      // ← from is_active column
+        isActive: n.isActive,
         canView: n.canView,
         canAdd: n.canAdd,
         canEdit: n.canEdit,
@@ -401,18 +542,22 @@ export default function RoleSettings() {
         canImport: n.canImport,
         canExport: n.canExport,
       }));
-      const res = await fetch(`${API}/api/roles/${selectedId}/permissions?app=${appKey}`, { credentials: 'include', 
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ permissions }),
+      await coreRoleApi.savePermissions(selectedId, APP_MAP[selectedApp] || selectedApp, permissions);
+      setHasChanges(false);
+      // Refresh to get new permissionIds
+      await fetchPermissions(selectedId, selectedApp);
+      setAlertConfig({
+        isOpen: true,
+        message: 'บันทึกสิทธิ์การใช้งานเรียบร้อยแล้ว',
+        isError: false
       });
-      if (res.ok) {
-        setHasChanges(false);
-        // Refresh to get new permissionIds
-        await fetchPermissions(selectedId, selectedApp);
-      }
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to save permissions:', e);
+      setAlertConfig({
+        isOpen: true,
+        message: e.message || 'เกิดข้อผิดพลาดในการบันทึกสิทธิ์',
+        isError: true
+      });
     } finally {
       setSaving(false);
     }
@@ -422,15 +567,9 @@ export default function RoleSettings() {
   const handleAddRole = async () => {
     if (!newName.trim()) return;
     try {
-      const res = await fetch(`${API}/api/roles`, { credentials: 'include', 
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roleName: newName.trim(), description: newDesc.trim() || undefined }),
-      });
-      if (res.ok) {
-        await fetchRoles();
-        setNewName(''); setNewDesc(''); setShowAdd(false);
-      }
+      await coreRoleApi.create({ roleName: newName.trim(), description: newDesc.trim() || undefined });
+      await fetchRoles();
+      setNewName(''); setNewDesc(''); setShowAdd(false);
     } catch (e) { console.error('Failed to add role', e); }
   };
 
@@ -438,8 +577,8 @@ export default function RoleSettings() {
     e.stopPropagation();
     if (!confirm('ยืนยันการลบบทบาทนี้?')) return;
     try {
-      const res = await fetch(`${API}/api/roles/${id}`, { credentials: 'include',  method: 'DELETE' });
-      if (res.ok) await fetchRoles();
+      await coreRoleApi.remove(id);
+      await fetchRoles();
     } catch (err) { console.error('Failed to delete role', err); }
   };
 
@@ -451,30 +590,24 @@ export default function RoleSettings() {
   };
 
   const handleSaveEdit = async () => {
-    if (!editName.trim()) return;
+    if (!editId || !editName.trim()) return;
     try {
-      const res = await fetch(`${API}/api/roles/${editId}`, { credentials: 'include', 
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roleName: editName.trim(), description: editDesc.trim() || undefined }),
-      });
-      if (res.ok) {
-        await fetchRoles();
-        setEditId(null);
-      }
-    } catch (err) { console.error('Failed to edit role', err); }
+      await coreRoleApi.update(editId, { roleName: editName.trim(), description: editDesc.trim() || undefined });
+      await fetchRoles();
+      setEditId(null);
+    } catch (e) { console.error('Failed to update role', e); }
   };
 
   const selectedRole = roles.find(r => r.id === selectedId);
 
   return (
-    <div style={{ display: 'flex', gap: '20px', height: 'calc(100vh - 180px)', minHeight: '600px' }}>
+    <div style={{ display: 'flex', gap: '20px', height: 'calc(100vh - 80px)', minHeight: '600px' }}>
 
       {/* ── Left Panel: Role List ── */}
       <div style={{
         width: '230px', flexShrink: 0, background: '#fff',
         borderRadius: '12px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)',
-        border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%',
       }}>
         <div style={{ padding: '14px' }}>
           <button
@@ -489,7 +622,7 @@ export default function RoleSettings() {
             onMouseEnter={e => (e.currentTarget.style.background = '#1d3a9f')}
             onMouseLeave={e => (e.currentTarget.style.background = '#1e40af')}
           >
-            <Plus size={15} /> + Add Role
+            <Plus size={15} /> Add Role
           </button>
         </div>
 
@@ -532,7 +665,7 @@ export default function RoleSettings() {
       </div>
 
       {/* ── Right Panel: Permission Matrix ── */}
-      <div style={{ flex: 1, background: '#fff', borderRadius: '12px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ flex: 1, background: '#fff', borderRadius: '12px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
         {/* Header */}
         <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px', background: '#fafbff', flexShrink: 0 }}>
           <select
@@ -578,11 +711,11 @@ export default function RoleSettings() {
             </div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
+              <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
                 <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
-                  <th style={{ padding: '12px 20px', textAlign: 'left', fontSize: '12px', fontWeight: 600, color: '#64748b', letterSpacing: '0.05em', textTransform: 'uppercase' }}>MODULE PERMISSION</th>
+                  <th style={{ position: 'sticky', top: 0, zIndex: 10, background: '#f8fafc', padding: '12px 20px', textAlign: 'left', fontSize: '12px', fontWeight: 600, color: '#64748b', letterSpacing: '0.05em', textTransform: 'uppercase' }}>MODULE PERMISSION</th>
                   {['ใช้งาน', 'ดู', 'เพิ่ม', 'แก้ไข', 'ลบ', 'นำเข้า', 'ส่งออก'].map(h => (
-                    <th key={h} style={{ padding: '12px 4px', textAlign: 'center', fontSize: '12px', fontWeight: 600, color: '#64748b', letterSpacing: '0.05em', textTransform: 'uppercase', minWidth: '56px' }}>{h}</th>
+                    <th key={h} style={{ position: 'sticky', top: 0, zIndex: 10, background: '#f8fafc', padding: '12px 4px', textAlign: 'center', fontSize: '12px', fontWeight: 600, color: '#64748b', letterSpacing: '0.05em', textTransform: 'uppercase', minWidth: '56px' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -657,6 +790,35 @@ export default function RoleSettings() {
           </div>
         </div>
       )}
+
+      {/* ── Alert Modal ── */}
+      <BaseModal
+        isOpen={alertConfig.isOpen}
+        onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
+        title={alertConfig.isError ? 'เกิดข้อผิดพลาด' : 'สำเร็จ'}
+        width="400px"
+        footer={
+          <button
+            onClick={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
+            style={{ padding: '10px 24px', background: alertConfig.isError ? '#ef4444' : '#10b981', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}
+          >
+            ตกลง
+          </button>
+        }
+      >
+        <div style={{ textAlign: 'center', padding: '8px 0' }}>
+          <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}>
+            {alertConfig.isError ? (
+              <Info size={32} style={{ color: '#ef4444' }} />
+            ) : (
+              <div style={{ color: '#10b981', fontSize: '32px', fontWeight: 'bold' }}>✓</div>
+            )}
+          </div>
+          <p style={{ margin: 0, color: '#1e293b', fontSize: '16px', fontWeight: 500, lineHeight: '1.6' }}>
+            {alertConfig.message}
+          </p>
+        </div>
+      </BaseModal>
     </div>
   );
 }

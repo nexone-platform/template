@@ -4,7 +4,7 @@ import CrudLayout from '@/components/CrudLayout';
 import { SummaryCard, SearchInput, AdvancedSearchModal, AdvancedSearchField, crudStyles, StatusDropdown, BaseModal, ExportButtons } from '@/components/CrudComponents';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
 import ImportExcelButton from '@/components/ImportExcelButton';
-import { Plus, Edit2, Trash2, Tags, Box, Eye, Info } from 'lucide-react';
+import { Plus, Edit2, Trash2, Tags, Box, Eye, Info, ChevronsUpDown, ArrowUp, ArrowDown, Settings } from 'lucide-react';
 import Pagination from '@/components/Pagination';
 import { templateApi, Template } from '@/services/api';
 import { usePagePermission } from '@/contexts/PermissionContext';
@@ -43,6 +43,17 @@ export default function TemplateMaster2Page() {
     const [search, setSearch] = useState('');
     const [filterType, setFilterType] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' | null }>({ key: '', direction: null });
+
+    // Column Settings State
+    const [isColumnSettingsOpen, setIsColumnSettingsOpen] = useState(false);
+    const [visibleColumns, setVisibleColumns] = useState({
+        template_id: true,
+        template_name: true,
+        template_group: true,
+        template_desc: true,
+        is_active: true
+    });
 
     // Advanced Search State
     const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
@@ -213,7 +224,51 @@ export default function TemplateMaster2Page() {
         return item.template_group === filterType;
     });
 
-    const paginatedData = filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    let sortedData = [...filteredData];
+    if (sortConfig.key && sortConfig.direction !== null) {
+        sortedData.sort((a, b) => {
+            const aVal = (a as any)[sortConfig.key];
+            const bVal = (b as any)[sortConfig.key];
+
+            if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
+    const paginatedData = sortedData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+    const handleSort = (key: string) => {
+        let direction: 'asc' | 'desc' | null = 'asc';
+        if (sortConfig.key === key) {
+            if (sortConfig.direction === 'asc') direction = 'desc';
+            else if (sortConfig.direction === 'desc') direction = null;
+            else direction = 'asc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const renderSortIcon = (columnKey: string) => {
+        if (sortConfig.key !== columnKey || sortConfig.direction === null) {
+            return <ChevronsUpDown size={14} style={{ opacity: 0.3 }} />;
+        }
+        if (sortConfig.direction === 'asc') {
+            return <ArrowDown size={14} />;
+        }
+        return <ArrowUp size={14} />;
+    };
+
+    const renderTh = (label: string, columnKey: string, width?: string) => (
+        <th
+            style={{ width, cursor: 'pointer', whiteSpace: 'nowrap', userSelect: 'none' }}
+            onClick={() => handleSort(columnKey)}
+        >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
+                <span>{label}</span>
+                {renderSortIcon(columnKey)}
+            </div>
+        </th>
+    );
 
     const importColumns = [
         { key: 'template_name', header: t['template_name'] || 'หัวข้อ', required: true, type: 'string' as const },
@@ -249,6 +304,7 @@ export default function TemplateMaster2Page() {
                     <SummaryCard
                         title={t['total_items'] || "รายการทั้งหมด"}
                         count={baseData.length}
+                        subtitle={t['items'] || "รายการ"}
                         icon={<Tags size={22} />}
                         color="#3b82f6"
                         isActive={filterType === 'all'}
@@ -262,6 +318,7 @@ export default function TemplateMaster2Page() {
                                 key={category}
                                 title={category}
                                 count={count}
+                                subtitle={t['items'] || "รายการ"}
                                 icon={<Box size={22} />}
                                 color={colors[index % colors.length]}
                                 isActive={filterType === category}
@@ -272,36 +329,42 @@ export default function TemplateMaster2Page() {
                 </>
             }
             toolbarLeft={
-                perm.canExport ? (
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <ExportButtons
-                    t={t}
-                    onExportXLSX={() => exportToXLSX(filteredData, 'Template2', [
-                        { key: 'template_id', label: t['template_id'] || 'ID' },
-                        { key: 'template_name', label: t['template_name'] || 'หัวข้อ' },
-                        { key: 'template_group', label: t['template_group'] || 'หมวดหมู่' },
-                        { key: 'template_desc', label: t['template_desc'] || 'คำอธิบาย' },
-                        { key: 'is_active', label: t['is_active'] || 'สถานะ', format: (v: any) => v.is_active ? (t['active'] || 'ใช้งาน') : (t['inactive'] || 'ยกเลิก') }
-                    ])}
-                    onExportCSV={() => exportToCSV(filteredData, 'Template2', [
-                        { key: 'template_id', label: t['template_id'] || 'ID' },
-                        { key: 'template_name', label: t['template_name'] || 'หัวข้อ' },
-                        { key: 'template_group', label: t['template_group'] || 'หมวดหมู่' },
-                        { key: 'template_desc', label: t['template_desc'] || 'คำอธิบาย' },
-                        { key: 'is_active', label: t['is_active'] || 'สถานะ', format: (v: any) => v.is_active ? (t['active'] || 'ใช้งาน') : (t['inactive'] || 'ยกเลิก') }
-                    ])}
-                    onExportPDF={(orientation) => exportToPDF(filteredData, 'Template2', [
-                        { key: 'template_id', label: t['template_id'] || 'ID' },
-                        { key: 'template_name', label: t['template_name'] || 'หัวข้อ' },
-                        { key: 'template_group', label: t['template_group'] || 'หมวดหมู่' },
-                        { key: 'template_desc', label: t['template_desc'] || 'คำอธิบาย' },
-                        { key: 'is_active', label: t['is_active'] || 'สถานะ', format: (v: any) => v.is_active ? (t['active'] || 'ใช้งาน') : (t['inactive'] || 'ยกเลิก') }
-                    ], 'Template 2 Report', orientation)}
-                />
-                <div style={{ width: '1px', height: '24px', background: 'var(--border-color)', margin: '0 8px' }} />
-                <ImportExcelButton translations={t} columns={importColumns as any} filenamePrefix="Template2" onImport={handleImport} onImportComplete={loadData} />
-                </div>
-                ) : undefined
+                <>
+                    {perm.canExport && (
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <ExportButtons
+                                t={t}
+                                onExportXLSX={() => exportToXLSX(filteredData, 'Template2', [
+                                    { key: 'template_id', label: t['template_id'] || 'ID' },
+                                    { key: 'template_name', label: t['template_name'] || 'หัวข้อ' },
+                                    { key: 'template_group', label: t['template_group'] || 'หมวดหมู่' },
+                                    { key: 'template_desc', label: t['template_desc'] || 'คำอธิบาย' },
+                                    { key: 'is_active', label: t['is_active'] || 'สถานะ', format: (v: any) => v.is_active ? (t['active'] || 'ใช้งาน') : (t['inactive'] || 'ยกเลิก') }
+                                ])}
+                                onExportCSV={() => exportToCSV(filteredData, 'Template2', [
+                                    { key: 'template_id', label: t['template_id'] || 'ID' },
+                                    { key: 'template_name', label: t['template_name'] || 'หัวข้อ' },
+                                    { key: 'template_group', label: t['template_group'] || 'หมวดหมู่' },
+                                    { key: 'template_desc', label: t['template_desc'] || 'คำอธิบาย' },
+                                    { key: 'is_active', label: t['is_active'] || 'สถานะ', format: (v: any) => v.is_active ? (t['active'] || 'ใช้งาน') : (t['inactive'] || 'ยกเลิก') }
+                                ])}
+                                onExportPDF={(orientation) => exportToPDF(filteredData, 'Template2', [
+                                    { key: 'template_id', label: t['template_id'] || 'ID' },
+                                    { key: 'template_name', label: t['template_name'] || 'หัวข้อ' },
+                                    { key: 'template_group', label: t['template_group'] || 'หมวดหมู่' },
+                                    { key: 'template_desc', label: t['template_desc'] || 'คำอธิบาย' },
+                                    { key: 'is_active', label: t['is_active'] || 'สถานะ', format: (v: any) => v.is_active ? (t['active'] || 'ใช้งาน') : (t['inactive'] || 'ยกเลิก') }
+                                ], 'Template 2 Report', orientation)}
+                            />
+                        </div>
+                    )}
+                    {perm.canImport && (
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <div style={{ width: '1px', height: '24px', background: 'var(--border-color)', margin: '0 8px' }} />
+                            <ImportExcelButton columns={importColumns as any} filenamePrefix="Template2" onImport={handleImport} onImportComplete={loadData} />
+                        </div>
+                    )}
+                </>
             }
             toolbarRight={
                 <>
@@ -325,24 +388,33 @@ export default function TemplateMaster2Page() {
                 <table className="data-table">
                     <thead>
                         <tr>
-                            <th style={{ width: '60px' }}>{t['template_id'] || 'ID'}</th>
-                            <th>{t['template_name'] || 'หัวข้อ'}</th>
-                            <th>{t['template_group'] || 'หมวดหมู่'}</th>
-                            <th>{t['template_desc'] || 'อธิบายการใช้งาน'}</th>
-                            <th className="text-center" style={{ width: '100px' }}>{t['is_active'] || 'สถานะ'}</th>
-                            {hasActions && <th className="text-center" style={{ width: '100px', paddingRight: '24px' }}>{t['manage'] || 'จัดการ'}</th>}
+                            {visibleColumns.template_id && renderTh(t['template_id'] || 'ID', 'template_id', '60px')}
+                            {visibleColumns.template_name && renderTh(t['template_name'] || 'หัวข้อ', 'template_name')}
+                            {visibleColumns.template_group && renderTh(t['template_group'] || 'หมวดหมู่', 'template_group')}
+                            {visibleColumns.template_desc && renderTh(t['template_desc'] || 'อธิบายการใช้งาน', 'template_desc')}
+                            {visibleColumns.is_active && renderTh(t['is_active'] || 'สถานะ', 'is_active', '100px')}
+                            {hasActions && <th className="text-center" style={{ width: '100px', paddingRight: '24px', whiteSpace: 'nowrap' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
+                                    <span>{t['manage'] || 'จัดการ'}</span>
+                                    {perm.canView && (
+                                        <span title={t['column_settings'] || 'ตั้งค่าคอลัมน์'} style={{ display: 'flex', alignItems: 'center' }}>
+                                            <Settings size={16} style={{ cursor: 'pointer', color: 'var(--text-muted)' }} onClick={() => setIsColumnSettingsOpen(true)} />
+                                        </span>
+                                    )}
+                                </div>
+                            </th>}
                         </tr>
                     </thead>
                     <tbody>
                         {paginatedData.map((item) => (
                             <tr key={item.template_id}>
-                                <td className="text-medium font-medium" style={{ color: 'var(--accent-blue)' }}># {item.template_id}</td>
-                                <td><span className="font-medium" style={{ color: 'var(--accent-blue)' }}>{item.template_name}</span></td>
-                                <td className="text-muted text-small">{item.template_group}</td>
-                                <td className="text-muted">{item.template_desc}</td>
-                                <td className="text-center">
+                                {visibleColumns.template_id && <td className="text-medium font-medium" style={{ color: 'var(--accent-blue)' }}># {item.template_id}</td>}
+                                {visibleColumns.template_name && <td><span className="font-medium" style={{ color: 'var(--accent-blue)' }}>{item.template_name}</span></td>}
+                                {visibleColumns.template_group && <td className="text-muted text-small">{item.template_group}</td>}
+                                {visibleColumns.template_desc && <td className="text-muted">{item.template_desc}</td>}
+                                {visibleColumns.is_active && <td className="text-center">
                                     <StatusDropdown status={item.is_active} onChange={(val) => handleToggleStatus(item, val)} disabled={!perm.canEdit} />
-                                </td>
+                                </td>}
                                 {hasActions && (
                                 <td className="text-center" style={{ paddingRight: '24px' }}>
                                     <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
@@ -355,7 +427,7 @@ export default function TemplateMaster2Page() {
                             </tr>
                         ))}
                         {filteredData.length === 0 && (
-                            <tr><td colSpan={hasActions ? 6 : 5} className="text-center" style={{ padding: '40px 0', color: 'var(--text-muted)' }}>{t['no_data_found'] || 'ไม่พบข้อมูล'}</td></tr>
+                            <tr><td colSpan={Object.values(visibleColumns).filter(Boolean).length + (hasActions ? 1 : 0)} className="text-center" style={{ padding: '40px 0', color: 'var(--text-muted)' }}>{t['no_data_found'] || 'ไม่พบข้อมูล'}</td></tr>
                         )}
                     </tbody>
                 </table>
@@ -370,7 +442,7 @@ export default function TemplateMaster2Page() {
                     totalItems={filteredData.length}
                     setCurrentPage={setCurrentPage}
                     setPageSize={setPageSize}
-                    translations={t}
+
                 />
             )}
 
@@ -406,7 +478,7 @@ export default function TemplateMaster2Page() {
                             <label style={{ ...crudStyles.label, marginBottom: 0 }}>{t['template_group'] || 'หมวดหมู่'} <span style={{ color: '#ef4444' }}>*</span></label>
                             {modalMode !== 'view' && (
                                 <button type="button" onClick={() => setIsCategoryModalOpen(true)} style={{ color: 'var(--accent-blue)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px', padding: 0 }}>
-                                    <Plus size={14} /> <span>{t['add_category'] || 'เพิ่มหมวดหมู่'}</span>
+                                    <Plus size={14} /> <span>{(t['add_category'] || 'เพิ่มหมวดหมู่').replace(/^\++\s*/, '')}</span>
                                 </button>
                             )}
                         </div>
@@ -436,32 +508,7 @@ export default function TemplateMaster2Page() {
                             </div>
                         </div>
                     )}
-                    {modalMode === 'view' && (
-                        <div style={{ marginTop: '16px', padding: '16px', background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
-                                <Info size={16} />
-                                <span style={{ fontSize: '13px', fontWeight: 600 }}>{t['system_logs'] || 'ข้อมูลระบบ (System Logs)'}</span>
-                            </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
-                                <div>
-                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t['created_by'] || 'สร้างโดย'}</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.create_by || '-'}</span>
-                                </div>
-                                <div>
-                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t['create_date'] || 'วันที่สร้าง'}</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.create_date ? format(new Date(selectedItem.create_date), configs?.dateFormat || 'dd/MM/yyyy') : '-'}</span>
-                                </div>
-                                <div>
-                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t['updated_by'] || 'แก้ไขล่าสุดโดย'}</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.update_by || '-'}</span>
-                                </div>
-                                <div>
-                                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t['update_date'] || 'วันที่แก้ไขล่าสุด'}</span>
-                                    <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{selectedItem?.update_date ? format(new Date(selectedItem.update_date), configs?.dateFormat || 'dd/MM/yyyy') : '-'}</span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+
                 </div>
             </BaseModal>
 
@@ -528,6 +575,96 @@ export default function TemplateMaster2Page() {
             >
                 <div style={{ textAlign: 'center', padding: '10px 0' }}>
                     <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)', fontSize: '15px' }}>{alertConfig.message}</p>
+                </div>
+            </BaseModal>
+
+            {/* Column Settings Modal */}
+            <BaseModal
+                isOpen={isColumnSettingsOpen}
+                onClose={() => setIsColumnSettingsOpen(false)}
+                title={t['column_settings_title'] || 'ตั้งค่าการแสดงผลตาราง'}
+                width="450px"
+                footer={
+                    <button onClick={() => setIsColumnSettingsOpen(false)} style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 }}>{t['ok_button'] || 'ตกลง'}</button>
+                }
+            >
+                <div style={{ marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>
+                        <h4 style={{ margin: 0, fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>{t['select_columns_to_show'] || 'เลือกคอลัมน์ที่ต้องการแสดง'}</h4>
+                        <h4 style={{ margin: 0, fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600, width: '130px' }}>{t['sort_data'] || 'เรียงลำดับข้อมูล'}</h4>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {/* ID */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.template_id} onChange={(e) => setVisibleColumns({ ...visibleColumns, template_id: e.target.checked })} /> {t['template_id'] || 'ID'}
+                            </label>
+                            <select
+                                style={{ ...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0 }}
+                                value={sortConfig.key === 'template_id' && sortConfig.direction !== null ? sortConfig.direction : 'none'}
+                                onChange={(e) => setSortConfig({ key: 'template_id', direction: e.target.value === 'none' ? null : e.target.value as 'asc' | 'desc' })}
+                            >
+                                <option value="none">{t['no_sort'] || 'ไม่เรียง'}</option>
+                                <option value="asc">{t['sort'] || 'เรียง'}</option>
+                            </select>
+                        </div>
+
+                        {/* ชื่อหัวข้อ */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.template_name} onChange={(e) => setVisibleColumns({ ...visibleColumns, template_name: e.target.checked })} /> {t['template_name'] || 'หัวข้อ'}
+                            </label>
+                            <select
+                                style={{ ...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0 }}
+                                value={sortConfig.key === 'template_name' && sortConfig.direction !== null ? sortConfig.direction : 'none'}
+                                onChange={(e) => setSortConfig({ key: 'template_name', direction: e.target.value === 'none' ? null : e.target.value as 'asc' | 'desc' })}
+                            >
+                                <option value="none">{t['no_sort'] || 'ไม่เรียง'}</option>
+                                <option value="asc">{t['sort'] || 'เรียง'}</option>
+                            </select>
+                        </div>
+
+                        {/* หมวดหมู่ */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.template_group} onChange={(e) => setVisibleColumns({ ...visibleColumns, template_group: e.target.checked })} /> {t['template_group'] || 'หมวดหมู่'}
+                            </label>
+                            <select
+                                style={{ ...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0 }}
+                                value={sortConfig.key === 'template_group' && sortConfig.direction !== null ? sortConfig.direction : 'none'}
+                                onChange={(e) => setSortConfig({ key: 'template_group', direction: e.target.value === 'none' ? null : e.target.value as 'asc' | 'desc' })}
+                            >
+                                <option value="none">{t['no_sort'] || 'ไม่เรียง'}</option>
+                                <option value="asc">{t['sort'] || 'เรียง'}</option>
+                            </select>
+                        </div>
+
+                        {/* คำอธิบาย */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.template_desc} onChange={(e) => setVisibleColumns({ ...visibleColumns, template_desc: e.target.checked })} /> {t['template_desc'] || 'คำอธิบาย'}
+                            </label>
+                            <select disabled style={{ ...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0, opacity: 0.5 }}>
+                                <option value="none">{t['no_sort'] || 'ไม่เรียง'}</option>
+                            </select>
+                        </div>
+
+                        {/* สถานะ */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.is_active} onChange={(e) => setVisibleColumns({ ...visibleColumns, is_active: e.target.checked })} /> {t['is_active'] || 'สถานะ'}
+                            </label>
+                            <select
+                                style={{ ...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0 }}
+                                value={sortConfig.key === 'is_active' && sortConfig.direction !== null ? sortConfig.direction : 'none'}
+                                onChange={(e) => setSortConfig({ key: 'is_active', direction: e.target.value === 'none' ? null : e.target.value as 'asc' | 'desc' })}
+                            >
+                                <option value="none">{t['no_sort'] || 'ไม่เรียง'}</option>
+                                <option value="asc">{t['sort'] || 'เรียง'}</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </BaseModal>
         </CrudLayout>

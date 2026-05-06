@@ -17,7 +17,7 @@ interface Province {
 }
 
 export default function ProvincesSettings() {
-    const perm = usePagePermission('Provinces / Areas');
+    const perm = usePagePermission('Provinces');
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const { configs, loading: configLoading } = useSystemConfig();

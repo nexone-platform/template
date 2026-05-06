@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Req, UseGuards, HttpException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AuditLog } from '../../common/decorators/audit-log.decorator';
@@ -35,8 +35,17 @@ export class UsersController {
   @Patch(':id')
   @Roles('admin')
   @AuditLog('Users', 'Update User')
-  update(@Param('id') id: string, @Body() updateUserDto: any, @Req() req: any) {
-    return this.usersService.update(id, updateUserDto, req.user?.userId);
+  async update(@Param('id') id: string, @Body() updateUserDto: any, @Req() req: any) {
+    try {
+      return await this.usersService.update(id, updateUserDto, req.user?.userId);
+    } catch (error) {
+      throw new HttpException({
+        status: 500,
+        error: 'Internal Server Error',
+        message: error.message || error.toString(),
+        detail: error.detail || error.driverError?.detail || 'No detail'
+      }, 500);
+    }
   }
 
   @Delete(':id')

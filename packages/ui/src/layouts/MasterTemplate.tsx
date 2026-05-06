@@ -18,6 +18,8 @@ interface MasterTemplateProps {
   user: any;
   onLogout: () => void;
   onToggleSidebar: () => void;
+  allowedMenuKeys?: string[];
+  deniedMenuKeys?: string[];
 }
 
 export default function MasterTemplate({
@@ -35,6 +37,8 @@ export default function MasterTemplate({
   user,
   onLogout,
   onToggleSidebar,
+  allowedMenuKeys,
+  deniedMenuKeys,
 }: MasterTemplateProps) {
   const { configs } = useSystemConfig();
 
@@ -55,6 +59,8 @@ export default function MasterTemplate({
         menuApiUrl={menuApiUrl}
         onToggleSidebar={onToggleSidebar}
         systemConfig={configs}
+        allowedMenuKeys={allowedMenuKeys}
+        deniedMenuKeys={deniedMenuKeys}
       />
       <main className={`main-content ${isOpen ? '' : 'expanded'}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', transition: 'all 0.3s' }}>
         <Topbar

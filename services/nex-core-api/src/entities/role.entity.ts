@@ -27,11 +27,11 @@ export class Role {
   createDate: Date;
 
   @Column({ name: 'create_by', type: 'uuid', nullable: true })
-  createBy: string;
+  createBy: string | null;
 
   @UpdateDateColumn({ name: 'update_date', type: 'timestamptz', nullable: true })
   updateDate: Date;
 
   @Column({ name: 'update_by', type: 'uuid', nullable: true })
-  updateBy: string;
+  updateBy: string | null;
 }

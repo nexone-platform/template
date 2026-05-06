@@ -1,12 +1,12 @@
 const http = require('http');
 
 const data = JSON.stringify({
+  workspaceId: 'TEMPLATE',
   email: 'tigerlinly@gmail.com',
-  password: 'password123',
-  workspaceId: 'TEMPLATE'
+  password: 'P@ssw0rd123!'
 });
 
-const req = http.request({
+const options = {
   hostname: 'localhost',
   port: 8101,
   path: '/api/auth/login',
@@ -15,11 +15,18 @@ const req = http.request({
     'Content-Type': 'application/json',
     'Content-Length': data.length
   }
-}, res => {
-  let body = '';
-  res.on('data', d => body += d);
-  res.on('end', () => console.log('Status:', res.statusCode, 'Body:', body));
+};
+
+const req = http.request(options, res => {
+  console.log(`STATUS: ${res.statusCode}`);
+  res.on('data', d => {
+    process.stdout.write(d);
+  });
 });
-req.on('error', e => console.error(e));
+
+req.on('error', error => {
+  console.error(error);
+});
+
 req.write(data);
 req.end();

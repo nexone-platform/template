@@ -32,13 +32,14 @@ import SecuritySettings from '@/components/SecuritySettings';
 import BillingSettings from '@/components/BillingSettings';
 import DisplaySettings from '@/components/DisplaySettings';
 import UnitTypeSettings from '@/components/UnitTypeSettings';
+import ProvincesSettings from '@/components/ProvincesSettings';
 
 // Hardcoded nav sections have been removed. Menus are now fully dynamic.
 
 export default function AdminPage() {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const { refreshPermissions } = usePermissions();
+  const { permissions, refreshPermissions } = usePermissions();
   const { isLoggedIn, user: authUser, login, logout, loading: authLoading, error: authError } = useAuth();
 
   // ดึงสิทธิ์ใหม่ทุกครั้งที่กด sidebar
@@ -193,7 +194,7 @@ export default function AdminPage() {
       case 'template-master-graph':
         return <TemplateMasterGraph1Page />;
       case 'provinces':
-        return <div className="p-6 bg-white rounded-lg shadow"><h3>Provinces Settings</h3></div>;
+        return <ProvincesSettings />;
       case 'unit-type':
         return <UnitTypeSettings />;
       default:
@@ -229,6 +230,8 @@ export default function AdminPage() {
       user={user}
       onLogout={() => logout()}
       onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+      allowedMenuKeys={permissions.filter(p => p.isActive).map(p => p.menuCode)}
+      deniedMenuKeys={permissions.filter(p => !p.isActive).map(p => p.menuCode)}
     >
       <React.Fragment key={currentPage}>
         {renderContent()}
