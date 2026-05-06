@@ -185,7 +185,7 @@ export default function TemplateMaster2Page() {
             setData(prev => prev.map(d => d.template_id === item.template_id ? { ...d, is_active: val } : d));
         } catch (err: any) { 
             console.error(err); 
-            setAlertConfig({isOpen: true, message: err.message || t['error_saving'] || 'เปลี่ยนสถานะไม่สำเร็จ', isError: true});
+            setAlertConfig({isOpen: true, message: err.message || t['error_changing_status'] || 'เปลี่ยนสถานะไม่สำเร็จ', isError: true});
         }
     };
 
@@ -354,7 +354,7 @@ export default function TemplateMaster2Page() {
                                     { key: 'template_group', label: t['template_group'] || 'หมวดหมู่' },
                                     { key: 'template_desc', label: t['template_desc'] || 'คำอธิบาย' },
                                     { key: 'is_active', label: t['is_active'] || 'สถานะ', format: (v: any) => v.is_active ? (t['active'] || 'ใช้งาน') : (t['inactive'] || 'ยกเลิก') }
-                                ], 'Template 2 Report', orientation)}
+                                ], t['template_2_report'] || 'Template 2 Report', orientation)}
                             />
                         </div>
                     )}
