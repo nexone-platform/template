@@ -1,0 +1,29 @@
+name: Deploy to Production (nexusfx.biz)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Execute Deployment Commands via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          # หากใช้ SSH Key ให้เปลี่ยน password เป็น key แทน:
+          # key: ${{ secrets.SERVER_SSH_KEY }}
+          
+          # เปลี่ยน path ให้ตรงกับโฟลเดอร์โปรเจกต์ของคุณบนเซิร์ฟเวอร์
+          script: |
+            cd /opt/nexsite/nex-site
+            git pull origin main
+            
+            # กรณีที่มีการใช้ docker-compose
+            docker compose -p nexsite -f docker-compose.prod.yml down
+            docker compose -p nexsite -f docker-compose.prod.yml up -d --build
