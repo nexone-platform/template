@@ -15,17 +15,17 @@ import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
 import { usePagePermission } from '@/contexts/PermissionContext';
 import { useApiConfig } from '@/contexts/ApiConfigContext';
 
-const statusLabels = (t: Record<string, string>): Record<string, string> => ({
-    pending: t['status_pending'] || 'รอจัดส่ง',
-    'in-transit': t['status_in_transit'] || 'กำลังขนส่ง',
-    completed: t['status_completed'] || 'สำเร็จ',
-    cancelled: t['status_cancelled'] || 'ยกเลิก'
+const statusLabels = (t: Record<string, string>): Record<string, string> => ({ 
+    pending: t['status_pending'] || 'รอจัดส่ง', 
+    'in-transit': t['status_in_transit'] || 'กำลังขนส่ง', 
+    completed: t['status_completed'] || 'สำเร็จ', 
+    cancelled: t['status_cancelled'] || 'ยกเลิก' 
 });
 const statusColors: Record<string, string> = { pending: 'pending', 'in-transit': 'active', completed: 'completed', cancelled: 'inactive' };
-const priorityLabels = (t: Record<string, string>): Record<string, string> => ({
-    normal: t['priority_normal'] || 'ปกติ',
-    urgent: t['priority_urgent'] || '🔥 เร่งด่วน',
-    express: t['priority_express'] || '⚡ ด่วนพิเศษ'
+const priorityLabels = (t: Record<string, string>): Record<string, string> => ({ 
+    normal: t['priority_normal'] || 'ปกติ', 
+    urgent: t['priority_urgent'] || '🔥 เร่งด่วน', 
+    express: t['priority_express'] || '⚡ ด่วนพิเศษ' 
 });
 const priorityColors: Record<string, string> = { normal: 'var(--accent-blue)', urgent: 'var(--accent-amber)', express: 'var(--accent-red)' };
 
@@ -54,13 +54,13 @@ const emptyForm = {
 };
 
 const getCargoTypes = (t: Record<string, string>) => [
-    t['cargo_food'] || 'อาหาร',
-    t['cargo_material'] || 'วัสดุก่อสร้าง',
-    t['cargo_chemical'] || 'เคมีภัณฑ์',
-    t['cargo_electronic'] || 'อิเล็กทรอนิกส์',
-    t['cargo_general'] || 'สินค้าทั่วไป',
-    t['cargo_oil'] || 'น้ำมัน',
-    t['cargo_agri'] || 'เกษตร',
+    t['cargo_food'] || 'อาหาร', 
+    t['cargo_material'] || 'วัสดุก่อสร้าง', 
+    t['cargo_chemical'] || 'เคมีภัณฑ์', 
+    t['cargo_electronic'] || 'อิเล็กทรอนิกส์', 
+    t['cargo_general'] || 'สินค้าทั่วไป', 
+    t['cargo_oil'] || 'น้ำมัน', 
+    t['cargo_agri'] || 'เกษตร', 
     t['cargo_others'] || 'อื่นๆ'
 ];
 
@@ -107,8 +107,8 @@ function dateStr() {
     return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}_${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}${String(d.getSeconds()).padStart(2, '0')}`;
 }
 
-export default function TemplateMaster3Page() {
-    const perm = usePagePermission('Master Type 3');
+export default function TemplateMaster4Page() {
+    const perm = usePagePermission('Master Type 4');
     const { lang } = useLanguage();
     const { getEndpoint } = useApiConfig();
     const coreApi = getEndpoint('NexCore', '');
@@ -196,23 +196,19 @@ export default function TemplateMaster3Page() {
         { key: 'cargoType', label: t['product'] || 'สินค้า', type: 'text', placeholder: t['search_product'] || 'ประเภทสินค้า...' },
         { key: 'origin', label: t['origin'] || 'ต้นทาง', type: 'text', placeholder: t['search_origin'] || 'ต้นทาง...' },
         { key: 'destination', label: t['destination'] || 'ปลายทาง', type: 'text', placeholder: t['search_destination'] || 'ปลายทาง...' },
-        {
-            key: 'status', label: t['status'] || 'สถานะ', type: 'select', options: [
-                { value: 'all', label: t['all'] || 'ทั้งหมด' },
-                { value: 'pending', label: t['status_pending'] || 'รอจัดส่ง' },
-                { value: 'in-transit', label: t['status_in_transit'] || 'กำลังขนส่ง' },
-                { value: 'completed', label: t['status_completed'] || 'สำเร็จ' },
-                { value: 'cancelled', label: t['status_cancelled'] || 'ยกเลิก' },
-            ]
-        },
-        {
-            key: 'priority', label: t['priority'] || 'Priority', type: 'select', options: [
-                { value: 'all', label: t['all'] || 'ทั้งหมด' },
-                { value: 'normal', label: t['priority_normal'] || 'ปกติ' },
-                { value: 'urgent', label: t['priority_urgent'] || 'เร่งด่วน' },
-                { value: 'express', label: t['priority_express'] || 'ด่วนพิเศษ' },
-            ]
-        },
+        { key: 'status', label: t['status'] || 'สถานะ', type: 'select', options: [
+            { value: 'all', label: t['all'] || 'ทั้งหมด' },
+            { value: 'pending', label: t['status_pending'] || 'รอจัดส่ง' },
+            { value: 'in-transit', label: t['status_in_transit'] || 'กำลังขนส่ง' },
+            { value: 'completed', label: t['status_completed'] || 'สำเร็จ' },
+            { value: 'cancelled', label: t['status_cancelled'] || 'ยกเลิก' },
+        ]},
+        { key: 'priority', label: t['priority'] || 'Priority', type: 'select', options: [
+            { value: 'all', label: t['all'] || 'ทั้งหมด' },
+            { value: 'normal', label: t['priority_normal'] || 'ปกติ' },
+            { value: 'urgent', label: t['priority_urgent'] || 'เร่งด่วน' },
+            { value: 'express', label: t['priority_express'] || 'ด่วนพิเศษ' },
+        ]},
     ];
 
     const handleAdvSearchChange = (key: string, value: string) => {
@@ -243,8 +239,8 @@ export default function TemplateMaster3Page() {
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const { configs, loading: configLoading } = useSystemConfig();
-    const [pageSize, setPageSize] = useState(20);
-    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(true);
+    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
+    const [hasSetDefaultPageSize, setHasSetDefaultPageSize] = useState(false);
 
     useEffect(() => {
         if (!configLoading && configs?.pageRecordDefault && !hasSetDefaultPageSize) {
@@ -265,17 +261,17 @@ export default function TemplateMaster3Page() {
         api.getLocations().then(l => {
             const sortedLocations = (l || []).sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''));
             setLocationsList(sortedLocations);
-        }).catch(() => { });
+        }).catch(() => {});
     }, []);
 
     useEffect(() => { loadOrders(); }, [loadOrders]);
 
     const filtered = orders.filter(o => {
         // Quick Search (Toolbar)
-        const matchSearch = search === '' ||
-            o.customerName.toLowerCase().includes(search.toLowerCase()) ||
-            o.id.toLowerCase().includes(search.toLowerCase()) ||
-            o.origin.toLowerCase().includes(search.toLowerCase()) ||
+        const matchSearch = search === '' || 
+            o.customerName.toLowerCase().includes(search.toLowerCase()) || 
+            o.id.toLowerCase().includes(search.toLowerCase()) || 
+            o.origin.toLowerCase().includes(search.toLowerCase()) || 
             o.destination.toLowerCase().includes(search.toLowerCase());
 
         // Card Filter (Status cards at top)
@@ -608,20 +604,29 @@ export default function TemplateMaster3Page() {
         <>
             <style>{`.page-content { padding: 10px !important; }`}</style>
             <CrudLayout
+            summaryCards={
+                <>
+                    <SummaryCard title={t['all'] || "ทั้งหมด"} count={orders.length} subtitle={t['items'] || "รายการ"} icon={<Package size={22} />} color="#3b82f6" isActive={filter === 'all'} onClick={() => { setFilter('all'); setCurrentPage(1); }} />
+                    <SummaryCard title={t['status_pending'] || "รอจัดส่ง"} count={counts.pending} subtitle={t['items'] || "รายการ"} icon={<Package size={22} />} color="#f59e0b" isActive={filter === 'pending'} onClick={() => { setFilter('pending'); setCurrentPage(1); }} />
+                    <SummaryCard title={t['status_in_transit'] || "กำลังขนส่ง"} count={counts['in-transit']} subtitle={t['items'] || "รายการ"} icon={<Truck size={22} />} color="#10b981" isActive={filter === 'in-transit'} onClick={() => { setFilter('in-transit'); setCurrentPage(1); }} />
+                    <SummaryCard title={t['status_completed'] || "สำเร็จ"} count={counts.completed} subtitle={t['items'] || "รายการ"} icon={<Package size={22} />} color="#8b5cf6" isActive={filter === 'completed'} onClick={() => { setFilter('completed'); setCurrentPage(1); }} />
+                    <SummaryCard title={t['total_value'] || "มูลค่ารวม"} count={totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} subtitle={t['items'] || "รายการ"}  icon={<DollarSign size={22} />} color="#ec4899" isActive={false} />
+                </>
+            }
             toolbarLeft={
                 <>
-                    {perm.canExport && <ExportButtons
+                    {perm.canExport && <ExportButtons 
                         t={t}
-                        onExportXLSX={() => exportToXLSX(getExportData(), 'Template3', exportColumns)}
-                        onExportCSV={() => exportToCSV(getExportData(), 'Template3', exportColumns)}
-                        onExportPDF={(orientation) => exportToPDF(getExportData(), 'Template3', exportColumns, 'Order Report - NexSpeed', orientation)}
+                        onExportXLSX={() => exportToXLSX(getExportData(), 'Template4', exportColumns)}
+                        onExportCSV={() => exportToCSV(getExportData(), 'Template4', exportColumns)}
+                        onExportPDF={(orientation) => exportToPDF(getExportData(), 'Template4', exportColumns, 'Order Report - NexSpeed', orientation)}
                     />}
                     {perm.canImport && (
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             <div style={{ width: '1px', height: '24px', background: 'var(--border-color)', margin: '0 8px' }} />
-                            <ImportExcelButton
+                            <ImportExcelButton 
                                 columns={importColumns as any}
-                                filenamePrefix="Template3"
+                                filenamePrefix="Template4"
                                 onImport={handleImport}
                                 onImportComplete={() => loadOrders()}
                                 translations={{ ...t, import_button: t['import'] }}
@@ -641,11 +646,11 @@ export default function TemplateMaster3Page() {
             toolbarRight={
                 <>
                     {perm.canView && (
-                        <SearchInput
-                            value={search}
-                            onChange={(val) => { setSearch(val); setCurrentPage(1); }}
-                            onClear={() => { setSearch(''); setCurrentPage(1); handleAdvSearchClear(); }}
-                            placeholder={t['search_placeholder'] || "ค้นหาลูกค้า, Order..."}
+                        <SearchInput 
+                            value={search} 
+                            onChange={(val) => { setSearch(val); setCurrentPage(1); }} 
+                            onClear={() => { setSearch(''); setCurrentPage(1); handleAdvSearchClear(); }} 
+                            placeholder={t['search_placeholder'] || "ค้นหาลูกค้า, Order..."} 
                             onAdvancedSearch={() => setShowAdvancedSearch(true)}
                             advancedSearchValues={advSearchValues}
                             onAdvancedSearchClear={handleAdvSearchClear}
@@ -663,8 +668,8 @@ export default function TemplateMaster3Page() {
         >
             {/* ===== LIST VIEW ===== */}
             {viewMode === 'list' && (
-                <div className="card">
-                    <div className="data-table-wrapper" style={{ height: '680px', overflowY: 'auto' }}>
+                <div className="card" style={{ padding: '10px' }}>
+                    <div className="data-table-wrapper" style={{ height: '600px', overflowY: 'auto' }}>
                         <table className="data-table" style={{ position: 'relative' }}>
                             <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'var(--bg-card)', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
                                 <tr>
@@ -708,26 +713,26 @@ export default function TemplateMaster3Page() {
                                         {visibleColumns.priority && <td><span style={{ fontSize: '12px', fontWeight: 600, color: priorityColors[o.priority] }}>{priorityLabels(t)[o.priority]}</span></td>}
                                         {visibleColumns.estimatedCost && <td style={{ fontWeight: 600, textAlign: 'right' }}>{o.estimatedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>}
                                         {visibleColumns.deliveryDate && <td style={{ fontSize: '13px' }}>{o.deliveryDate}</td>}
-                                        {visibleColumns.status && <td style={{ textAlign: 'center' }}><StatusDropdown
+                                        {visibleColumns.status && <td style={{ textAlign: 'center' }}><StatusDropdown 
                                             value={o.status}
                                             onChange={async (newValue: any) => {
                                                 setOrders(prev => prev.map(x => x.id === o.id ? { ...x, status: newValue } : x));
-                                                try { await api.updateOrder(o.id, { ...o, status: newValue } as any); } catch (err) { console.error(err); }
+                                                try { await api.updateOrder(o.id, { ...o, status: newValue } as any); } catch(err) { console.error(err); }
                                             }}
-                                            options={Object.keys(statusLabels(t)).map(k => ({
-                                                value: k,
-                                                label: statusLabels(t)[k as keyof ReturnType<typeof statusLabels>],
+                                            options={Object.keys(statusLabels(t)).map(k => ({ 
+                                                value: k, 
+                                                label: statusLabels(t)[k as keyof ReturnType<typeof statusLabels>], 
                                                 color: (['completed'].includes(k) ? 'green' : (['cancelled'].includes(k) ? 'red' : (['in-transit'].includes(k) ? 'blue' : 'yellow'))) as any
                                             }))}
                                             disabled={!perm.canEdit}
                                         /></td>}
                                         <td style={{ textAlign: 'center' }}>
                                             {hasActions && (
-                                                <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-                                                    {perm.canView && <button onClick={() => handleView(o)} style={{ ...crudStyles.actionBtn, color: 'var(--accent-blue)', background: 'rgba(59,130,246,0.1)' }} title={t['view'] || 'เรียกดู'}><Eye size={14} /></button>}
-                                                    {perm.canEdit && <button onClick={() => handleEdit(o)} style={{ ...crudStyles.actionBtn, color: '#f59e0b', background: '#fef3c7' }} title={t['edit'] || 'แก้ไข'}><Pencil size={14} /></button>}
-                                                    {perm.canDelete && <button onClick={() => handleDeleteClick(o)} style={{ ...crudStyles.actionBtn, color: '#ef4444', background: '#fee2e2' }} title={t['delete'] || 'ลบ'}><Trash2 size={14} /></button>}
-                                                </div>
+                                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                                                {perm.canView   && <button onClick={() => handleView(o)}   style={{ ...crudStyles.actionBtn, color: 'var(--accent-blue)', background: 'rgba(59,130,246,0.1)' }} title={t['view'] || 'เรียกดู'}><Eye    size={14} /></button>}
+                                                {perm.canEdit   && <button onClick={() => handleEdit(o)}   style={{ ...crudStyles.actionBtn, color: '#f59e0b', background: '#fef3c7' }} title={t['edit'] || 'แก้ไข'}><Pencil size={14} /></button>}
+                                                {perm.canDelete && <button onClick={() => handleDeleteClick(o)} style={{ ...crudStyles.actionBtn, color: '#ef4444', background: '#fee2e2' }} title={t['delete'] || 'ลบ'}><Trash2 size={14} /></button>}
+                                            </div>
                                             )}
                                         </td>
                                     </tr>
@@ -744,24 +749,24 @@ export default function TemplateMaster3Page() {
             {/* ===== GRID VIEW ===== */}
             {viewMode === 'grid' && (
                 <>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '12px', height: '680px', overflowY: 'auto', alignContent: 'start', paddingRight: '4px', paddingBottom: '12px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '12px', height: '600px', overflowY: 'auto', alignContent: 'start', paddingRight: '4px', paddingBottom: '12px' }}>
                         {paged.map(o => (
                             <div key={o.id} className="card" style={{ padding: '16px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                                     <span style={{ fontWeight: 700, color: 'var(--accent-blue)' }}>{o.id}</span>
-                                    <StatusDropdown
-                                        value={o.status}
-                                        onChange={async (newValue: any) => {
-                                            setOrders(prev => prev.map(x => x.id === o.id ? { ...x, status: newValue } : x));
-                                            try { await api.updateOrder(o.id, { ...o, status: newValue } as any); } catch (err) { console.error(err); }
-                                        }}
-                                        options={Object.keys(statusLabels(t)).map(k => ({
-                                            value: k,
-                                            label: statusLabels(t)[k as keyof ReturnType<typeof statusLabels>],
-                                            color: (['completed'].includes(k) ? 'green' : (['cancelled'].includes(k) ? 'red' : (['in-transit'].includes(k) ? 'blue' : 'yellow'))) as any
-                                        }))}
-                                        disabled={!perm.canEdit}
-                                    />
+                                    <StatusDropdown 
+                    value={o.status}
+                    onChange={async (newValue: any) => {
+                        setOrders(prev => prev.map(x => x.id === o.id ? { ...x, status: newValue } : x));
+                        try { await api.updateOrder(o.id, { ...o, status: newValue } as any); } catch(err) { console.error(err); }
+                    }}
+                    options={Object.keys(statusLabels(t)).map(k => ({ 
+                        value: k, 
+                        label: statusLabels(t)[k as keyof ReturnType<typeof statusLabels>], 
+                        color: (['completed'].includes(k) ? 'green' : (['cancelled'].includes(k) ? 'red' : (['in-transit'].includes(k) ? 'blue' : 'yellow'))) as any
+                    }))}
+                    disabled={!perm.canEdit}
+                />
                                 </div>
                                 <div style={{ fontWeight: 700, fontSize: '15px', marginBottom: '4px' }}>{o.customerName}</div>
                                 <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>{o.origin} → {o.destination}</div>
@@ -773,8 +778,8 @@ export default function TemplateMaster3Page() {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <span style={{ fontWeight: 700, fontSize: '15px', color: 'var(--accent-blue)' }}>{o.estimatedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     <div style={{ display: 'flex', gap: '4px' }}>
-                                        {perm.canView && <button onClick={() => handleView(o)} style={{ ...crudStyles.actionBtn, color: 'var(--accent-blue)', background: 'rgba(59,130,246,0.1)' }} title={t['view'] || 'เรียกดู'}><Eye size={14} /></button>}
-                                        {perm.canEdit && <button onClick={() => handleEdit(o)} style={{ ...crudStyles.actionBtn, color: '#f59e0b', background: '#fef3c7' }} title={t['edit'] || 'แก้ไข'}><Pencil size={14} /></button>}
+                                        {perm.canView   && <button onClick={() => handleView(o)}   style={{ ...crudStyles.actionBtn, color: 'var(--accent-blue)', background: 'rgba(59,130,246,0.1)' }} title={t['view'] || 'เรียกดู'}><Eye    size={14} /></button>}
+                                        {perm.canEdit   && <button onClick={() => handleEdit(o)}   style={{ ...crudStyles.actionBtn, color: '#f59e0b', background: '#fef3c7' }} title={t['edit'] || 'แก้ไข'}><Pencil size={14} /></button>}
                                         {perm.canDelete && <button onClick={() => handleDeleteClick(o)} style={{ ...crudStyles.actionBtn, color: '#ef4444', background: '#fee2e2' }} title={t['delete'] || 'ลบ'}><Trash2 size={14} /></button>}
                                     </div>
                                 </div>
@@ -835,31 +840,31 @@ export default function TemplateMaster3Page() {
             <BaseModal isOpen={showAddModal || showEditModal} title={showAddModal ? (t['add_order'] || "เพิ่มคำสั่งขนส่ง") : (t['edit_order'] || "แก้ไขคำสั่งขนส่ง")} onClose={() => { setShowAddModal(false); setShowEditModal(false); }}>
                 {renderFormFields(showAddModal ? 'add' : 'edit')}
                 <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-                    <button onClick={() => { setShowAddModal(false); setShowEditModal(false); }}
-                        style={{
-                            padding: '8px 24px',
-                            background: 'white',
-                            color: 'var(--text-secondary)',
-                            border: '1px solid var(--border-color)',
-                            borderRadius: '10px',
-                            cursor: 'pointer',
+                    <button onClick={() => { setShowAddModal(false); setShowEditModal(false); }} 
+                        style={{ 
+                            padding: '8px 24px', 
+                            background: 'white', 
+                            color: 'var(--text-secondary)', 
+                            border: '1px solid var(--border-color)', 
+                            borderRadius: '10px', 
+                            cursor: 'pointer', 
                             fontWeight: 600,
                             boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
                         }}>
                         {t['cancel'] || 'ยกเลิก'}
                     </button>
-                    <button onClick={showAddModal ? handleSaveNew : handleSaveEdit}
-                        style={{
-                            padding: '8px 24px',
-                            background: 'var(--accent-green)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '10px',
-                            cursor: 'pointer',
-                            fontWeight: 600,
+                    <button onClick={showAddModal ? handleSaveNew : handleSaveEdit} 
+                        style={{ 
+                            padding: '8px 24px', 
+                            background: 'var(--accent-green)', 
+                            color: 'white', 
+                            border: 'none', 
+                            borderRadius: '10px', 
+                            cursor: 'pointer', 
+                            fontWeight: 600, 
                             opacity: saving ? 0.5 : 1,
                             boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)'
-                        }}
+                        }}  
                         disabled={saving}>
                         {showAddModal ? (t['add_data'] || 'เพิ่มข้อมูล') : (t['save_data'] || 'บันทึกข้อมูล')}
                     </button>
@@ -872,28 +877,28 @@ export default function TemplateMaster3Page() {
                     {t['delete_confirm_msg'] || 'คุณต้องการลบคำสั่ง'} <strong style={{ color: 'var(--accent-red)' }}>{selectedOrder?.id}</strong> {t['of'] || 'ของ'} {selectedOrder?.customerName} {t['question_mark'] || 'หรือไม่?'}
                 </p>
                 <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-                    <button onClick={() => setShowDeleteConfirm(false)}
-                        style={{
-                            padding: '8px 24px',
-                            background: 'white',
-                            color: 'var(--text-secondary)',
-                            border: '1px solid var(--border-color)',
-                            borderRadius: '10px',
-                            cursor: 'pointer',
+                    <button onClick={() => setShowDeleteConfirm(false)} 
+                        style={{ 
+                            padding: '8px 24px', 
+                            background: 'white', 
+                            color: 'var(--text-secondary)', 
+                            border: '1px solid var(--border-color)', 
+                            borderRadius: '10px', 
+                            cursor: 'pointer', 
                             fontWeight: 600,
                             boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
                         }}>
                         {t['cancel'] || 'ยกเลิก'}
                     </button>
                     <button onClick={handleDelete} disabled={saving}
-                        style={{
-                            background: '#ef4444',
-                            color: 'white',
-                            border: 'none',
-                            padding: '8px 24px',
-                            borderRadius: '10px',
-                            fontWeight: 600,
-                            cursor: 'pointer',
+                        style={{ 
+                            background: '#ef4444', 
+                            color: 'white', 
+                            border: 'none', 
+                            padding: '8px 24px', 
+                            borderRadius: '10px', 
+                            fontWeight: 600, 
+                            cursor: 'pointer', 
                             opacity: saving ? 0.5 : 1,
                             boxShadow: '0 4px 6px -1px rgba(239, 68, 68, 0.2)'
                         }}>
@@ -903,15 +908,15 @@ export default function TemplateMaster3Page() {
             </BaseModal>
 
             {/* Custom Alert Modal */}
-            <BaseModal
-                isOpen={alertConfig.isOpen}
+            <BaseModal 
+                isOpen={alertConfig.isOpen} 
                 title={alertConfig.isError ? (t['error'] || 'ข้อผิดพลาด') : (t['success'] || 'สำเร็จ')}
                 onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
             >
                 <div style={{ padding: '20px', textAlign: 'center' }}>
-                    <div style={{
-                        width: '48px', height: '48px',
-                        borderRadius: '50%',
+                    <div style={{ 
+                        width: '48px', height: '48px', 
+                        borderRadius: '50%', 
                         background: alertConfig.isError ? '#fee2e2' : '#dcfce3',
                         color: alertConfig.isError ? '#ef4444' : '#10b981',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -922,7 +927,7 @@ export default function TemplateMaster3Page() {
                     <p style={{ fontSize: '16px', color: 'var(--text-primary)', marginBottom: '24px' }}>
                         {alertConfig.message}
                     </p>
-                    <button
+                    <button 
                         onClick={() => setAlertConfig({ ...alertConfig, isOpen: false })}
                         style={{
                             background: alertConfig.isError ? '#ef4444' : '#10b981',
@@ -947,14 +952,14 @@ export default function TemplateMaster3Page() {
                 title={t['column_settings_title'] || 'ตั้งค่าการแสดงผลตาราง'}
                 width="450px"
                 footer={
-                    <button onClick={() => setIsColumnSettingsOpen(false)}
-                        style={{
-                            padding: '10px 32px',
-                            background: 'var(--accent-blue)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '10px',
-                            cursor: 'pointer',
+                    <button onClick={() => setIsColumnSettingsOpen(false)} 
+                        style={{ 
+                            padding: '10px 32px', 
+                            background: 'var(--accent-blue)', 
+                            color: 'white', 
+                            border: 'none', 
+                            borderRadius: '10px', 
+                            cursor: 'pointer', 
                             fontWeight: 600,
                             boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.2)'
                         }}>

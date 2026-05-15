@@ -94,7 +94,7 @@ export default function TemplateMaster3Page() {
             setHasSetDefaultPageSize(true);
         }
     }, [configLoading, configs?.pageRecordDefault, hasSetDefaultPageSize]);
-    const [pageSize, setPageSize] = useState(configs?.pageRecordDefault || 10);
+    const [pageSize, setPageSize] = useState(20);
 
     // View mode
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -330,7 +330,7 @@ export default function TemplateMaster3Page() {
                     <span>แสดง</span>
                     <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
                         style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-primary)', fontSize: '13px', fontFamily: 'inherit' }}>
-                        {[5, 10, 20, 50].map(n => <option key={n} value={n}>{n}</option>)}
+                        {[5, 10, 14, 20, 50].map(n => <option key={n} value={n}>{n}</option>)}
                     </select>
                     <span>รายการ / หน้า</span>
                     <span style={{ marginLeft: '8px', color: 'var(--text-muted)' }}>
@@ -374,15 +374,7 @@ export default function TemplateMaster3Page() {
 
     return (
         <div className="animate-fade-in">
-
-            {/* Score Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '12px' }}>
-                <ScoreCard icon={<Package size={22} />} color="#3b82f6" label="ทั้งหมด" value={String(orders.length)} sub="รายการ" bg="rgba(59,130,246,0.15)" onClick={() => { setFilter('all'); setCurrentPage(1); }} active={filter === 'all'} />
-                <ScoreCard icon={<Package size={22} />} color="#f59e0b" label="รอจัดส่ง" value={String(counts.pending)} sub="รายการ" bg="rgba(245,158,11,0.15)" onClick={() => { setFilter('pending'); setCurrentPage(1); }} active={filter === 'pending'} />
-                <ScoreCard icon={<Truck size={22} />} color="#10b981" label="กำลังขนส่ง" value={String(counts['in-transit'])} sub="รายการ" bg="rgba(16,185,129,0.15)" onClick={() => { setFilter('in-transit'); setCurrentPage(1); }} active={filter === 'in-transit'} />
-                <ScoreCard icon={<Package size={22} />} color="#8b5cf6" label="สำเร็จ" value={String(counts.completed)} sub="รายการ" bg="rgba(139,92,246,0.15)" onClick={() => { setFilter('completed'); setCurrentPage(1); }} active={filter === 'completed'} />
-                <ScoreCard icon={<DollarSign size={22} />} color="#ec4899" label="มูลค่ารวม" value={`฿${totalCost.toLocaleString()}`} sub="" bg="rgba(236,72,153,0.15)" />
-            </div>
+            <style>{`.page-content { padding: 10px !important; }`}</style>
 
             {/* Toolbar */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
@@ -402,27 +394,27 @@ export default function TemplateMaster3Page() {
 
                 <div style={{ flex: 1 }} />
 
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'nowrap', justifyContent: 'flex-end', flex: '1 1 auto', minWidth: 0 }}>
+                    <div className="topbar-search" style={{ minWidth: '100px', flex: '1 1 auto', width: '100%' }}>
+                        <Search size={16} />
+                        <input placeholder="ค้นหาลูกค้า, Order..." value={search} onChange={e => { setSearch(e.target.value); setCurrentPage(1); }} style={{ width: '100%' }} />
+                    </div>
 
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'var(--bg-primary)', borderRadius: '8px', padding: '2px', border: '1px solid var(--border-color)', flexShrink: 0 }}>
+                        <button onClick={() => setViewMode('list')} title="List"
+                            style={{ ...viewToggleStyle, background: viewMode === 'list' ? 'var(--accent-blue)' : 'transparent', color: viewMode === 'list' ? 'white' : 'var(--text-muted)' }}><List size={16} /></button>
+                        <button onClick={() => setViewMode('grid')} title="Grid"
+                            style={{ ...viewToggleStyle, background: viewMode === 'grid' ? 'var(--accent-blue)' : 'transparent', color: viewMode === 'grid' ? 'white' : 'var(--text-muted)' }}><LayoutGrid size={16} /></button>
+                    </div>
 
-                <div className="topbar-search" style={{ minWidth: '180px' }}>
-                    <Search size={16} />
-                    <input placeholder="ค้นหาลูกค้า, Order..." value={search} onChange={e => { setSearch(e.target.value); setCurrentPage(1); }} />
+                    <button onClick={handleAdd} className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}><Plus size={16} /> <span>เพิ่มข้อมูล</span></button>
                 </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'var(--bg-primary)', borderRadius: '8px', padding: '2px', border: '1px solid var(--border-color)' }}>
-                    <button onClick={() => setViewMode('list')} title="List"
-                        style={{ ...viewToggleStyle, background: viewMode === 'list' ? 'var(--accent-blue)' : 'transparent', color: viewMode === 'list' ? 'white' : 'var(--text-muted)' }}><List size={16} /></button>
-                    <button onClick={() => setViewMode('grid')} title="Grid"
-                        style={{ ...viewToggleStyle, background: viewMode === 'grid' ? 'var(--accent-blue)' : 'transparent', color: viewMode === 'grid' ? 'white' : 'var(--text-muted)' }}><LayoutGrid size={16} /></button>
-                </div>
-
-                <button onClick={handleAdd} className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 500, cursor: 'pointer' }}><Plus size={16} /> <span>เพิ่มข้อมูล</span></button>
             </div>
 
             {/* ===== LIST VIEW ===== */}
             {viewMode === 'list' && (
                 <div className="card">
-                    <div className="data-table-wrapper" style={{ height: '600px', overflowY: 'auto' }}>
+                    <div className="data-table-wrapper" style={{ height: '680px', overflowY: 'auto' }}>
                         <table className="data-table" style={{ position: 'relative' }}>
                             <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'var(--bg-card)', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
                                 <tr>
@@ -482,7 +474,7 @@ export default function TemplateMaster3Page() {
             {/* ===== GRID VIEW ===== */}
             {viewMode === 'grid' && (
                 <>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '12px', height: '600px', overflowY: 'auto', alignContent: 'start', paddingRight: '4px', paddingBottom: '12px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '12px', height: '680px', overflowY: 'auto', alignContent: 'start', paddingRight: '4px', paddingBottom: '12px' }}>
                         {paged.map(o => (
                             <div key={o.id} className="card" style={{ padding: '16px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>

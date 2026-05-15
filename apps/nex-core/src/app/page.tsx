@@ -26,6 +26,7 @@ import SystemAnnouncements from '@/components/SystemAnnouncements';
 import TemplateMaster1Page from '@/components/template/TemplateMaster1Page';
 import TemplateMaster2Page from '@/components/template/TemplateMaster2Page';
 import TemplateMaster3Page from '@/components/template/TemplateMaster3Page';
+import TemplateMaster4Page from '@/components/template/TemplateMaster4Page';
 import TemplateMasterGraph1Page from '@/components/template/TemplateMasterGraph1Page';
 
 import SecuritySettings from '@/components/SecuritySettings';
@@ -191,6 +192,8 @@ export default function AdminPage() {
         return <TemplateMaster2Page />;
       case 'template-master-3':
         return <TemplateMaster3Page />;
+      case 'template-master-4':
+        return <TemplateMaster4Page />;
       case 'template-master-graph':
         return <TemplateMasterGraph1Page />;
       case 'provinces':

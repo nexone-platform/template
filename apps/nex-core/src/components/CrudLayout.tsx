@@ -5,7 +5,7 @@ export interface CrudLayoutProps {
      * ชื่อหัวข้อหลักของหน้า (เช่น ข้อมูลสาขา)
      */
     title?: string;
-    
+
     /** 
      * คำอธิบายการทำงานของหน้า
      */
@@ -55,7 +55,7 @@ export default function CrudLayout({
 }: CrudLayoutProps) {
     const getSummaryGridColumns = () => {
         if (!summaryCards) return '1fr';
-        
+
         let count = 0;
         React.Children.forEach(summaryCards, (child) => {
             if (React.isValidElement(child) && child.type === React.Fragment) {
@@ -79,14 +79,14 @@ export default function CrudLayout({
                     {description && <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0 }}>{description}</p>}
                 </div>
             )}
-            
+
             {/* 1. Summary Cards (ถ้ามี) */}
             {summaryCards && (
-                <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: getSummaryGridColumns(), 
-                    gap: '12px', 
-                    marginBottom: '16px' 
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: getSummaryGridColumns(),
+                    gap: '12px',
+                    marginBottom: '16px'
                 }}>
                     {summaryCards}
                 </div>
@@ -101,12 +101,12 @@ export default function CrudLayout({
 
             {/* 2. Toolbar (ส่วน Header ก่อนตาราง) */}
             {(toolbarLeft || toolbarRight) && (
-                <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '8px', 
-                    marginBottom: '12px', 
-                    flexWrap: 'wrap' 
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '12px',
+                    flexWrap: 'wrap'
                 }}>
                     {/* ด้านซ้าย */}
                     {toolbarLeft && (
@@ -114,13 +114,13 @@ export default function CrudLayout({
                             {toolbarLeft}
                         </div>
                     )}
-                    
+
                     {/* ดันไปขวา */}
                     <div style={{ flex: 1 }} />
-                    
+
                     {/* ด้านขวา */}
                     {toolbarRight && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'nowrap', justifyContent: 'flex-end', flex: '1 1 auto', minWidth: 0 }}>
                             {toolbarRight}
                         </div>
                     )}

@@ -60,6 +60,8 @@ export interface Order {
     driverId?: string; createdAt: string; updatedAt: string;
 }
 
+
+
 export interface Trip {
     id: string; orderId: string; vehicleId: string; driverId: string;
     status: string; origin: string; destination: string;
@@ -458,6 +460,7 @@ export const api = {
     createOrder: (o: Partial<Order>) => postAPI('/template-checkbox', o),
     updateOrder: (id: string, o: Partial<Order>) => putAPI(`/template-checkbox/${id}`, o),
     deleteOrder: (id: string) => deleteAPI(`/template-checkbox/${id}`),
+
 
     // Trips
     getTrips: () => fetchAPI<Trip[]>('/trips'),

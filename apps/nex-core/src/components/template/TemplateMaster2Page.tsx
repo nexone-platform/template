@@ -361,7 +361,7 @@ export default function TemplateMaster2Page() {
                     {perm.canImport && (
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             <div style={{ width: '1px', height: '24px', background: 'var(--border-color)', margin: '0 8px' }} />
-                            <ImportExcelButton columns={importColumns as any} filenamePrefix="Template2" onImport={handleImport} onImportComplete={loadData} />
+                            <ImportExcelButton columns={importColumns as any} filenamePrefix="Template2" onImport={handleImport} onImportComplete={loadData} translations={{ ...t, import_button: t['import'] }} />
                         </div>
                     )}
                 </>
@@ -377,7 +377,7 @@ export default function TemplateMaster2Page() {
                         advancedSearchValues={advSearchValues}
                         onAdvancedSearchClear={handleAdvSearchClear}
                     />}
-                    {perm.canAdd && <button onClick={handleAdd} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 500, cursor: 'pointer' }}><Plus size={16} /> <span>{t['add_data'] || 'เพิ่มข้อมูล'}</span></button>}
+                    {perm.canAdd && <button onClick={handleAdd} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}><Plus size={16} /> <span>{t['add_data'] || 'เพิ่มข้อมูล'}</span></button>}
                 </>
             }
         >

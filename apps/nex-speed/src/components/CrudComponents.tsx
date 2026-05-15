@@ -138,12 +138,13 @@ export function StatusDropdown({
 
 export function SearchInput({ value, onChange, placeholder = "ค้นหา..." }: { value: string, onChange: (val: string) => void, placeholder?: string }) {
     return (
-        <div className="topbar-search" style={{ minWidth: '240px' }}>
+        <div className="topbar-search" style={{ minWidth: '100px', maxWidth: '538.97px', flex: '1 1 auto', width: '100%' }}>
             <Search size={16} />
             <input 
                 placeholder={placeholder} 
                 value={value} 
                 onChange={e => onChange(e.target.value)} 
+                style={{ width: '100%' }}
             />
         </div>
     );

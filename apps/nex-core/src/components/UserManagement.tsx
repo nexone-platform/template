@@ -3,7 +3,7 @@ import CrudLayout from '@/components/CrudLayout';
 import { SearchInput, AdvancedSearchModal, AdvancedSearchField, crudStyles, StatusDropdown, BaseModal, ExportButtons } from '@/components/CrudComponents';
 import ImportExcelButton from '@/components/ImportExcelButton';
 import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/exportUtils';
-import { Plus, Edit2, Info, Trash2, Eye, ArrowUp, ArrowDown, ChevronsUpDown, Settings } from 'lucide-react';
+import { Plus, Edit2, Info, Trash2, Eye, EyeOff, ArrowUp, ArrowDown, ChevronsUpDown, Settings, Key } from 'lucide-react';
 import Pagination from '@/components/Pagination';
 import { coreUserApi, coreRoleApi } from '@/services/api';
 import { usePagePermission } from '@/contexts/PermissionContext';
@@ -53,8 +53,16 @@ export default function UserManagement() {
         roleName: true,
         language: true,
         mfaEnabled: true,
+        changePassword: true,
         isActive: true
     });
+
+    const [isChangePwdModalOpen, setIsChangePwdModalOpen] = useState(false);
+    const [changePwdItem, setChangePwdItem] = useState<any>(null);
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     // Advanced Search State
     const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
@@ -202,6 +210,15 @@ export default function UserManagement() {
         setIsModalOpen(true);
     };
 
+    const handleChangePassword = (item: any) => {
+        setChangePwdItem(item);
+        setNewPassword('');
+        setConfirmPassword('');
+        setShowNewPassword(false);
+        setShowConfirmPassword(false);
+        setIsChangePwdModalOpen(true);
+    };
+
     const saveForm = async () => {
         if (!formData.displayName?.trim()) {
             setAlertConfig({isOpen: true, message: t['require_name'] || 'กรุณาระบุชื่อพนักงาน', isError: true});
@@ -252,6 +269,23 @@ export default function UserManagement() {
         } catch (err: any) { 
             console.error(err); 
             setAlertConfig({isOpen: true, message: err.message || t['error_deleting'] || 'ลบข้อมูลไม่สำเร็จ', isError: true});
+        }
+        setSaving(false);
+    };
+
+    const saveNewPassword = async () => {
+        if (!newPassword || newPassword !== confirmPassword) {
+            setAlertConfig({isOpen: true, message: t['password_mismatch'] || 'รหัสผ่านไม่ตรงกัน หรือไม่ได้กรอก', isError: true});
+            return;
+        }
+        setSaving(true);
+        try {
+            await coreUserApi.update(changePwdItem.id, { password: newPassword });
+            setAlertConfig({isOpen: true, message: t['password_change_success'] || 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว', isError: false});
+            setIsChangePwdModalOpen(false);
+        } catch (err: any) {
+            console.error(err);
+            setAlertConfig({isOpen: true, message: err.message || t['error_saving'] || 'เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน', isError: true});
         }
         setSaving(false);
     };
@@ -439,6 +473,7 @@ export default function UserManagement() {
                                     {visibleColumns.roleName && renderTh(t['role'] || 'สิทธิ์การใช้งาน', 'roleId')}
                                     {visibleColumns.language && renderTh(t['language'] || 'ภาษา', 'language', '100px')}
                                     {visibleColumns.mfaEnabled && renderTh('MFA', 'mfaEnabled', '80px')}
+                                    {visibleColumns.changePassword && <th className="text-center" style={{ width: '120px' }}>{t['change_password'] || 'เปลี่ยนรหัสผ่าน'}</th>}
                                     {visibleColumns.isActive && renderTh(t['is_active'] || 'สถานะ', 'isActive', '100px')}
                                     {hasActions && <th className="text-center" style={{ width: '100px', paddingRight: '16px', whiteSpace: 'nowrap' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
@@ -472,6 +507,13 @@ export default function UserManagement() {
                                             }}>
                                                 {item.mfaEnabled ? 'ON' : 'OFF'}
                                             </span>
+                                        </td>}
+                                        {visibleColumns.changePassword && <td className="text-center">
+                                            {perm.canEdit && (
+                                                <button onClick={() => handleChangePassword(item)} style={{ ...crudStyles.actionBtn, color: '#3b82f6', background: 'rgba(59,130,246,0.1)', margin: '0 auto' }} title={t['change_password'] || "เปลี่ยนรหัสผ่าน"}>
+                                                    <Key size={14} />
+                                                </button>
+                                            )}
                                         </td>}
                                         {visibleColumns.isActive && <td className="text-center">
                                             <StatusDropdown status={item.isActive} onChange={(val) => handleToggleStatus(item, val)} disabled={!perm.canEdit} t={t} />
@@ -639,6 +681,53 @@ export default function UserManagement() {
                 </div>
             </BaseModal>
 
+            {/* Change Password Modal */}
+            <BaseModal
+                isOpen={isChangePwdModalOpen}
+                onClose={() => setIsChangePwdModalOpen(false)}
+                title={(t['change_password'] || 'เปลี่ยนรหัสผ่าน') + ` - ${changePwdItem?.displayName || ''}`}
+                width="400px"
+                footer={
+                    <>
+                        <button onClick={() => setIsChangePwdModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, color: 'var(--text-primary)' }}>{t['cancel'] || 'ยกเลิก'}</button>
+                        <button onClick={saveNewPassword} disabled={saving} style={{ padding: '8px 16px', background: 'var(--accent-green)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 500, opacity: saving ? 0.5 : 1 }}>{saving ? (t['saving'] || 'กำลังบันทึก...') : (t['save_button'] || 'บันทึก')}</button>
+                    </>
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div>
+                        <label style={crudStyles.label}>{t['new_password'] || 'รหัสผ่านใหม่'} <span style={{ color: '#ef4444' }}>*</span></label>
+                        <div style={{ position: 'relative' }}>
+                            <input type={showNewPassword ? "text" : "password"} style={{ ...crudStyles.input, paddingRight: '40px' }} placeholder={t['new_password_placeholder'] || 'กำหนดรหัสผ่านใหม่'}
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)} />
+                            <button
+                                type="button"
+                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', padding: 0 }}
+                            >
+                                {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label style={crudStyles.label}>{t['confirm_new_password'] || 'ยืนยันรหัสผ่านใหม่'} <span style={{ color: '#ef4444' }}>*</span></label>
+                        <div style={{ position: 'relative' }}>
+                            <input type={showConfirmPassword ? "text" : "password"} style={{ ...crudStyles.input, paddingRight: '40px' }} placeholder={t['confirm_new_password_placeholder'] || 'ยืนยันรหัสผ่านใหม่อีกครั้ง'}
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)} />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', padding: 0 }}
+                            >
+                                {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </BaseModal>
+
             {/* Custom Alert Modal */}
             <BaseModal 
                 isOpen={alertConfig.isOpen} 
@@ -790,6 +879,16 @@ export default function UserManagement() {
                             >
                                 <option value="none">{t['no_sort'] || 'ไม่เรียง'}</option>
                                 <option value="asc">{t['sort'] || 'เรียง'}</option>
+                            </select>
+                        </div>
+
+                        {/* Change Password */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', flex: 1 }}>
+                                <input type="checkbox" checked={visibleColumns.changePassword} onChange={(e) => setVisibleColumns({ ...visibleColumns, changePassword: e.target.checked })} /> {t['change_password'] || 'เปลี่ยนรหัสผ่าน'}
+                            </label>
+                            <select disabled style={{ ...crudStyles.input, width: '130px', padding: '4px 8px', height: '32px', fontSize: '13px', margin: 0, opacity: 0.5 }}>
+                                <option value="none">{t['no_sort'] || 'ไม่เรียง'}</option>
                             </select>
                         </div>
 

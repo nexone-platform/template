@@ -37,22 +37,22 @@ interface SummaryCardProps {
 export function SummaryCard({ title, count, value, subtitle, icon, color, iconBg, isActive = false, onClick }: SummaryCardProps) {
     const cardColor = color || (iconBg ? iconBg.substring(0, 7) : 'var(--accent-blue)'); // Fallback
     const hasClick = !!onClick;
-    
+
     return (
-        <div 
+        <div
             onClick={onClick}
-            style={{ 
-                display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 18px', borderRadius: '14px', 
-                background: isActive ? `${cardColor}1A` : `${cardColor}0A`, 
-                border: isActive ? `2px solid ${cardColor}` : `1px solid ${cardColor}30`, 
-                cursor: hasClick ? 'pointer' : 'default', 
-                transition: 'all 0.2s', 
-                opacity: (isActive || !hasClick) ? 1 : 0.8 
+            style={{
+                display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 18px', borderRadius: '14px',
+                background: isActive ? `${cardColor}1A` : `${cardColor}0A`,
+                border: isActive ? `2px solid ${cardColor}` : `1px solid ${cardColor}30`,
+                cursor: hasClick ? 'pointer' : 'default',
+                transition: 'all 0.2s',
+                opacity: (isActive || !hasClick) ? 1 : 0.8
             }}
         >
-            <div style={{ 
-                width: '44px', height: '44px', borderRadius: '12px', background: `${cardColor}1A`, 
-                display: 'flex', alignItems: 'center', justifyContent: 'center', color: cardColor, fontSize: '20px' 
+            <div style={{
+                width: '44px', height: '44px', borderRadius: '12px', background: `${cardColor}1A`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', color: cardColor, fontSize: '20px'
             }}>
                 {icon}
             </div>
@@ -71,13 +71,13 @@ export function SummaryCard({ title, count, value, subtitle, icon, color, iconBg
 // Common UI Elements
 // ==================================
 
-export function StatusDropdown({ 
-    status, 
+export function StatusDropdown({
+    status,
     onChange,
     disabled = false,
     t
-}: { 
-    status: boolean, 
+}: {
+    status: boolean,
     onChange: (val: boolean) => void,
     disabled?: boolean,
     t?: Record<string, string>
@@ -102,7 +102,7 @@ export function StatusDropdown({
 
     return (
         <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
-            <button 
+            <button
                 onClick={() => { if (!disabled) setOpen(!open); }}
                 style={{
                     display: 'flex', alignItems: 'center', gap: '6px',
@@ -120,18 +120,18 @@ export function StatusDropdown({
             {open && (
                 <div style={{
                     position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
-                    marginTop: '4px', background: 'var(--bg-card)', 
+                    marginTop: '4px', background: 'var(--bg-card)',
                     border: '1px solid var(--border-color)', borderRadius: '10px',
                     boxShadow: 'var(--shadow-card)', minWidth: '110px', zIndex: 10,
                     overflow: 'hidden', padding: '4px'
                 }}>
-                    <div 
+                    <div
                         onClick={() => { onChange(true); setOpen(false); }}
                         style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', cursor: 'pointer', fontSize: '13px', borderRadius: '6px', color: 'var(--text-primary)', fontWeight: status ? 600 : 400, background: status ? 'var(--bg-secondary)' : 'transparent' }}
                     >
                         <CheckCircle2 size={14} color="var(--accent-green)" /> {t?.['active'] || (lang === 'en' ? 'Active' : 'ใช้งาน')}
                     </div>
-                    <div 
+                    <div
                         onClick={() => { onChange(false); setOpen(false); }}
                         style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', cursor: 'pointer', fontSize: '13px', borderRadius: '6px', color: 'var(--text-primary)', fontWeight: !status ? 600 : 400, background: !status ? 'var(--bg-secondary)' : 'transparent' }}
                     >
@@ -143,10 +143,10 @@ export function StatusDropdown({
     );
 }
 
-export function SearchInput({ value, onChange, onClear, placeholder = "ค้นหา...", onAdvancedSearch, advancedSearchFields, advancedSearchValues, onAdvancedSearchChange, onAdvancedSearchSubmit, onAdvancedSearchClear, t }: { 
-    value: string, 
-    onChange: (val: string) => void, 
-    onClear?: () => void, 
+export function SearchInput({ value, onChange, onClear, placeholder = "ค้นหา...", onAdvancedSearch, advancedSearchFields, advancedSearchValues, onAdvancedSearchChange, onAdvancedSearchSubmit, onAdvancedSearchClear, t }: {
+    value: string,
+    onChange: (val: string) => void,
+    onClear?: () => void,
     placeholder?: string,
     onAdvancedSearch?: () => void,
     advancedSearchFields?: AdvancedSearchField[],
@@ -159,16 +159,19 @@ export function SearchInput({ value, onChange, onClear, placeholder = "ค้น
     const { lang } = useLanguage();
     const [isFocused, setIsFocused] = useState(false);
     const hasActiveFilters = advancedSearchValues && Object.values(advancedSearchValues).some(v => v !== '' && v !== 'all');
-    
+
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '1 1 auto', flexWrap: 'nowrap', justifyContent: 'flex-end', minWidth: 0 }}>
             {/* Search Bar */}
-            <div 
-                style={{ 
-                    width: '538.97px', 
+            <div
+                style={{
+                    width: '100%',
+                    maxWidth: '538.97px',
+                    minWidth: '100px',
+                    flex: '1 1 auto',
                     height: '38.39px',
-                    display: 'flex', 
-                    alignItems: 'center', 
+                    display: 'flex',
+                    alignItems: 'center',
                     gap: '8px',
                     padding: '0 12px',
                     background: 'var(--bg-primary)',
@@ -214,17 +217,17 @@ export function SearchInput({ value, onChange, onClear, placeholder = "ค้น
                         }} />
                     )}
                 </button>
-                <input 
-                    placeholder={placeholder} 
-                    value={value} 
-                    onChange={e => onChange(e.target.value)} 
+                <input
+                    placeholder={placeholder}
+                    value={value}
+                    onChange={e => onChange(e.target.value)}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     onKeyDown={e => { if (e.key === 'Enter' && onAdvancedSearchSubmit) onAdvancedSearchSubmit(); }}
-                    style={{ 
-                        border: 'none', 
-                        background: 'transparent', 
-                        outline: 'none', 
+                    style={{
+                        border: 'none',
+                        background: 'transparent',
+                        outline: 'none',
                         color: 'var(--text-primary)',
                         width: '100%',
                         fontSize: '14px',
@@ -555,7 +558,7 @@ export function ExportButtons({ onExportXLSX, onExportCSV, onExportPDF, t }: Exp
 
     return (
         <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
-            <button 
+            <button
                 onClick={() => setOpen(!open)}
                 style={{
                     display: 'flex', alignItems: 'center', gap: '6px',
@@ -574,8 +577,8 @@ export function ExportButtons({ onExportXLSX, onExportCSV, onExportPDF, t }: Exp
                     minWidth: '150px', padding: '4px', display: 'flex', flexDirection: 'column'
                 }}>
                     {onExportXLSX && (
-                        <button 
-                            onClick={() => { onExportXLSX(); setOpen(false); }} 
+                        <button
+                            onClick={() => { onExportXLSX(); setOpen(false); }}
                             style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', border: 'none', background: 'transparent', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', color: 'var(--text-primary)', fontSize: '14px', whiteSpace: 'nowrap' }}
                             onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
                             onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
@@ -584,8 +587,8 @@ export function ExportButtons({ onExportXLSX, onExportCSV, onExportPDF, t }: Exp
                         </button>
                     )}
                     {onExportCSV && (
-                        <button 
-                            onClick={() => { onExportCSV(); setOpen(false); }} 
+                        <button
+                            onClick={() => { onExportCSV(); setOpen(false); }}
                             style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', border: 'none', background: 'transparent', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', color: 'var(--text-primary)', fontSize: '14px', whiteSpace: 'nowrap' }}
                             onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
                             onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
@@ -595,8 +598,8 @@ export function ExportButtons({ onExportXLSX, onExportCSV, onExportPDF, t }: Exp
                     )}
                     {onExportPDF && (
                         <>
-                            <button 
-                                onClick={() => { onExportPDF('landscape'); setOpen(false); }} 
+                            <button
+                                onClick={() => { onExportPDF('landscape'); setOpen(false); }}
                                 style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', border: 'none', background: 'transparent', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', color: 'var(--text-primary)', fontSize: '14px', whiteSpace: 'nowrap' }}
                                 onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
                                 onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
@@ -607,8 +610,8 @@ export function ExportButtons({ onExportXLSX, onExportCSV, onExportPDF, t }: Exp
                                     <line x1="6" y1="13" x2="14" y2="13" />
                                 </svg> {t?.['export_pdf_landscape'] || "PDF แนวนอน"}
                             </button>
-                            <button 
-                                onClick={() => { onExportPDF('portrait'); setOpen(false); }} 
+                            <button
+                                onClick={() => { onExportPDF('portrait'); setOpen(false); }}
                                 style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', border: 'none', background: 'transparent', width: '100%', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', color: 'var(--text-primary)', fontSize: '14px', whiteSpace: 'nowrap' }}
                                 onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
                                 onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
@@ -620,7 +623,7 @@ export function ExportButtons({ onExportXLSX, onExportCSV, onExportPDF, t }: Exp
                                 </svg> {t?.['export_pdf_portrait'] || "PDF แนวตั้ง"}
                             </button>
                         </>
-                    )} 
+                    )}
                 </div>
             )}
         </div>
@@ -630,18 +633,18 @@ export function ExportButtons({ onExportXLSX, onExportCSV, onExportPDF, t }: Exp
 // ==================================
 // Base Modal Component
 // ==================================
-export function BaseModal({ 
-    isOpen, 
-    onClose, 
-    title, 
-    children, 
+export function BaseModal({
+    isOpen,
+    onClose,
+    title,
+    children,
     footer,
     width = '500px'
-}: { 
-    isOpen: boolean; 
-    onClose: () => void; 
-    title: string; 
-    children: React.ReactNode; 
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    title: string;
+    children: React.ReactNode;
     footer?: React.ReactNode;
     width?: string;
 }) {

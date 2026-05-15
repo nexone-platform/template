@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Pencil, Trash2, Save, X, ShieldCheck, ChevronRight, Info } from 'lucide-react';
 import { coreRoleApi } from '../services/api';
 import { BaseModal } from './CrudComponents';
+import { useApiConfig } from '../contexts/ApiConfigContext';
 
 // App name mapping (display -> api value)
 const APP_MAP: Record<string, string> = {
@@ -11,7 +12,7 @@ const APP_MAP: Record<string, string> = {
   'NexStream': 'NexStream',
   'NexOne': 'NexOne',
 };
-const SYSTEM_APPS = Object.keys(APP_MAP);
+const FALLBACK_SYSTEM_APPS = Object.keys(APP_MAP);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -245,6 +246,10 @@ function renderMenuTree(
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function RoleSettings() {
+  const { getEndpoint } = useApiConfig();
+  const coreApi = getEndpoint('NexCore', '');
+  const API_URL = `${coreApi}/v1/system-apps`;
+
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedId, setSelectedId] = useState<string>('');
   const [menuTree, setMenuTree] = useState<MenuNode[]>([]);
@@ -253,6 +258,7 @@ export default function RoleSettings() {
   const [saving, setSaving] = useState(false);
   const [loadingMenu, setLoadingMenu] = useState(false);
   const [alertConfig, setAlertConfig] = useState<{ isOpen: boolean, message: string, isError: boolean }>({ isOpen: false, message: '', isError: false });
+  const [systemApps, setSystemApps] = useState<string[]>(FALLBACK_SYSTEM_APPS);
 
   const handleCollapseToggle = useCallback((menuId: string) => {
     setCollapsedIds(prev => {
@@ -274,10 +280,41 @@ export default function RoleSettings() {
 
   const [selectedApp, setSelectedApp] = useState('NexCore');
 
+  const fetchSystemApps = useCallback(async () => {
+    try {
+      const res = await fetch(API_URL, { credentials: 'include' });
+      const json = await res.json();
+      const apps = (json && json.data !== undefined) ? json.data : json;
+      if (Array.isArray(apps)) {
+        const activeAppNames = apps.map(a => a.app_name).filter(Boolean);
+        if (activeAppNames.length > 0) {
+          setSystemApps(activeAppNames);
+          if (!activeAppNames.includes(selectedApp)) {
+            setSelectedApp(activeAppNames[0]);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Failed to fetch system apps', e);
+    }
+  }, [API_URL, selectedApp]);
+
+  useEffect(() => {
+    fetchSystemApps();
+  }, [fetchSystemApps]);
+
   // ── Fetch roles list ──────────────────────────────────────────────────────
   const fetchRoles = useCallback(async () => {
     try {
-      const data = await coreRoleApi.getAll();
+      const res = await fetch(`${coreApi}/roles`, { credentials: 'include' });
+      if (!res.ok) throw new Error(`Role API Error: ${res.status}`);
+      const json = await res.json();
+      
+      let data = json;
+      if (json?.data) {
+          data = Array.isArray(json.data) ? json.data : (json.data.data || []);
+      }
+      
       if (Array.isArray(data)) {
         const mapped: Role[] = data.map((r: any) => ({
           id: (r.roleId || r.id || '').toString(),
@@ -285,7 +322,7 @@ export default function RoleSettings() {
           description: r.description || '',
           isSystem: !!r.isSystem,
         }));
-        const sorted = [...mapped].sort((a, b) => b.name.localeCompare(a.name));
+        const sorted = [...mapped].sort((a, b) => a.name.localeCompare(b.name));
         setRoles(sorted);
         if (mapped.length > 0 && !selectedId) {
           setSelectedId(mapped[0].id);
@@ -294,13 +331,14 @@ export default function RoleSettings() {
     } catch (e) {
       console.error('Failed to fetch roles:', e);
     }
-  }, [selectedId]);
+  }, [coreApi, selectedId]);
   // ── Fetch menu permissions ────────────────────────────────────────────────
   const fetchPermissions = useCallback(async (roleId: string, appDisplay: string) => {
     setLoadingMenu(true);
     try {
-      const res = await coreRoleApi.getPermissions(roleId, APP_MAP[appDisplay] || appDisplay);
-      const data = res.data || res;
+      const res = await fetch(`${coreApi}/roles/${roleId}/permissions?app=${APP_MAP[appDisplay] || appDisplay}`, { credentials: 'include' });
+      const json = await res.json();
+      const data = json.data !== undefined ? json.data : json;
       console.log('Fetched menuTree data:', data);
       if (Array.isArray(data)) {
         setMenuTree(data);
@@ -315,7 +353,7 @@ export default function RoleSettings() {
       setLoadingMenu(false);
       setHasChanges(false);
     }
-  }, []);
+  }, [coreApi]);
 
   useEffect(() => { fetchRoles(); }, [fetchRoles]);
 
@@ -542,7 +580,14 @@ export default function RoleSettings() {
         canImport: n.canImport,
         canExport: n.canExport,
       }));
-      await coreRoleApi.savePermissions(selectedId, APP_MAP[selectedApp] || selectedApp, permissions);
+      const res = await fetch(`${coreApi}/roles/${selectedId}/permissions?app=${APP_MAP[selectedApp] || selectedApp}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ permissions }),
+        credentials: 'include'
+      });
+      if (!res.ok) throw new Error('Failed to save permissions');
+      
       setHasChanges(false);
       // Refresh to get new permissionIds
       await fetchPermissions(selectedId, selectedApp);
@@ -567,7 +612,12 @@ export default function RoleSettings() {
   const handleAddRole = async () => {
     if (!newName.trim()) return;
     try {
-      await coreRoleApi.create({ roleName: newName.trim(), description: newDesc.trim() || undefined });
+      const res = await fetch(`${coreApi}/roles`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roleName: newName.trim(), description: newDesc.trim() || undefined }),
+        credentials: 'include'
+      });
+      if (!res.ok) throw new Error('Failed to add role');
       await fetchRoles();
       setNewName(''); setNewDesc(''); setShowAdd(false);
     } catch (e) { console.error('Failed to add role', e); }
@@ -577,7 +627,8 @@ export default function RoleSettings() {
     e.stopPropagation();
     if (!confirm('ยืนยันการลบบทบาทนี้?')) return;
     try {
-      await coreRoleApi.remove(id);
+      const res = await fetch(`${coreApi}/roles/${id}`, { method: 'DELETE', credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to delete role');
       await fetchRoles();
     } catch (err) { console.error('Failed to delete role', err); }
   };
@@ -592,7 +643,12 @@ export default function RoleSettings() {
   const handleSaveEdit = async () => {
     if (!editId || !editName.trim()) return;
     try {
-      await coreRoleApi.update(editId, { roleName: editName.trim(), description: editDesc.trim() || undefined });
+      const res = await fetch(`${coreApi}/roles/${editId}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roleName: editName.trim(), description: editDesc.trim() || undefined }),
+        credentials: 'include'
+      });
+      if (!res.ok) throw new Error('Failed to update role');
       await fetchRoles();
       setEditId(null);
     } catch (e) { console.error('Failed to update role', e); }
@@ -673,7 +729,7 @@ export default function RoleSettings() {
             onChange={e => setSelectedApp(e.target.value)}
             style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '14px', cursor: 'pointer', background: '#fff', color: '#374151', fontWeight: 500, outline: 'none' }}
           >
-            {SYSTEM_APPS.map(a => <option key={a} value={a}>{a}</option>)}
+            {systemApps.map(a => <option key={a} value={a}>{a}</option>)}
           </select>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>

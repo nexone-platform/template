@@ -100,7 +100,7 @@ export default function CrudLayout({
                     
                     {/* ด้านขวา */}
                     {toolbarRight && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'nowrap', justifyContent: 'flex-end', flex: '1 1 auto', minWidth: 0 }}>
                             {toolbarRight}
                         </div>
                     )}

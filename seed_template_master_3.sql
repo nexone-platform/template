@@ -4,7 +4,7 @@ INSERT INTO nex_core.language_translations (translation_id, language_code, page_
 -- th
 (gen_random_uuid(), 'th', 'template-master-3', 'total_value', 'มูลค่ารวม', true),
 (gen_random_uuid(), 'th', 'template-master-3', 'items', 'รายการ', true),
-(gen_random_uuid(), 'th', 'template-master-3', 'import', 'นำเข้า', true),
+(gen_random_uuid(), 'th', 'template-master-3', 'import', 'Import', true),
 (gen_random_uuid(), 'th', 'template-master-3', 'customer', 'ลูกค้า', true),
 (gen_random_uuid(), 'th', 'template-master-3', 'search_customer', 'ชื่อลูกค้า...', true),
 (gen_random_uuid(), 'th', 'template-master-3', 'product', 'สินค้า', true),

@@ -180,7 +180,7 @@ export default function TemplateMaster2Page() {
             toolbarRight={
                 <>
                     <SearchInput value={search} onChange={setSearch} placeholder="ค้นหาตัวอย่าง..." />
-                    <button onClick={handleAdd} className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 500, cursor: 'pointer' }}><Plus size={16} /> <span>เพิ่มข้อมูล</span></button>
+                    <button onClick={handleAdd} className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-blue)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}><Plus size={16} /> <span>เพิ่มข้อมูล</span></button>
                 </>
             }
         >
